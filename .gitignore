@@ -1,0 +1,40 @@
+# Dependencies
+web/node_modules/
+
+# Frontend build output
+web/dist/
+web/dist-ssr/
+web/.vite/
+
+# Frontend logs and local environment files
+web/*.log
+web/.env
+web/.env.*
+!web/.env.example
+web/coverage/
+
+# Go build output and coverage
+backend/bin/
+backend/dist/
+backend/*.exe
+backend/*.exe~
+backend/*.out
+backend/*.test
+backend/coverage.out
+backend/coverage.html
+
+# Local environment files
+*.local
+*.secret
+
+# Editor and operating-system files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
