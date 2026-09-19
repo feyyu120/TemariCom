@@ -52,7 +52,7 @@ export const LeftSidebar: React.FC = () => {
       <div className="h-[53px] shrink-0 border-b border-border-subtle flex items-center px-4 bg-background">
         <div className="flex items-center gap-3 px-1">
           <img
-            src="/assets/temaricom-logo.png"
+            src={isDark ? "/assets/temaricom-logo-dark.png" : "/assets/temaricom-logo-light.png"}
             alt="TemariCom Logo"
             className="w-7 h-7 object-contain rounded-sm"
           />
