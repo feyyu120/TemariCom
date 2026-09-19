@@ -1,0 +1,210 @@
+import {
+  HomeFeedData,
+  Post,
+  OfficialAnnouncement,
+  Opportunity,
+  LostFoundItem,
+} from '@/features/home/types';
+
+export const mockPosts: Post[] = [
+  {
+    id: 'post-1',
+    author: {
+      id: 'author-1',
+      name: 'TikivahUniversity',
+      username: 'TikivahUniversity',
+      avatarUrl: 'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=150&auto=format&fit=crop&q=80',
+      isVerified: true,
+      institution: 'Tikivah University',
+    },
+    content: "Exciting opportunity for all Tikivah University students!\n\nThe university is now accepting applications for the 2025/26 academic year scholarship program. Don't miss this chance to build your future!",
+    createdAt: new Date(Date.now() - 10 * 3600 * 1000).toISOString(),
+    timeAgo: '10h',
+    media: {
+      type: 'image',
+      imageUrl: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=80',
+      title: 'Tikivah University Scholarship Program 2025/26',
+      subtitle: 'Learning Today, Leading Tomorrow.',
+    },
+    stats: {
+      comments: 342,
+      reposts: 1200,
+      likes: 4800,
+      views: '128K',
+      isLiked: false,
+      isBookmarked: false,
+    },
+    feedType: 'both',
+  },
+  {
+    id: 'post-2',
+    author: {
+      id: 'author-2',
+      name: 'Selamawit Girma',
+      username: 'selamawit_g',
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+      isVerified: false,
+    },
+    content: "Finally finished the Software Engineering past exam for AAU 🎓\nIt was tough but really helpful. If anyone needs it, I'm happy to share.\n\n#AAU #PastExams #SoftwareEngineering",
+    createdAt: new Date(Date.now() - 7 * 3600 * 1000).toISOString(),
+    timeAgo: '7h',
+    tags: ['#AAU', '#PastExams', '#SoftwareEngineering'],
+    stats: {
+      comments: 24,
+      reposts: 63,
+      likes: 412,
+      views: '15K',
+      isLiked: true,
+      isBookmarked: true,
+    },
+    feedType: 'for_you',
+  },
+  {
+    id: 'post-3',
+    author: {
+      id: 'author-3',
+      name: 'Tech Addis',
+      username: 'techaddis',
+      avatarUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=150&auto=format&fit=crop&q=80',
+      isVerified: true,
+    },
+    content: 'Ethiopian students are building amazing things! 🚀\nHere are 5 innovative student projects you should check out.',
+    createdAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
+    timeAgo: '12h',
+    media: {
+      type: 'link',
+      title: '5 Innovative Student Projects from Ethiopia',
+      subtitle: 'Showcasing creativity, problem solving and real impact.',
+      domain: 'techaddis.com',
+      imageUrl: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800&auto=format&fit=crop&q=80',
+    },
+    stats: {
+      comments: 18,
+      reposts: 42,
+      likes: 221,
+      views: '12K',
+      isLiked: false,
+      isBookmarked: false,
+    },
+    feedType: 'both',
+  },
+  {
+    id: 'post-4',
+    author: {
+      id: 'author-4',
+      name: 'Feysel Yassin',
+      username: 'feysel_y',
+      avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+      isVerified: false,
+    },
+    content: 'Just completed a mini project using Go Fiber 🚀\nModular monolith architecture makes routing and maintenance super enjoyable!',
+    createdAt: new Date(Date.now() - 14 * 3600 * 1000).toISOString(),
+    timeAgo: '14h',
+    stats: {
+      comments: 9,
+      reposts: 15,
+      likes: 89,
+      views: '4.2K',
+      isLiked: false,
+      isBookmarked: false,
+    },
+    feedType: 'following',
+  },
+];
+
+export const mockAnnouncements: OfficialAnnouncement[] = [
+  {
+    id: 'ann-1',
+    institutionName: 'Addis Ababa University',
+    title: 'Academic Registration Extension',
+    date: 'May 25, 2025',
+    isOfficial: true,
+    institutionLogoUrl: 'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=80&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 'ann-2',
+    institutionName: 'Ethiopian Ministry of Education',
+    title: 'New Scholarship Opportunities for 2025',
+    date: 'May 20, 2025',
+    isOfficial: true,
+    institutionLogoUrl: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=80&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 'ann-3',
+    institutionName: 'Zenith Bank Ethiopia',
+    title: 'Financial Support for Students',
+    date: 'May 18, 2025',
+    isOfficial: true,
+    institutionLogoUrl: 'https://images.unsplash.com/photo-1565372195458-9de0b320ef04?w=80&auto=format&fit=crop&q=80',
+  },
+];
+
+export const mockOpportunities: Opportunity[] = [
+  {
+    id: 'opp-1',
+    type: 'Scholarship',
+    title: "Master's in Data Science – AAU",
+    organization: 'Addis Ababa University',
+    deadlineOrDate: 'Deadline: May 31, 2025',
+    organizationLogoUrl: 'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=80&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 'opp-2',
+    type: 'Internship',
+    title: 'Ministry of Innovation Internship Program',
+    organization: 'Ministry of Innovation & Tech',
+    deadlineOrDate: 'Deadline: June 10, 2025',
+    organizationLogoUrl: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=80&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 'opp-3',
+    type: 'Job',
+    title: 'Software Engineer (Intern) – Ethio Telecom',
+    organization: 'Ethio Telecom',
+    deadlineOrDate: 'Deadline: May 28, 2025',
+    organizationLogoUrl: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=80&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 'opp-4',
+    type: 'Event',
+    title: 'STEM Career Fair 2025',
+    organization: 'Addis Ababa Science Park',
+    deadlineOrDate: 'June 6, 2025 · Addis Ababa',
+    location: 'Addis Ababa',
+    organizationLogoUrl: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=80&auto=format&fit=crop&q=80',
+  },
+];
+
+export const mockLostItems: LostFoundItem[] = [
+  {
+    id: 'lost-1',
+    status: 'Lost',
+    title: 'Black Backpack',
+    location: 'Found near Main Library',
+    timeAgo: '2h ago',
+    category: 'backpack',
+  },
+  {
+    id: 'lost-2',
+    status: 'Found',
+    title: 'iPhone 14',
+    location: 'Found at AAU Campus',
+    timeAgo: '6h ago',
+    category: 'phone',
+  },
+  {
+    id: 'lost-3',
+    status: 'Lost',
+    title: 'Student ID Card',
+    location: 'Lost near Engineering Block',
+    timeAgo: '1d ago',
+    category: 'id_card',
+  },
+];
+
+export const mockHomeData: HomeFeedData = {
+  posts: mockPosts,
+  announcements: mockAnnouncements,
+  opportunities: mockOpportunities,
+  lostItems: mockLostItems,
+};

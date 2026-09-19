@@ -14,7 +14,7 @@
     --color-text-tertiary: #737780;
     --color-icon-primary: #F2F3F5;
     --color-icon-secondary: #9EA3AE;
-    --color-active: #1D2B53;
+    --color-active: #212736;
     --color-active-text: #F2F3F5;
     --color-danger: #E53935;
     --color-unread: #E53935;
@@ -32,7 +32,7 @@
     --color-text-tertiary: #8A8F98;
     --color-icon-primary: #17191D;
     --color-icon-secondary: #8E8E93;
-    --color-active: #1D2B53;
+    --color-active:#a1a2a4;
     --color-active-text: #F2F3F5;
     --color-danger: #E53935;
     --color-unread: #E53935;
@@ -46,5 +46,29 @@
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+  }
+
+  /* Thin subtle modern scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+
+  *::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 9999px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-text-tertiary);
   }
 }

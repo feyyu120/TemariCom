@@ -1,4 +1,4 @@
-import { ThemeRadius } from './types';
+import { ThemeRadius } from '@/theme/types';
 
 /**
  * Standardized border radius scale across all components.
@@ -11,4 +11,3 @@ export const radius: ThemeRadius = {
   pill: 9999,
   circle: 99999,
 };
-

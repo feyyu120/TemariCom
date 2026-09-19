@@ -1,4 +1,4 @@
-import { ThemeSpacing } from './types';
+import { ThemeSpacing } from '@/theme/types';
 
 /**
  * Standardized spacing scale across all screens and components.
@@ -12,4 +12,3 @@ export const spacing: ThemeSpacing = {
   xl: 32,
   xxl: 48,
 };
-

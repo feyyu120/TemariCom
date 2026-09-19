@@ -1,4 +1,4 @@
-import { ThemeTypography } from './types';
+import { ThemeTypography } from '@/theme/types';
 
 /**
  * Standardized typography scale for web matching TemariCom design.
@@ -61,4 +61,3 @@ export const typography: ThemeTypography = {
     fontWeight: '600',
   },
 };
-

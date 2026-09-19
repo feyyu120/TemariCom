@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useCallback, useEffect, useMemo, useState, ReactNode } from 'react';
-import { darkTheme } from './darkTheme';
-import { lightTheme } from './lightTheme';
+import { darkTheme } from '@/theme/darkTheme';
+import { lightTheme } from '@/theme/lightTheme';
 import {
   Theme,
   ThemeColors,
@@ -10,7 +10,7 @@ import {
   ThemeShadows,
   ThemeSpacing,
   ThemeTypography,
-} from './types';
+} from '@/theme/types';
 
 const THEME_STORAGE_KEY = 'temaricom-theme-mode';
 
@@ -114,4 +114,3 @@ export function useThemeColors(): ThemeColors {
   const { colors } = useTheme();
   return colors;
 }
-

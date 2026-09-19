@@ -1,9 +1,9 @@
-import { darkColors } from './colors';
-import { radius } from './radius';
-import { darkShadows } from './shadows';
-import { spacing } from './spacing';
-import { typography } from './typography';
-import { Theme } from './types';
+import { darkColors } from '@/theme/colors';
+import { radius } from '@/theme/radius';
+import { darkShadows } from '@/theme/shadows';
+import { spacing } from '@/theme/spacing';
+import { typography } from '@/theme/typography';
+import { Theme } from '@/theme/types';
 
 /**
  * Dark Theme (Default for TemariCom)
@@ -17,4 +17,3 @@ export const darkTheme: Theme = {
   typography,
   shadows: darkShadows,
 };
-

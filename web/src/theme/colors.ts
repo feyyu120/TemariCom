@@ -1,4 +1,4 @@
-import { ThemeColors } from './types';
+import { ThemeColors } from '@/theme/types';
 
 /**
  * Dark Mode Palette (Default)
@@ -51,4 +51,3 @@ export const lightColors: ThemeColors = {
   unread: '#E53935',
   verification: '#17191D',
 };
-

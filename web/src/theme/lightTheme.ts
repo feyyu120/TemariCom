@@ -1,9 +1,9 @@
-import { lightColors } from './colors';
-import { radius } from './radius';
-import { lightShadows } from './shadows';
-import { spacing } from './spacing';
-import { typography } from './typography';
-import { Theme } from './types';
+import { lightColors } from '@/theme/colors';
+import { radius } from '@/theme/radius';
+import { lightShadows } from '@/theme/shadows';
+import { spacing } from '@/theme/spacing';
+import { typography } from '@/theme/typography';
+import { Theme } from '@/theme/types';
 
 /**
  * Light Theme
@@ -17,4 +17,3 @@ export const lightTheme: Theme = {
   typography,
   shadows: lightShadows,
 };
-

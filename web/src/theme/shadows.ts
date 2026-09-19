@@ -1,4 +1,4 @@
-import { ThemeShadows } from './types';
+import { ThemeShadows } from '@/theme/types';
 
 /**
  * Subtle dark-mode shadows.
@@ -29,4 +29,3 @@ export const lightShadows: ThemeShadows = {
     boxShadow: '0 6px 12px rgba(0, 0, 0, 0.12)',
   },
 };
-
