@@ -92,7 +92,11 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
         </div>
 
         {/* Horizontal Scroll Cards without scrollbar */}
-        <div className="flex gap-3 px-4 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth pb-1">
+        <div
+          onTouchStart={(e) => e.stopPropagation()}
+          onTouchEnd={(e) => e.stopPropagation()}
+          className="flex gap-3 px-4 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth pb-1"
+        >
           {combinedItems.map((item) => (
             <div
               key={item.id}

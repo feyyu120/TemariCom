@@ -15,7 +15,6 @@ import {
   Sun,
   Moon,
   CheckCircle2,
-  X,
 } from 'lucide-react';
 import { useTheme } from '@/theme';
 
@@ -127,7 +126,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {/* Top Profile Section */}
           <div className="p-4 pb-3 border-b border-border-subtle bg-surface/40">
             <div className="flex items-center justify-between mb-3.5">
@@ -136,31 +135,19 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                 T
               </div>
 
-              <div className="flex items-center gap-1">
-                {/* Theme Toggle Button */}
-                <button
-                  type="button"
-                  onClick={toggleTheme}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-textPrimary hover:bg-surface-elevated transition-colors"
-                  aria-label="Toggle theme mode"
-                >
-                  {isDark ? (
-                    <Sun className="w-5 h-5 text-textPrimary" />
-                  ) : (
-                    <Moon className="w-5 h-5 text-textPrimary" />
-                  )}
-                </button>
-
-                {/* Close Button */}
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors"
-                  aria-label="Close menu"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
+              {/* Theme Toggle Button */}
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="w-9 h-9 rounded-full flex items-center justify-center text-textPrimary hover:bg-surface-elevated transition-colors"
+                aria-label="Toggle theme mode"
+              >
+                {isDark ? (
+                  <Sun className="w-5 h-5 text-textPrimary" />
+                ) : (
+                  <Moon className="w-5 h-5 text-textPrimary" />
+                )}
+              </button>
             </div>
 
             {/* Profile Info */}

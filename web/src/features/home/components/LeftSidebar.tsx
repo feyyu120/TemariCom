@@ -68,7 +68,7 @@ export const LeftSidebar: React.FC = () => {
       </div>
 
       {/* 2. SCROLLABLE NAVIGATION LIST: Scrolls between pinned header and pinned profile */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-1">
+      <div className="flex-1 overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-4 space-y-1">
         <nav className="space-y-1">
           {mainNavItems.map((item) => (
             <button

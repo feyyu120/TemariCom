@@ -23,8 +23,10 @@ export const HomeScreen: React.FC = () => {
     const deltaX = e.changedTouches[0].clientX - touchStartX.current;
     const deltaY = e.changedTouches[0].clientY - touchStartY.current;
 
-    // Swipe right: deltaX > 50, predominantly horizontal movement
-    if (deltaX > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+    // Only open sidebar if swipe started near the left edge (<= 40px)
+    // to prevent accidental opening while scrolling horizontal cards or feeds
+    const isLeftEdgeSwipe = touchStartX.current <= 40;
+    if (isLeftEdgeSwipe && deltaX > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
       setIsDrawerOpen(true);
     }
 
