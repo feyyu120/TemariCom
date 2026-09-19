@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useCallback, useEffect, useMemo, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useCallback, useLayoutEffect, useMemo, useState, ReactNode } from 'react';
 import { darkTheme } from '@/theme/darkTheme';
 import { lightTheme } from '@/theme/lightTheme';
 import {
@@ -15,6 +15,55 @@ import {
 const THEME_STORAGE_KEY = 'temaricom-theme-mode';
 
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
+
+/**
+ * Disables CSS transitions momentarily during theme switch so every element,
+ * background, border, and search bar update simultaneously in a single atomic frame.
+ */
+function disableTransitionsDuringThemeSwitch() {
+  if (typeof document === 'undefined') return () => {};
+
+  const css = document.createElement('style');
+  css.appendChild(
+    document.createTextNode(
+      `*, *::before, *::after {
+        -webkit-transition: none !important;
+        -moz-transition: none !important;
+        -o-transition: none !important;
+        -ms-transition: none !important;
+        transition: none !important;
+      }`
+    )
+  );
+  document.head.appendChild(css);
+
+  return () => {
+    // Force a style recalculation to flush theme styles immediately
+    (() => window.getComputedStyle(document.body).opacity)();
+
+    // Re-enable normal interactive transitions on next frame
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (css.parentNode) {
+          document.head.removeChild(css);
+        }
+      });
+    });
+  };
+}
+
+function applyThemeMode(mode: ThemeMode) {
+  if (typeof document === 'undefined') return;
+
+  const restoreTransitions = disableTransitionsDuringThemeSwitch();
+  const root = document.documentElement;
+
+  root.classList.toggle('dark', mode === 'dark');
+  root.style.colorScheme = mode;
+  localStorage.setItem(THEME_STORAGE_KEY, mode);
+
+  restoreTransitions();
+}
 
 export interface ThemeProviderProps {
   children: ReactNode;
@@ -39,25 +88,22 @@ export function ThemeProvider({
     return initialMode;
   });
 
-  // Sync document root class ('dark') and CSS variables with active mode
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-
-    const root = document.documentElement;
-    if (mode === 'dark') {
-      root.classList.add('dark');
-    } else {
-      root.classList.remove('dark');
-    }
-    localStorage.setItem(THEME_STORAGE_KEY, mode);
+  // Apply the root class before the browser paints so every element paints in the same mode
+  useLayoutEffect(() => {
+    applyThemeMode(mode);
   }, [mode]);
 
   const setMode = useCallback((newMode: ThemeMode) => {
+    applyThemeMode(newMode);
     setModeState(newMode);
   }, []);
 
   const toggleTheme = useCallback(() => {
-    setModeState((prev) => (prev === 'dark' ? 'light' : 'dark'));
+    setModeState((prev) => {
+      const nextMode = prev === 'dark' ? 'light' : 'dark';
+      applyThemeMode(nextMode);
+      return nextMode;
+    });
   }, []);
 
   const theme: Theme = useMemo(
