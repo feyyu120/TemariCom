@@ -1,5 +1,7 @@
+import { HomeScreen } from '@/features/home';
+
 function App() {
-  return <h1>Hello TemariCom</h1>
+  return <HomeScreen />;
 }
 
-export default App
+export default App;
