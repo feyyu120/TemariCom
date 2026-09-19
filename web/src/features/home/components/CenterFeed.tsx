@@ -4,7 +4,6 @@ import { homeService } from '@/features/home/services/homeService';
 import { PostCard } from '@/features/home/components/PostCard';
 import { PostSkeleton } from '@/features/home/components/SkeletonLoader';
 import { MobileTopBar } from '@/features/home/components/MobileTopBar';
-import { MobileStories } from '@/features/home/components/MobileStories';
 import { MobileOfficialOpportunities } from '@/features/home/components/MobileOfficialOpportunities';
 
 type FeedTab = 'for_you' | 'following';
@@ -114,10 +113,7 @@ export const CenterFeed: React.FC<CenterFeedProps> = ({ onOpenMenu }) => {
         </button>
       </header>
 
-      {/* 3. Mobile Top Sections: Quick Access Stories */}
-      <MobileStories />
-
-      {/* 4. Mobile Top Sections: Official & Opportunities Horizontal Cards */}
+      {/* 3. Mobile Top Section: Official & Opportunities Horizontal Cards */}
       <MobileOfficialOpportunities
         announcements={announcements}
         opportunities={opportunities}

@@ -7,7 +7,6 @@ export * from '@/features/home/components/RightSidebar';
 export * from '@/features/home/components/PostCard';
 export * from '@/features/home/components/SkeletonLoader';
 export * from '@/features/home/components/MobileTopBar';
-export * from '@/features/home/components/MobileStories';
 export * from '@/features/home/components/MobileOfficialOpportunities';
 export * from '@/features/home/components/MobileDrawer';
 export * from '@/features/home/components/MobileBottomNav';

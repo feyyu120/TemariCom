@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
 import { CenterFeed } from '@/features/home/components/CenterFeed';
 import { RightSidebar } from '@/features/home/components/RightSidebar';
@@ -7,9 +7,37 @@ import { MobileBottomNav } from '@/features/home/components/MobileBottomNav';
 
 export const HomeScreen: React.FC = () => {
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
+
+  // Detect swipe right gesture to open mobile sidebar drawer
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 1) {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+
+    // Swipe right: deltaX > 50, predominantly horizontal movement
+    if (deltaX > 50 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+      setIsDrawerOpen(true);
+    }
+
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background text-textPrimary antialiased">
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      className="flex h-screen w-screen overflow-hidden bg-background text-textPrimary antialiased"
+    >
       {/* 1. Left Navigation Sidebar - Independent scroll on desktop, hidden on mobile */}
       <div className="hidden lg:flex shrink-0">
         <LeftSidebar />

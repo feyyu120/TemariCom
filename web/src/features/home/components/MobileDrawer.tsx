@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Home,
   GraduationCap,
@@ -33,6 +33,8 @@ interface DrawerMenuItem {
 
 export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) => {
   const { isDark, toggleTheme } = useTheme();
+  const touchStartX = useRef<number | null>(null);
+  const touchStartY = useRef<number | null>(null);
 
   // Close on Escape key press
   useEffect(() => {
@@ -56,6 +58,26 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
       document.body.style.overflow = '';
     };
   }, [isOpen]);
+
+  // Swipe left on drawer panel to close
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null || touchStartY.current === null) return;
+    const deltaX = e.changedTouches[0].clientX - touchStartX.current;
+    const deltaY = e.changedTouches[0].clientY - touchStartY.current;
+
+    // If swiped left by > 45px and predominantly horizontal
+    if (deltaX < -45 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+      onClose();
+    }
+
+    touchStartX.current = null;
+    touchStartY.current = null;
+  };
 
   const menuGroup1: DrawerMenuItem[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
@@ -99,6 +121,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
 
       {/* Drawer Panel */}
       <aside
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
         className={`fixed top-0 bottom-0 left-0 w-[290px] max-w-[82vw] bg-background border-r border-border-subtle z-50 flex flex-col justify-between shadow-2xl transition-transform duration-300 ease-out ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
@@ -108,7 +132,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
           <div className="p-4 pb-3 border-b border-border-subtle bg-surface/40">
             <div className="flex items-center justify-between mb-3.5">
               {/* User Avatar */}
-              <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-md border-2 border-border-subtle">
+              <div className="w-14 h-14 rounded-full bg-surface-elevated text-textPrimary flex items-center justify-center font-bold text-xl shadow-sm border border-border">
                 T
               </div>
 
@@ -121,7 +145,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                   aria-label="Toggle theme mode"
                 >
                   {isDark ? (
-                    <Sun className="w-5 h-5 text-amber-400" />
+                    <Sun className="w-5 h-5 text-textPrimary" />
                   ) : (
                     <Moon className="w-5 h-5 text-textPrimary" />
                   )}
@@ -144,7 +168,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
               <span className="font-bold text-sm text-textPrimary">
                 thehoper150
               </span>
-              <CheckCircle2 className="w-4 h-4 text-blue-500 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-verification shrink-0" />
             </div>
             <p className="text-xs text-textTertiary mt-0.5">
               +251 91 234 5678
@@ -159,7 +183,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                 key={item.id}
                 type="button"
                 onClick={onClose}
-                className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors"
+                className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
               >
                 <span className="text-textSecondary">{item.icon}</span>
                 <span>{item.label}</span>
@@ -174,7 +198,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                 key={item.id}
                 type="button"
                 onClick={onClose}
-                className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors"
+                className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
               >
                 <span className="text-textSecondary">{item.icon}</span>
                 <span>{item.label}</span>
@@ -189,7 +213,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                 key={item.id}
                 type="button"
                 onClick={onClose}
-                className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors"
+                className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
               >
                 <span className="text-textSecondary">{item.icon}</span>
                 <span>{item.label}</span>
@@ -204,7 +228,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                 key={item.id}
                 type="button"
                 onClick={onClose}
-                className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors"
+                className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
               >
                 <span className="text-textSecondary">{item.icon}</span>
                 <span>{item.label}</span>
@@ -217,7 +241,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
             <button
               type="button"
               onClick={onClose}
-              className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-semibold text-danger hover:bg-danger/10 transition-colors"
+              className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-semibold text-danger hover:bg-danger/10 transition-colors cursor-pointer"
             >
               <LogOut className="w-5 h-5 text-danger" />
               <span>Logout</span>
@@ -238,4 +262,3 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
     </div>
   );
 };
-
