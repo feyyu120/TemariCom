@@ -60,8 +60,8 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
         </button>
       </div>
 
-      {/* Horizontal Scroll Cards */}
-      <div className="flex gap-3 px-4 overflow-x-auto no-scrollbar scroll-smooth pb-1">
+      {/* Horizontal Scroll Cards without scrollbar */}
+      <div className="flex gap-3 px-4 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth pb-1">
         {items.map((item) => (
           <div
             key={item.id}
@@ -120,3 +120,4 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
     </section>
   );
 };
+

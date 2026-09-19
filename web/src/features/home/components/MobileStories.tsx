@@ -2,8 +2,6 @@ import React from 'react';
 import {
   Plus,
   Megaphone,
-  GraduationCap,
-  Briefcase,
   Search,
   Calendar,
 } from 'lucide-react';
@@ -26,39 +24,27 @@ export const MobileStories: React.FC = () => {
     },
     {
       id: 'announcements',
-      label: 'Announce',
-      icon: <Megaphone className="w-5 h-5 text-blue-400" />,
+      label: 'Announcement',
+      icon: <Megaphone className="w-5 h-5 text-blue-500 dark:text-blue-400" />,
       gradient: 'from-blue-500 via-indigo-500 to-cyan-400',
     },
     {
-      id: 'scholarships',
-      label: 'Scholarships',
-      icon: <GraduationCap className="w-5 h-5 text-purple-400" />,
-      gradient: 'from-purple-500 via-fuchsia-500 to-pink-500',
-    },
-    {
-      id: 'internships',
-      label: 'Internships',
-      icon: <Briefcase className="w-5 h-5 text-emerald-400" />,
-      gradient: 'from-emerald-500 via-teal-500 to-cyan-500',
-    },
-    {
       id: 'lost_items',
-      label: 'Lost & Found',
-      icon: <Search className="w-5 h-5 text-amber-400" />,
+      label: 'Lost Item',
+      icon: <Search className="w-5 h-5 text-amber-500 dark:text-amber-400" />,
       gradient: 'from-amber-500 via-orange-500 to-yellow-400',
     },
     {
       id: 'events',
       label: 'Events',
-      icon: <Calendar className="w-5 h-5 text-rose-400" />,
+      icon: <Calendar className="w-5 h-5 text-rose-500 dark:text-rose-400" />,
       gradient: 'from-rose-500 via-pink-500 to-red-400',
     },
   ];
 
   return (
     <div className="lg:hidden w-full border-b border-border-subtle bg-background py-3 select-none">
-      <div className="flex items-center gap-3.5 px-4 overflow-x-auto no-scrollbar scroll-smooth">
+      <div className="flex items-center gap-3.5 px-4 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden scroll-smooth">
         {stories.map((story) => (
           <button
             key={story.id}
@@ -80,7 +66,7 @@ export const MobileStories: React.FC = () => {
                 </div>
               </div>
             )}
-            <span className="text-[11px] font-medium text-textSecondary max-w-[62px] truncate text-center group-hover:text-textPrimary transition-colors">
+            <span className="text-[11px] font-medium text-textSecondary max-w-[70px] truncate text-center group-hover:text-textPrimary transition-colors">
               {story.label}
             </span>
           </button>

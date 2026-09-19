@@ -19,21 +19,9 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({ onOpenMenu }) => {
           <Menu className="w-5 h-5 text-textPrimary" />
         </button>
 
-        <div className="flex items-center gap-2">
-          <img
-            src="/assets/temaricom-logo-dark.png"
-            alt="TemariCom Logo"
-            className="w-6 h-6 object-contain rounded-sm hidden dark:block"
-          />
-          <img
-            src="/assets/temaricom-logo-light.png"
-            alt="TemariCom Logo"
-            className="w-6 h-6 object-contain rounded-sm block dark:hidden"
-          />
-          <span className="font-bold text-base tracking-tight text-textPrimary">
-            TemariCom
-          </span>
-        </div>
+        <span className="font-bold text-base tracking-tight text-textPrimary">
+          TemariCom
+        </span>
       </div>
 
       {/* Right: Search & Notification Bell */}
@@ -60,3 +48,4 @@ export const MobileTopBar: React.FC<MobileTopBarProps> = ({ onOpenMenu }) => {
     </header>
   );
 };
+
