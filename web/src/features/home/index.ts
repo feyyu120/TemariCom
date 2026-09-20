@@ -6,4 +6,8 @@ export * from '@/features/home/components/CenterFeed';
 export * from '@/features/home/components/RightSidebar';
 export * from '@/features/home/components/PostCard';
 export * from '@/features/home/components/SkeletonLoader';
+export * from '@/features/home/components/MobileTopBar';
+export * from '@/features/home/components/MobileOfficialOpportunities';
+export * from '@/features/home/components/MobileDrawer';
+export * from '@/features/home/components/MobileBottomNav';
 export * from '@/features/home/screens/HomeScreen';

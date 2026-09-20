@@ -46,7 +46,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
     }
   };
 
-  // Helper to render hashtags with color
+  // Helper to render hashtags and handles with color
   const renderFormattedText = (content: string) => {
     const parts = content.split(/(\s+)/);
     return parts.map((word, idx) => {
@@ -62,8 +62,8 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
   };
 
   return (
-    <article className="p-4 border-b border-border-subtle hover:bg-surface/30 transition-colors duration-150 cursor-pointer">
-      <div className="flex items-start gap-3">
+    <article className="p-3.5 sm:p-4 border-b border-border-subtle hover:bg-surface/30 transition-colors duration-150 cursor-pointer">
+      <div className="flex items-start gap-2.5 sm:gap-3">
         {/* Author Avatar */}
         <img
           src={post.author.avatarUrl}
@@ -73,14 +73,14 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
         {/* Post Body */}
         <div className="flex-1 min-w-0">
-          {/* Header Row */}
-          <div className="flex items-center justify-between gap-2 mb-1">
+          {/* Header Row / Author Details */}
+          <div className="flex items-center justify-between gap-1.5 mb-1">
             <div className="flex items-center gap-1.5 flex-wrap min-w-0">
               <span className="font-bold text-sm text-textPrimary hover:underline truncate">
                 {post.author.name}
               </span>
               {post.author.isVerified && (
-                <BadgeCheck className="w-4 h-4 text-verification shrink-0" />
+                <BadgeCheck className="w-3.5 h-3.5 text-verification shrink-0" />
               )}
               <span className="text-xs text-textTertiary truncate">
                 @{post.author.username}
@@ -93,7 +93,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
             <button
               type="button"
-              className="p-1 text-textTertiary hover:text-textPrimary hover:bg-surface-elevated rounded-full transition-colors"
+              className="p-1 -mr-1 text-textTertiary hover:text-textPrimary hover:bg-surface-elevated rounded-full transition-colors cursor-pointer"
               aria-label="Post actions"
             >
               <MoreHorizontal className="w-4 h-4" />
@@ -101,13 +101,13 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </div>
 
           {/* Text Content */}
-          <div className="text-sm text-textPrimary whitespace-pre-line leading-relaxed mb-3">
+          <div className="text-sm text-textPrimary whitespace-pre-line leading-relaxed mb-2.5">
             {renderFormattedText(post.content)}
           </div>
 
           {/* Media / Link Card Preview */}
           {post.media && (
-            <div className="mb-3 rounded-card border border-border-subtle overflow-hidden bg-surface group hover:border-border transition-colors">
+            <div className="mb-2.5 rounded-card border border-border-subtle overflow-hidden bg-surface group hover:border-border transition-colors">
               {post.media.type === 'image' && post.media.imageUrl && (
                 <div className="relative">
                   <img
@@ -164,23 +164,19 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
             {/* Comment */}
             <button
               type="button"
-              className="flex items-center gap-1.5 hover:text-textPrimary group transition-colors"
+              className="flex items-center gap-1 hover:text-textPrimary group transition-colors -ml-1 py-1 px-1.5 rounded-full hover:bg-surface-elevated/70 cursor-pointer"
             >
-              <div className="p-1.5 rounded-full group-hover:bg-surface-elevated transition-colors">
-                <MessageCircle className="w-4 h-4" />
-              </div>
-              <span>{post.stats.comments}</span>
+              <MessageCircle className="w-4 h-4 shrink-0" />
+              <span className="text-xs">{post.stats.comments}</span>
             </button>
 
             {/* Repost */}
             <button
               type="button"
-              className="flex items-center gap-1.5 hover:text-textPrimary group transition-colors"
+              className="flex items-center gap-1 hover:text-textPrimary group transition-colors py-1 px-1.5 rounded-full hover:bg-surface-elevated/70 cursor-pointer"
             >
-              <div className="p-1.5 rounded-full group-hover:bg-surface-elevated transition-colors">
-                <Repeat2 className="w-4 h-4" />
-              </div>
-              <span>
+              <Repeat2 className="w-4 h-4 shrink-0" />
+              <span className="text-xs">
                 {post.stats.reposts > 999
                   ? `${(post.stats.reposts / 1000).toFixed(1)}K`
                   : post.stats.reposts}
@@ -191,18 +187,18 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
             <button
               type="button"
               onClick={handleLike}
-              className={`flex items-center gap-1.5 group transition-colors ${
-                isLiked ? 'text-danger' : 'hover:text-danger'
+              className={`flex items-center gap-1 group transition-colors py-1 px-1.5 rounded-full cursor-pointer ${
+                isLiked
+                  ? 'text-danger hover:bg-danger/10'
+                  : 'hover:text-danger hover:bg-danger/10'
               }`}
             >
-              <div className="p-1.5 rounded-full group-hover:bg-danger/10 transition-colors">
-                <Heart
-                  className={`w-4 h-4 transition-transform active:scale-125 ${
-                    isLiked ? 'fill-current text-danger' : ''
-                  }`}
-                />
-              </div>
-              <span className={isLiked ? 'font-semibold text-danger' : ''}>
+              <Heart
+                className={`w-4 h-4 shrink-0 transition-transform active:scale-125 ${
+                  isLiked ? 'fill-current text-danger' : ''
+                }`}
+              />
+              <span className={`text-xs ${isLiked ? 'font-semibold text-danger' : ''}`}>
                 {likeCount > 999
                   ? `${(likeCount / 1000).toFixed(1)}K`
                   : likeCount}
@@ -210,33 +206,31 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
             </button>
 
             {/* Views */}
-            <div className="flex items-center gap-1.5 hover:text-textPrimary transition-colors">
-              <div className="p-1.5">
-                <BarChart2 className="w-4 h-4" />
-              </div>
-              <span>{post.stats.views}</span>
+            <div className="flex items-center gap-1 hover:text-textPrimary transition-colors py-1 px-1">
+              <BarChart2 className="w-4 h-4 shrink-0" />
+              <span className="text-xs">{post.stats.views}</span>
             </div>
 
             {/* Share */}
             <button
               type="button"
-              className="p-1.5 rounded-full hover:bg-surface-elevated hover:text-textPrimary transition-colors"
+              className="p-1.5 rounded-full hover:bg-surface-elevated hover:text-textPrimary transition-colors cursor-pointer"
               aria-label="Share post"
             >
-              <Share2 className="w-4 h-4" />
+              <Share2 className="w-4 h-4 shrink-0" />
             </button>
 
             {/* Bookmark */}
             <button
               type="button"
               onClick={handleBookmark}
-              className={`p-1.5 rounded-full hover:bg-surface-elevated hover:text-textPrimary transition-colors ${
+              className={`p-1.5 rounded-full hover:bg-surface-elevated hover:text-textPrimary transition-colors cursor-pointer ${
                 isBookmarked ? 'text-textPrimary' : ''
               }`}
               aria-label="Bookmark post"
             >
               <Bookmark
-                className={`w-4 h-4 ${isBookmarked ? 'fill-current' : ''}`}
+                className={`w-4 h-4 shrink-0 ${isBookmarked ? 'fill-current' : ''}`}
               />
             </button>
           </div>

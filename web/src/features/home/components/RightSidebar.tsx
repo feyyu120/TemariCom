@@ -88,7 +88,7 @@ export const RightSidebar: React.FC = () => {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search TemariCom..."
-            className="w-full pl-10 pr-4 py-1.5 text-xs rounded-full bg-surface-elevated border border-border-subtle text-textPrimary placeholder:text-textTertiary focus:outline-none focus:border-border focus:ring-1 focus:ring-border transition-all"
+            className="w-full pl-10 pr-4 py-1.5 text-xs rounded-full bg-surface-elevated border border-border-subtle text-textPrimary placeholder:text-textTertiary focus:outline-none focus:border-border focus:ring-1 focus:ring-border"
           />
         </div>
 

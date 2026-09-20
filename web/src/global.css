@@ -48,6 +48,13 @@
     text-rendering: optimizeLegibility;
   }
 
+  html,
+  body,
+  #root {
+    background-color: var(--color-background);
+    color: var(--color-text-primary);
+  }
+
   /* Thin subtle modern scrollbars */
   * {
     scrollbar-width: thin;
@@ -70,5 +77,15 @@
 
   *::-webkit-scrollbar-thumb:hover {
     background-color: var(--color-text-tertiary);
+  }
+}
+
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
   }
 }
