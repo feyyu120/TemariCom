@@ -7,6 +7,16 @@ export interface Author {
   institution?: string;
 }
 
+export interface UserProfile {
+  id: string;
+  name: string;
+  username: string;
+  phone?: string;
+  email?: string;
+  avatarUrl: string;
+  isVerified?: boolean;
+}
+
 export interface PostMedia {
   type: 'image' | 'link';
   url?: string;

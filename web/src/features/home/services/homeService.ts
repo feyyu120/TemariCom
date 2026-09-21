@@ -4,6 +4,7 @@ import {
   OfficialAnnouncement,
   Opportunity,
   LostFoundItem,
+  UserProfile,
 } from '@/features/home/types';
 import {
   mockHomeData,
@@ -11,6 +12,7 @@ import {
   mockAnnouncements,
   mockOpportunities,
   mockLostItems,
+  mockCurrentUser,
 } from '@/features/home/mocks/mockHomeData';
 
 /**
@@ -136,5 +138,21 @@ export const homeService = {
       throw new Error('Failed to toggle bookmark');
     }
     return !currentBookmarked;
+  },
+
+  /**
+   * Fetch currently authenticated user profile
+   */
+  async getCurrentUser(): Promise<UserProfile> {
+    if (USE_MOCK) {
+      await delay(150);
+      return { ...mockCurrentUser };
+    }
+
+    const res = await fetch(`${API_BASE_URL}/users/me`);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch current user: ${res.statusText}`);
+    }
+    return res.json();
   },
 };

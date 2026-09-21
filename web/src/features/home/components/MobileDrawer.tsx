@@ -1,8 +1,8 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Home,
   GraduationCap,
-  Megaphone,
+  BadgePercent,
   ShoppingCart,
   Bike,
   Search,
@@ -14,9 +14,12 @@ import {
   LogOut,
   Sun,
   Moon,
-  CheckCircle2,
+  BadgeCheck,
 } from 'lucide-react';
 import { useTheme } from '@/theme';
+import { homeService } from '@/features/home/services/homeService';
+import { mockCurrentUser } from '@/features/home/mocks/mockHomeData';
+import { UserProfile } from '@/features/home/types';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -32,8 +35,25 @@ interface DrawerMenuItem {
 
 export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) => {
   const { isDark, toggleTheme } = useTheme();
+  const [currentUser, setCurrentUser] = useState<UserProfile>(mockCurrentUser);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
+
+  // Load authenticated user profile
+  useEffect(() => {
+    let isMounted = true;
+    homeService
+      .getCurrentUser()
+      .then((user) => {
+        if (isMounted) setCurrentUser(user);
+      })
+      .catch((err) => {
+        console.error('Failed to load user profile in MobileDrawer', err);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // Close on Escape key press
   useEffect(() => {
@@ -81,7 +101,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
   const menuGroup1: DrawerMenuItem[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
     { id: 'tutor', label: 'Find Tutor', icon: <GraduationCap className="w-5 h-5" /> },
-    { id: 'promote', label: 'Promote', icon: <Megaphone className="w-5 h-5" /> },
+    { id: 'promote', label: 'Promote', icon: <BadgePercent className="w-5 h-5" /> },
   ];
 
   const menuGroup2: DrawerMenuItem[] = [
@@ -131,9 +151,11 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
           <div className="p-4 pb-3 border-b border-border-subtle bg-surface/40">
             <div className="flex items-center justify-between mb-3.5">
               {/* User Avatar */}
-              <div className="w-14 h-14 rounded-full bg-surface-elevated text-textPrimary flex items-center justify-center font-bold text-xl shadow-sm border border-border">
-                T
-              </div>
+              <img
+                src={currentUser.avatarUrl}
+                alt={currentUser.name}
+                className="w-14 h-14 rounded-full object-cover shadow-sm border border-border shrink-0"
+              />
 
               {/* Theme Toggle Button */}
               <button
@@ -152,14 +174,22 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
 
             {/* Profile Info */}
             <div className="flex items-center gap-1.5">
-              <span className="font-bold text-sm text-textPrimary">
-                thehoper150
+              <span className="font-bold text-base text-textPrimary truncate">
+                {currentUser.name}
               </span>
-              <CheckCircle2 className="w-4 h-4 text-verification shrink-0" />
+              {currentUser.isVerified && (
+                <BadgeCheck className="w-4 h-4 text-verification shrink-0" />
+              )}
             </div>
-            <p className="text-xs text-textTertiary mt-0.5">
-              +251 91 234 5678
-            </p>
+            <div className="flex items-center gap-1.5 text-xs text-textTertiary mt-0.5 truncate">
+              <span>@{currentUser.username}</span>
+              {currentUser.phone && (
+                <>
+                  <span>&bull;</span>
+                  <span>{currentUser.phone}</span>
+                </>
+              )}
+            </div>
           </div>
 
           {/* Navigation Items */}
