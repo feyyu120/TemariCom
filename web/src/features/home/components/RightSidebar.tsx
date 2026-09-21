@@ -141,7 +141,7 @@ export const RightSidebar: React.FC = () => {
                     />
                     <div className="min-w-0 flex-1">
                       {/* Institution Name */}
-                      <p className="text-[14px] font-bold text-textPrimary truncate">
+                      <p className="text-[14px] font-semibold text-textPrimary truncate">
                         {item.institutionName}
                       </p>
                       {/* Title: distinct in size and color */}
@@ -197,12 +197,12 @@ export const RightSidebar: React.FC = () => {
                     <div className="min-w-0 flex-1">
                       {/* Category Badge on its own line above title */}
                       <div className="mb-1">
-                        <span className="inline-block text-[11px] font-semibold text-textPrimary bg-surface-elevated px-2 py-0.5 rounded-full border border-border-subtle leading-tight">
+                        <span className="inline-block text-[11px]  text-textPrimary bg-surface-elevated px-2 py-0.5 rounded-full border border-border-subtle leading-tight">
                           {item.type}
                         </span>
                       </div>
                       {/* Item Title */}
-                      <p className="text-[14px] font-bold text-textPrimary truncate group-hover:underline transition-colors">
+                      <p className="text-[14px] font-semibold text-textPrimary truncate group-hover:underline transition-colors">
                         {item.title}
                       </p>
                       {/* Deadline / Date */}
