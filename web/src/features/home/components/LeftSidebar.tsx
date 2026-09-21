@@ -74,7 +74,7 @@ export const LeftSidebar: React.FC = () => {
             <button
               key={item.id}
               type="button"
-              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-card text-sm text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <span className="text-textPrimary shrink-0">{item.icon}</span>
@@ -92,7 +92,7 @@ export const LeftSidebar: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsMoreOpen((prev) => !prev)}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-card text-sm text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
+            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <MoreHorizontal className="w-5 h-5 text-textPrimary shrink-0" />
@@ -112,7 +112,7 @@ export const LeftSidebar: React.FC = () => {
                 <button
                   key={item.id}
                   type="button"
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-sm text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
                 >
                   <span className="text-textPrimary shrink-0">{item.icon}</span>
                   <span>{item.label}</span>
@@ -120,14 +120,14 @@ export const LeftSidebar: React.FC = () => {
               ))}
 
               {/* Theme Mode Switcher in More Dropdown */}
-              <div className="flex items-center justify-between px-3 py-2 rounded-card hover:bg-surface-elevated transition-colors text-sm text-textPrimary cursor-pointer">
+              <div className="flex items-center justify-between px-3 py-2 rounded-card hover:bg-surface-elevated transition-colors text-[15px] text-textPrimary cursor-pointer">
                 <div className="flex items-center gap-3">
                   {isDark ? (
                     <Moon className="w-5 h-5 text-textPrimary shrink-0" />
                   ) : (
                     <Sun className="w-5 h-5 text-textPrimary shrink-0" />
                   )}
-                  <span className="text-xs font-medium">
+                  <span className="text-[13px] font-medium">
                     {isDark ? 'Dark Mode' : 'Light Mode'}
                   </span>
                 </div>
@@ -163,10 +163,10 @@ export const LeftSidebar: React.FC = () => {
               className="w-9 h-9 rounded-full object-cover shrink-0"
             />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-textPrimary truncate">
+              <p className="text-[15px] font-bold text-textPrimary truncate">
                 Feysel Yassin
               </p>
-              <p className="text-xs text-textTertiary truncate">@feysel_y</p>
+              <p className="text-[13px] text-textTertiary truncate">@feysel_y</p>
             </div>
           </div>
           <MoreHorizontal className="w-4 h-4 text-textPrimary shrink-0" />

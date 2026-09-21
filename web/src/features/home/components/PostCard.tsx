@@ -76,17 +76,17 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
           {/* Header Row / Author Details */}
           <div className="flex items-center justify-between gap-1.5 mb-1">
             <div className="flex items-center gap-1.5 flex-wrap min-w-0">
-              <span className="font-bold text-sm text-textPrimary hover:underline truncate">
+              <span className="font-bold text-[15px] text-textPrimary hover:underline truncate">
                 {post.author.name}
               </span>
               {post.author.isVerified && (
-                <BadgeCheck className="w-3.5 h-3.5 text-verification shrink-0" />
+                <BadgeCheck className="w-4 h-4 text-verification shrink-0" />
               )}
-              <span className="text-xs text-textTertiary truncate">
+              <span className="text-[15px] text-textTertiary truncate">
                 @{post.author.username}
               </span>
-              <span className="text-xs text-textTertiary">·</span>
-              <span className="text-xs text-textTertiary shrink-0">
+              <span className="text-[15px] text-textTertiary">·</span>
+              <span className="text-[15px] text-textTertiary shrink-0">
                 {post.timeAgo}
               </span>
             </div>
@@ -101,7 +101,7 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
           </div>
 
           {/* Text Content */}
-          <div className="text-sm text-textPrimary whitespace-pre-line leading-relaxed mb-2.5">
+          <div className="text-[15px] text-textPrimary whitespace-pre-line leading-[20px] mb-2.5">
             {renderFormattedText(post.content)}
           </div>
 
@@ -145,11 +145,11 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
                     <p className="text-xs text-textTertiary uppercase tracking-wide">
                       {post.media.domain}
                     </p>
-                    <p className="font-semibold text-sm text-textPrimary mt-0.5 group-hover:underline">
+                    <p className="font-semibold text-[15px] text-textPrimary mt-0.5 group-hover:underline">
                       {post.media.title}
                     </p>
                     {post.media.subtitle && (
-                      <p className="text-xs text-textSecondary mt-1 line-clamp-2">
+                      <p className="text-[14px] text-textSecondary mt-1 line-clamp-2">
                         {post.media.subtitle}
                       </p>
                     )}
@@ -160,14 +160,14 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
           )}
 
           {/* Post Action Buttons Row */}
-          <div className="flex items-center justify-between text-textTertiary text-xs max-w-md pt-1 select-none">
+          <div className="flex items-center justify-between text-textTertiary text-[13px] max-w-md pt-1 select-none">
             {/* Comment */}
             <button
               type="button"
               className="flex items-center gap-1 hover:text-textPrimary group transition-colors -ml-1 py-1 px-1.5 rounded-full hover:bg-surface-elevated/70 cursor-pointer"
             >
-              <MessageCircle className="w-4 h-4 shrink-0" />
-              <span className="text-xs">{post.stats.comments}</span>
+              <MessageCircle className="w-[18px] h-[18px] shrink-0" />
+              <span>{post.stats.comments}</span>
             </button>
 
             {/* Repost */}
@@ -175,8 +175,8 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
               type="button"
               className="flex items-center gap-1 hover:text-textPrimary group transition-colors py-1 px-1.5 rounded-full hover:bg-surface-elevated/70 cursor-pointer"
             >
-              <Repeat2 className="w-4 h-4 shrink-0" />
-              <span className="text-xs">
+              <Repeat2 className="w-[18px] h-[18px] shrink-0" />
+              <span>
                 {post.stats.reposts > 999
                   ? `${(post.stats.reposts / 1000).toFixed(1)}K`
                   : post.stats.reposts}
@@ -194,11 +194,11 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
               }`}
             >
               <Heart
-                className={`w-4 h-4 shrink-0 transition-transform active:scale-125 ${
+                className={`w-[18px] h-[18px] shrink-0 transition-transform active:scale-125 ${
                   isLiked ? 'fill-current text-danger' : ''
                 }`}
               />
-              <span className={`text-xs ${isLiked ? 'font-semibold text-danger' : ''}`}>
+              <span className={isLiked ? 'font-semibold text-danger' : ''}>
                 {likeCount > 999
                   ? `${(likeCount / 1000).toFixed(1)}K`
                   : likeCount}
@@ -207,8 +207,8 @@ export const PostCard: React.FC<PostCardProps> = ({ post }) => {
 
             {/* Views */}
             <div className="flex items-center gap-1 hover:text-textPrimary transition-colors py-1 px-1">
-              <BarChart2 className="w-4 h-4 shrink-0" />
-              <span className="text-xs">{post.stats.views}</span>
+              <BarChart2 className="w-[18px] h-[18px] shrink-0" />
+              <span>{post.stats.views}</span>
             </div>
 
             {/* Share */}

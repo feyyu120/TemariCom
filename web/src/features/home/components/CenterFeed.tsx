@@ -68,7 +68,7 @@ export const CenterFeed: React.FC<CenterFeedProps> = ({ onOpenMenu }) => {
   }, []);
 
   return (
-    <main className="flex-1 min-w-0 h-screen overflow-y-auto border-r-0 lg:border-r border-border-subtle bg-background pb-16 lg:pb-0">
+    <main className="flex-1 min-w-0 h-screen overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden border-r-0 lg:border-r border-border-subtle bg-background pb-16 lg:pb-0">
       {/* 1. Mobile Sticky Top Header (Visible on < lg screens) */}
       <MobileTopBar onOpenMenu={onOpenMenu ?? (() => {})} />
 
@@ -77,7 +77,7 @@ export const CenterFeed: React.FC<CenterFeedProps> = ({ onOpenMenu }) => {
         <button
           type="button"
           onClick={() => setActiveTab('for_you')}
-          className="flex-1 flex items-center justify-center text-center text-sm font-semibold transition-colors hover:bg-surface-elevated/40 relative"
+          className="flex-1 flex items-center justify-center text-center text-[15px] font-semibold transition-colors hover:bg-surface-elevated/40 relative"
         >
           <span
             className={
@@ -96,7 +96,7 @@ export const CenterFeed: React.FC<CenterFeedProps> = ({ onOpenMenu }) => {
         <button
           type="button"
           onClick={() => setActiveTab('following')}
-          className="flex-1 flex items-center justify-center text-center text-sm font-semibold transition-colors hover:bg-surface-elevated/40 relative"
+          className="flex-1 flex items-center justify-center text-center text-[15px] font-semibold transition-colors hover:bg-surface-elevated/40 relative"
         >
           <span
             className={
@@ -124,7 +124,7 @@ export const CenterFeed: React.FC<CenterFeedProps> = ({ onOpenMenu }) => {
         <button
           type="button"
           onClick={() => setActiveTab('for_you')}
-          className="flex-1 py-3 flex items-center justify-center text-center text-xs font-semibold transition-colors relative"
+          className="flex-1 py-3 flex items-center justify-center text-center text-[15px] font-semibold transition-colors relative"
         >
           <span
             className={
@@ -136,14 +136,14 @@ export const CenterFeed: React.FC<CenterFeedProps> = ({ onOpenMenu }) => {
             For you
           </span>
           {activeTab === 'for_you' && (
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-12 h-0.5 bg-textPrimary rounded-full" />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-0.5 bg-textPrimary rounded-full" />
           )}
         </button>
 
         <button
           type="button"
           onClick={() => setActiveTab('following')}
-          className="flex-1 py-3 flex items-center justify-center text-center text-xs font-semibold transition-colors relative"
+          className="flex-1 py-3 flex items-center justify-center text-center text-[15px] font-semibold transition-colors relative"
         >
           <span
             className={
@@ -155,7 +155,7 @@ export const CenterFeed: React.FC<CenterFeedProps> = ({ onOpenMenu }) => {
             Following
           </span>
           {activeTab === 'following' && (
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-0.5 bg-textPrimary rounded-full" />
+            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-0.5 bg-textPrimary rounded-full" />
           )}
         </button>
       </div>
