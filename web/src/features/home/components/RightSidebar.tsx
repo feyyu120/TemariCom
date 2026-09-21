@@ -3,7 +3,7 @@ import {
   Search,
   Bell,
   Megaphone,
-  Briefcase,
+  BriefcaseBusiness,
   ChevronRight,
   Smartphone,
   CreditCard,
@@ -140,19 +140,15 @@ export const RightSidebar: React.FC = () => {
                       className="w-8 h-8 rounded-full object-cover shrink-0"
                     />
                     <div className="min-w-0 flex-1">
-                      {/* Bolded & Bigger Institution Name */}
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-[11px] uppercase font-semibold bg-surface-elevated text-textPrimary px-1.5 py-0.5 rounded border border-border-subtle">
-                          Official
-                        </span>
-                        <span className="text-[14px] font-bold text-textPrimary truncate">
-                          {item.institutionName}
-                        </span>
-                      </div>
-                      {/* Item Title in matching textPrimary color */}
-                      <p className="text-[14px] font-medium text-textPrimary truncate group-hover:underline transition-colors">
+                      {/* Institution Name */}
+                      <p className="text-[14px] font-bold text-textPrimary truncate">
+                        {item.institutionName}
+                      </p>
+                      {/* Title: distinct in size and color */}
+                      <p className="text-[13px] font-medium text-textSecondary truncate group-hover:underline transition-colors mt-0.5">
                         {item.title}
                       </p>
+                      {/* Date */}
                       <p className="text-[12px] text-textTertiary mt-0.5">
                         {item.date}
                       </p>
@@ -173,7 +169,7 @@ export const RightSidebar: React.FC = () => {
           <section className="bg-surface rounded-card border border-border-subtle p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-textPrimary" />
+                <BriefcaseBusiness className="w-5 h-5 text-textPrimary" />
                 <h3 className="font-bold text-[15px] text-textPrimary">
                   Opportunities
                 </h3>
@@ -199,19 +195,17 @@ export const RightSidebar: React.FC = () => {
                       className="w-8 h-8 rounded-full object-cover shrink-0"
                     />
                     <div className="min-w-0 flex-1">
-                      {/* Bolded & Bigger Organization / Institution Name */}
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <span className="text-[11px] font-semibold text-textPrimary bg-surface-elevated px-1.5 py-0.5 rounded border border-border-subtle">
+                      {/* Category Badge on its own line above title */}
+                      <div className="mb-1">
+                        <span className="inline-block text-[11px] font-semibold text-textPrimary bg-surface-elevated px-2 py-0.5 rounded-full border border-border-subtle leading-tight">
                           {item.type}
                         </span>
-                        <span className="text-[14px] font-bold text-textPrimary truncate">
-                          {item.organization}
-                        </span>
                       </div>
-                      {/* Item Title in matching textPrimary color */}
-                      <p className="text-[14px] font-medium text-textPrimary truncate group-hover:underline transition-colors">
+                      {/* Item Title */}
+                      <p className="text-[14px] font-bold text-textPrimary truncate group-hover:underline transition-colors">
                         {item.title}
                       </p>
+                      {/* Deadline / Date */}
                       <p className="text-[12px] text-textTertiary mt-0.5">
                         {item.deadlineOrDate}
                       </p>
