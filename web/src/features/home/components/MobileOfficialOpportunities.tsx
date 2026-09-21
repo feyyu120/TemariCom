@@ -78,16 +78,16 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
       <section className="lg:hidden w-full border-b border-border-subtle bg-background py-3 select-none">
         {/* Section Header */}
         <div className="flex items-center justify-between px-4 mb-2.5">
-          <h2 className="text-sm font-bold text-textPrimary tracking-tight">
+          <h2 className="text-[15px] font-bold text-textPrimary tracking-tight">
             Official & Opportunities
           </h2>
           <button
             type="button"
             onClick={() => setIsModalOpen(true)}
-            className="flex items-center text-xs font-semibold text-textTertiary hover:text-textPrimary transition-colors cursor-pointer"
+            className="flex items-center text-[13px] font-medium text-textPrimary hover:underline transition-colors cursor-pointer"
           >
             <span>See all</span>
-            <ChevronRight className="w-4 h-4 ml-0.5" />
+            <ChevronRight className="w-4 h-4 ml-0.5 text-textPrimary" />
           </button>
         </div>
 
@@ -105,10 +105,10 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
               <div>
                 {/* Category Badge & Meta Date */}
                 <div className="flex items-center justify-between gap-2 mb-2">
-                  <span className="text-[10px] uppercase font-semibold bg-surface-elevated text-textPrimary px-1.5 py-0.5 rounded border border-border-subtle">
+                  <span className="text-[11px] uppercase font-semibold bg-surface-elevated text-textPrimary px-1.5 py-0.5 rounded border border-border-subtle">
                     {item.category}
                   </span>
-                  <span className="text-[11px] text-textTertiary truncate">
+                  <span className="text-[12px] text-textTertiary truncate">
                     {item.meta}
                   </span>
                 </div>
@@ -126,7 +126,7 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
                       {item.organization.charAt(0)}
                     </div>
                   )}
-                  <span className="text-xs font-bold text-textPrimary truncate">
+                  <span className="text-[14px] font-bold text-textPrimary truncate">
                     {item.organization}
                   </span>
                   {item.isOfficial && (
@@ -135,7 +135,7 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
                 </div>
 
                 {/* Title */}
-                <p className="text-xs font-normal text-textSecondary line-clamp-2 leading-relaxed mb-3">
+                <p className="text-[14px]  text-textPrimary line-clamp-2 leading-relaxed mb-3">
                   {item.title}
                 </p>
               </div>
@@ -143,7 +143,7 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
               {/* Action Button */}
               <button
                 type="button"
-                className="w-full py-1.5 px-3 text-center text-xs font-semibold rounded-medium bg-surface-elevated hover:bg-surface border border-border-subtle text-textPrimary transition-colors cursor-pointer"
+                className="w-full py-1.5 px-3 text-center text-[13px] font-semibold rounded-medium bg-surface-elevated hover:bg-surface border border-border-subtle text-textPrimary transition-colors cursor-pointer"
               >
                 View Details
               </button>
@@ -270,7 +270,7 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
                       </div>
 
                       {/* Title */}
-                      <p className="text-sm font-semibold text-textPrimary leading-snug mt-1 mb-2">
+                      <p className="text-sm  text-textPrimary leading-snug mt-1 mb-2">
                         {item.title}
                       </p>
                     </div>

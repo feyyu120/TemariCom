@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Home,
   BookOpen,
@@ -10,13 +10,20 @@ import {
   PlusCircle,
   Bookmark,
   Settings,
-  Megaphone,
+  BadgePercent,
   MoreHorizontal,
   ChevronDown,
   Sun,
   Moon,
+  Trophy,
+  Download,
+  HelpCircle,
+  BadgeCheck,
 } from 'lucide-react';
 import { useTheme } from '@/theme';
+import { homeService } from '@/features/home/services/homeService';
+import { mockCurrentUser } from '@/features/home/mocks/mockHomeData';
+import { UserProfile } from '@/features/home/types';
 
 interface NavItem {
   id: string;
@@ -28,6 +35,23 @@ interface NavItem {
 export const LeftSidebar: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState<UserProfile>(mockCurrentUser);
+
+  // Load authenticated user profile
+  useEffect(() => {
+    let isMounted = true;
+    homeService
+      .getCurrentUser()
+      .then((user) => {
+        if (isMounted) setCurrentUser(user);
+      })
+      .catch((err) => {
+        console.error('Failed to load user profile', err);
+      });
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const mainNavItems: NavItem[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
@@ -37,13 +61,16 @@ export const LeftSidebar: React.FC = () => {
     { id: 'marketplace', label: 'Marketplace', icon: <ShoppingCart className="w-5 h-5" /> },
     { id: 'chat', label: 'Chat', icon: <MessageSquare className="w-5 h-5" />, badge: 3 },
     { id: 'lostfound', label: 'Lost & Found', icon: <Search className="w-5 h-5" /> },
-    { id: 'promote', label: 'Promote', icon: <Megaphone className="w-5 h-5" /> },
+    { id: 'promote', label: 'Promote', icon: <BadgePercent className="w-5 h-5" /> },
     { id: 'create', label: 'Create', icon: <PlusCircle className="w-5 h-5" /> },
   ];
 
   const moreDropdownItems: NavItem[] = [
+    { id: 'chess', label: 'Play Chess', icon: <Trophy className="w-5 h-5" /> },
     { id: 'saved', label: 'Saved', icon: <Bookmark className="w-5 h-5" /> },
+    { id: 'downloads', label: 'Downloads', icon: <Download className="w-5 h-5" /> },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
+    { id: 'help', label: 'Help', icon: <HelpCircle className="w-5 h-5" /> },
   ];
 
   return (
@@ -74,7 +101,7 @@ export const LeftSidebar: React.FC = () => {
             <button
               key={item.id}
               type="button"
-              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-card text-sm text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <span className="text-textPrimary shrink-0">{item.icon}</span>
@@ -92,7 +119,7 @@ export const LeftSidebar: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsMoreOpen((prev) => !prev)}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-card text-sm text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
+            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <MoreHorizontal className="w-5 h-5 text-textPrimary shrink-0" />
@@ -112,7 +139,7 @@ export const LeftSidebar: React.FC = () => {
                 <button
                   key={item.id}
                   type="button"
-                  className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-sm text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
+                  className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
                 >
                   <span className="text-textPrimary shrink-0">{item.icon}</span>
                   <span>{item.label}</span>
@@ -120,14 +147,14 @@ export const LeftSidebar: React.FC = () => {
               ))}
 
               {/* Theme Mode Switcher in More Dropdown */}
-              <div className="flex items-center justify-between px-3 py-2 rounded-card hover:bg-surface-elevated transition-colors text-sm text-textPrimary cursor-pointer">
+              <div className="flex items-center justify-between px-3 py-2 rounded-card hover:bg-surface-elevated transition-colors text-[15px] text-textPrimary cursor-pointer">
                 <div className="flex items-center gap-3">
                   {isDark ? (
                     <Moon className="w-5 h-5 text-textPrimary shrink-0" />
                   ) : (
                     <Sun className="w-5 h-5 text-textPrimary shrink-0" />
                   )}
-                  <span className="text-xs font-medium">
+                  <span className="text-[13px] font-medium">
                     {isDark ? 'Dark Mode' : 'Light Mode'}
                   </span>
                 </div>
@@ -158,15 +185,22 @@ export const LeftSidebar: React.FC = () => {
         <div className="flex items-center justify-between p-2 rounded-card hover:bg-surface-elevated cursor-pointer transition-colors duration-150">
           <div className="flex items-center gap-3 min-w-0">
             <img
-              src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80"
-              alt="Feysel Yassin"
+              src={currentUser.avatarUrl}
+              alt={currentUser.name}
               className="w-9 h-9 rounded-full object-cover shrink-0"
             />
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-semibold text-textPrimary truncate">
-                Feysel Yassin
+              <div className="flex items-center gap-1.5">
+                <p className="text-[15px] font-bold text-textPrimary truncate">
+                  {currentUser.name}
+                </p>
+                {currentUser.isVerified && (
+                  <BadgeCheck className="w-3.5 h-3.5 text-verification shrink-0" />
+                )}
+              </div>
+              <p className="text-[13px] text-textTertiary truncate">
+                @{currentUser.username}
               </p>
-              <p className="text-xs text-textTertiary truncate">@feysel_y</p>
             </div>
           </div>
           <MoreHorizontal className="w-4 h-4 text-textPrimary shrink-0" />

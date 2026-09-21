@@ -43,16 +43,21 @@
     margin: 0;
     background-color: var(--color-background);
     color: var(--color-text-primary);
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    font-family: 'Chirp', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
 
   html,
   body,
-  #root {
+  #root,
+  button,
+  input,
+  textarea,
+  select {
     background-color: var(--color-background);
     color: var(--color-text-primary);
+    font-family: 'Chirp', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   }
 
   /* Thin subtle modern scrollbars */

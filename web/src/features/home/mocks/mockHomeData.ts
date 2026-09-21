@@ -4,6 +4,7 @@ import {
   OfficialAnnouncement,
   Opportunity,
   LostFoundItem,
+  UserProfile,
 } from '@/features/home/types';
 
 export const mockPosts: Post[] = [
@@ -23,8 +24,6 @@ export const mockPosts: Post[] = [
     media: {
       type: 'image',
       imageUrl: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=800&auto=format&fit=crop&q=80',
-      title: 'Tikivah University Scholarship Program 2025/26',
-      subtitle: 'Learning Today, Leading Tomorrow.',
     },
     stats: {
       comments: 342,
@@ -201,6 +200,16 @@ export const mockLostItems: LostFoundItem[] = [
     category: 'id_card',
   },
 ];
+
+export const mockCurrentUser: UserProfile = {
+  id: 'user-current',
+  name: 'Feysel Yassin',
+  username: 'thehoper150',
+  phone: '+251 91 234 5678',
+  email: 'thehoper150@temaricom.com',
+  avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&auto=format&fit=crop&q=80',
+  isVerified: true,
+};
 
 export const mockHomeData: HomeFeedData = {
   posts: mockPosts,
