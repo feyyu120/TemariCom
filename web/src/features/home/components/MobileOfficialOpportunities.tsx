@@ -135,7 +135,7 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
                 </div>
 
                 {/* Title */}
-                <p className="text-[14px] font-medium text-textPrimary line-clamp-2 leading-relaxed mb-3">
+                <p className="text-[14px]  text-textPrimary line-clamp-2 leading-relaxed mb-3">
                   {item.title}
                 </p>
               </div>
@@ -270,7 +270,7 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
                       </div>
 
                       {/* Title */}
-                      <p className="text-sm font-semibold text-textPrimary leading-snug mt-1 mb-2">
+                      <p className="text-sm  text-textPrimary leading-snug mt-1 mb-2">
                         {item.title}
                       </p>
                     </div>
