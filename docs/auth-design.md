@@ -130,10 +130,10 @@ CREATE TABLE users (
     username VARCHAR(50) UNIQUE,
     password_hash TEXT,
     account_status VARCHAR(30) NOT NULL DEFAULT 'pending', -- 'pending','active','suspended','banned','deactivated'
-     full_name  VARCHAR(100),
-    avatar_url VARCHAR(500),
-    bio        VARCHAR(255),
-    is_verified BOOLEAN NOT NULL DEFAULT false,
+    full_name VARCHAR(100),
+    avatar_key VARCHAR(500),
+    bio VARCHAR(255),
+    is_verified BOOLEAN NOT NULL DEFAULT FALSE,
     last_login_at TIMESTAMPTZ,
     last_login_ip INET,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -142,6 +142,7 @@ CREATE TABLE users (
 );
 
 CREATE INDEX idx_users_created_at ON users(created_at DESC);
+CREATE INDEX idx_users_full_name ON users(full_name) WHERE full_name IS NOT NULL;
 ```
 
 ### 5.2 `verification_codes` Table

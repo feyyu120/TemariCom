@@ -24,6 +24,9 @@ backend/coverage.out
 backend/coverage.html
 
 # Local environment files
+.env
+.env.*
+!.env.example
 *.local
 *.secret
 
