@@ -11,39 +11,45 @@ import {
 } from 'lucide-react';
 import { Post } from '@/features/home/types';
 import { homeService } from '@/features/home/services/homeService';
+import { useAuth } from '@/features/auth';
 
 interface PostCardProps {
   post: Post;
 }
 
 export const PostCard: React.FC<PostCardProps> = ({ post }) => {
+  const { requireAuth } = useAuth();
   const [isLiked, setIsLiked] = useState(post.stats.isLiked ?? false);
   const [likeCount, setLikeCount] = useState(post.stats.likes);
   const [isBookmarked, setIsBookmarked] = useState(post.stats.isBookmarked ?? false);
 
-  const handleLike = async (e: React.MouseEvent) => {
+  const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const nextState = !isLiked;
-    setIsLiked(nextState);
-    setLikeCount((prev) => (nextState ? prev + 1 : prev - 1));
-    try {
-      await homeService.toggleLike(post.id, isLiked);
-    } catch {
-      // Rollback on failure
-      setIsLiked(isLiked);
-      setLikeCount((prev) => (isLiked ? prev + 1 : prev - 1));
-    }
+    requireAuth(async () => {
+      const nextState = !isLiked;
+      setIsLiked(nextState);
+      setLikeCount((prev) => (nextState ? prev + 1 : prev - 1));
+      try {
+        await homeService.toggleLike(post.id, isLiked);
+      } catch {
+        // Rollback on failure
+        setIsLiked(isLiked);
+        setLikeCount((prev) => (isLiked ? prev + 1 : prev - 1));
+      }
+    });
   };
 
-  const handleBookmark = async (e: React.MouseEvent) => {
+  const handleBookmark = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const nextState = !isBookmarked;
-    setIsBookmarked(nextState);
-    try {
-      await homeService.toggleBookmark(post.id, isBookmarked);
-    } catch {
-      setIsBookmarked(isBookmarked);
-    }
+    requireAuth(async () => {
+      const nextState = !isBookmarked;
+      setIsBookmarked(nextState);
+      try {
+        await homeService.toggleBookmark(post.id, isBookmarked);
+      } catch {
+        setIsBookmarked(isBookmarked);
+      }
+    });
   };
 
   // Helper to render hashtags and handles with color

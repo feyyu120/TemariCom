@@ -15,11 +15,11 @@ import {
   Sun,
   Moon,
   BadgeCheck,
+  User as UserIcon,
+  LogIn,
 } from 'lucide-react';
 import { useTheme } from '@/theme';
-import { homeService } from '@/features/home/services/homeService';
-import { mockCurrentUser } from '@/features/home/mocks/mockHomeData';
-import { UserProfile } from '@/features/home/types';
+import { useAuth } from '@/features/auth';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -35,25 +35,9 @@ interface DrawerMenuItem {
 
 export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) => {
   const { isDark, toggleTheme } = useTheme();
-  const [currentUser, setCurrentUser] = useState<UserProfile>(mockCurrentUser);
+  const { user, isAuthenticated, openAuthModal, logout } = useAuth();
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
-
-  // Load authenticated user profile
-  useEffect(() => {
-    let isMounted = true;
-    homeService
-      .getCurrentUser()
-      .then((user) => {
-        if (isMounted) setCurrentUser(user);
-      })
-      .catch((err) => {
-        console.error('Failed to load user profile in MobileDrawer', err);
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   // Close on Escape key press
   useEffect(() => {
@@ -150,12 +134,18 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
           {/* Top Profile Section */}
           <div className="p-4 pb-3 border-b border-border-subtle bg-surface/40">
             <div className="flex items-center justify-between mb-3.5">
-              {/* User Avatar */}
-              <img
-                src={currentUser.avatarUrl}
-                alt={currentUser.name}
-                className="w-14 h-14 rounded-full object-cover shadow-sm border border-border shrink-0"
-              />
+              {/* User Avatar or Guest Icon */}
+              {user?.avatar_url ? (
+                <img
+                  src={user.avatar_url}
+                  alt={user.full_name || user.username}
+                  className="w-14 h-14 rounded-full object-cover shadow-sm border border-border shrink-0"
+                />
+              ) : (
+                <div className="w-14 h-14 rounded-full bg-surface border border-border flex items-center justify-center text-textSecondary shrink-0">
+                  <UserIcon className="w-7 h-7" />
+                </div>
+              )}
 
               {/* Theme Toggle Button */}
               <button
@@ -172,24 +162,48 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
               </button>
             </div>
 
-            {/* Profile Info */}
-            <div className="flex items-center gap-1.5">
-              <span className="font-bold text-base text-textPrimary truncate">
-                {currentUser.name}
-              </span>
-              {currentUser.isVerified && (
-                <BadgeCheck className="w-4 h-4 text-verification shrink-0" />
-              )}
-            </div>
-            <div className="flex items-center gap-1.5 text-xs text-textTertiary mt-0.5 truncate">
-              <span>@{currentUser.username}</span>
-              {currentUser.phone && (
-                <>
-                  <span>&bull;</span>
-                  <span>{currentUser.phone}</span>
-                </>
-              )}
-            </div>
+            {/* Profile Info or Sign In Action */}
+            {!isAuthenticated || !user ? (
+              <div className="space-y-2">
+                <div>
+                  <p className="font-bold text-base text-textPrimary">Welcome to TemariCom</p>
+                  <p className="text-xs text-textTertiary mt-0.5">
+                    Sign in to access your chats, tutors and saved items.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    openAuthModal('login');
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-colors shadow-sm cursor-pointer"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>Sign In / Register</span>
+                </button>
+              </div>
+            ) : (
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-base text-textPrimary truncate">
+                    {user.full_name || user.username || user.email.split('@')[0]}
+                  </span>
+                  {user.is_verified && (
+                    <BadgeCheck className="w-4 h-4 text-verification shrink-0" />
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-textTertiary mt-0.5 truncate">
+                  <span>@{user.username || user.email.split('@')[0]}</span>
+                  {user.phone && (
+                    <>
+                      <span>&bull;</span>
+                      <span>{user.phone}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Navigation Items */}
@@ -252,17 +266,22 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
               </button>
             ))}
 
-            <div className="h-[1px] bg-border-subtle mx-2 my-1.5" />
-
-            {/* Logout */}
-            <button
-              type="button"
-              onClick={onClose}
-              className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-semibold text-danger hover:bg-danger/10 transition-colors cursor-pointer"
-            >
-              <LogOut className="w-5 h-5 text-danger" />
-              <span>Logout</span>
-            </button>
+            {isAuthenticated && (
+              <>
+                <div className="h-[1px] bg-border-subtle mx-2 my-1.5" />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await logout();
+                    onClose();
+                  }}
+                  className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-semibold text-danger hover:bg-danger/10 transition-colors cursor-pointer"
+                >
+                  <LogOut className="w-5 h-5 text-danger" />
+                  <span>Logout</span>
+                </button>
+              </>
+            )}
           </nav>
         </div>
 
