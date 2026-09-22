@@ -120,17 +120,21 @@ export async function request<T = any>(
     ...(customHeaders as Record<string, string>),
   };
 
-  // 3. Inject Bearer token if required
-  if (requiresAuth) {
+  // 3. Inject Bearer token if required (unless useCookieOnly is explicitly requested)
+  if (requiresAuth && !options.useCookieOnly) {
     const token = await tokenStorage.getSessionToken();
     if (token) {
       headers['Authorization'] = `Bearer ${token}`;
     }
   }
 
-  // 4. Execute fetch
+  // 4. Execute fetch with dual-mode credentials (sends HttpOnly cookie automatically)
   try {
-    const response = await fetch(url, { ...fetchOptions, headers });
+    const response = await fetch(url, {
+      ...fetchOptions,
+      headers,
+      credentials: options.credentials || 'include',
+    });
 
     // 5. Parse response body
     let rawData: any = null;
@@ -267,3 +271,4 @@ export const apiClient = {
 };
 
 export default apiClient;
+

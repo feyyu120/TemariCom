@@ -39,4 +39,7 @@ export function isApiError(err: unknown): err is ApiError {
 export interface RequestOptions extends RequestInit {
   params?: Record<string, string | number | boolean | undefined>;
   requiresAuth?: boolean;
+  useCookieOnly?: boolean;
+  credentials?: RequestCredentials;
 }
+

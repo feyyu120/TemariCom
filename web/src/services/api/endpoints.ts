@@ -10,7 +10,9 @@ export const ENDPOINTS = {
     VERIFY_OTP: '/auth/verify-otp',
     ME: '/auth/me',
     LOGOUT: '/auth/logout',
+    SWITCH_ACCOUNT: '/auth/switch-account',
   },
 } as const;
 
 export default ENDPOINTS;
+

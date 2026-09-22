@@ -51,6 +51,7 @@ func RegisterRoutes(router fiber.Router, db *pgxpool.Pool, emailService email.Em
 	group.Post("/login", authHandler.Login)
 	group.Post("/verify-otp", authHandler.VerifyOTP)
 	group.Post("/logout", authHandler.Logout)
+	group.Post("/switch-account", authHandler.SwitchAccount)
 
 	return authService
 }

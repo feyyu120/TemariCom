@@ -96,27 +96,22 @@ export const authService = {
   },
 
   /**
-   * Logout current user: revokes session in PostgreSQL & clears storage
+   * Logout current user: revokes session in PostgreSQL & clears cookie and storage
    * POST /api/v1/auth/logout
    */
   async logout(specificToken?: string): Promise<LogoutResult> {
-    const token = specificToken || (await tokenStorage.getSessionToken());
     let serverRevoked = false;
     let revocationError: string | undefined;
 
-    if (token) {
-      try {
-        await apiClient.post('/auth/logout', undefined, {
-          requiresAuth: true,
-          headers: specificToken ? { Authorization: `Bearer ${specificToken}` } : undefined,
-        });
-        serverRevoked = true;
-      } catch (error: any) {
-        revocationError = error?.message || 'Server session revocation failed';
-        console.warn('[authService.logout] Remote session revocation failed:', revocationError);
-      }
-    } else {
+    try {
+      await apiClient.post('/auth/logout', undefined, {
+        requiresAuth: true,
+        headers: specificToken ? { Authorization: `Bearer ${specificToken}` } : undefined,
+      });
       serverRevoked = true;
+    } catch (error: any) {
+      revocationError = error?.message || 'Server session revocation failed';
+      console.warn('[authService.logout] Remote session revocation failed:', revocationError);
     }
 
     // Clear active session locally
@@ -126,6 +121,28 @@ export const authService = {
       serverRevoked,
       error: serverRevoked ? undefined : revocationError,
     };
+  },
+
+  /**
+   * Switch the active account on Web (updates HttpOnly cookie on backend and active account in storage)
+   * POST /api/v1/auth/switch-account
+   */
+  async switchAccount(accountIdOrToken: string): Promise<User> {
+    const accounts = tokenStorage.getAccounts();
+    const account = accounts.find((a) => a.id === accountIdOrToken);
+    const token = account ? account.sessionToken : accountIdOrToken;
+
+    const response = await apiClient.post<User>(
+      '/auth/switch-account',
+      { session_token: token },
+      { requiresAuth: false }
+    );
+
+    if (account) {
+      tokenStorage.switchActiveAccount(account.id);
+    }
+
+    return response.data;
   },
 
   /**
@@ -152,3 +169,4 @@ export const authService = {
 };
 
 export default authService;
+

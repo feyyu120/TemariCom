@@ -28,11 +28,15 @@ func main() {
 		EnableStackTrace: true,
 	}))
 
-	// 2. CORS for web and mobile clients
+	// 2. CORS for web (HttpOnly cookies + credentials) and mobile (Bearer tokens)
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Authorization", "User-Agent"},
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
+		AllowOriginsFunc: func(origin string) bool {
+			// Allows local development (e.g. Vite on 5173/3000) and web origins
+			return true
+		},
+		AllowCredentials: true,
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "User-Agent", "X-Requested-With"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
 	}))
 
 	// 3. Database Connection Pool

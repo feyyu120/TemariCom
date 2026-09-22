@@ -8,6 +8,7 @@ import (
 	"TemariCom/internal/auth/dto"
 	"TemariCom/internal/auth/repository"
 	"TemariCom/internal/auth/service"
+	"TemariCom/pkg/middleware"
 	"TemariCom/pkg/validator"
 
 	"github.com/gofiber/fiber/v3"
@@ -227,6 +228,11 @@ func (h *AuthHandler) VerifyOTP(c fiber.Ctx) error {
 		})
 	}
 
+	// Dual-mode security: Always set HttpOnly session cookie for Web browsers.
+	// Native mobile clients ignore Set-Cookie, which is completely harmless.
+	isSecure := c.Protocol() == "https" || strings.EqualFold(c.Get("X-Forwarded-Proto"), "https")
+	c.Cookie(middleware.BuildSessionCookie(authSession.SessionToken, isSecure))
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success": true,
 		"message": "Authentication successful",
@@ -234,13 +240,9 @@ func (h *AuthHandler) VerifyOTP(c fiber.Ctx) error {
 	})
 }
 
-// Me validates the active session token and returns current user data: GET
+// Me validates the active session token (via Bearer header or HttpOnly cookie) and returns current user data: GET /api/v1/auth/me
 func (h *AuthHandler) Me(c fiber.Ctx) error {
-	authHeader := c.Get("Authorization")
-	var token string
-	if strings.HasPrefix(authHeader, "Bearer ") {
-		token = strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
-	}
+	token := middleware.ExtractSessionToken(c)
 
 	if token == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
@@ -270,14 +272,10 @@ func (h *AuthHandler) Me(c fiber.Ctx) error {
 	})
 }
 
-// Logout revokes the current session: POST /
+// Logout revokes the current session and clears the web HttpOnly cookie: POST /api/v1/auth/logout
 func (h *AuthHandler) Logout(c fiber.Ctx) error {
-	// Extract Bearer token from Authorization header or body
-	authHeader := c.Get("Authorization")
-	var token string
-	if strings.HasPrefix(authHeader, "Bearer ") {
-		token = strings.TrimSpace(strings.TrimPrefix(authHeader, "Bearer "))
-	}
+	// Extract session token from Bearer header, HttpOnly cookie, or JSON body
+	token := middleware.ExtractSessionToken(c)
 
 	if token == "" {
 		var body struct {
@@ -303,8 +301,42 @@ func (h *AuthHandler) Logout(c fiber.Ctx) error {
 		})
 	}
 
+	// Clear session cookie for Web clients
+	c.Cookie(middleware.BuildClearSessionCookie())
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success": true,
 		"message": "Logged out successfully",
+	})
+}
+
+// SwitchAccount updates the HttpOnly session cookie to the requested session token: POST /api/v1/auth/switch-account
+func (h *AuthHandler) SwitchAccount(c fiber.Ctx) error {
+	var req struct {
+		SessionToken string `json:"session_token"`
+	}
+	if err := c.Bind().Body(&req); err != nil || strings.TrimSpace(req.SessionToken) == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "Valid session token is required to switch account",
+		})
+	}
+
+	targetToken := strings.TrimSpace(req.SessionToken)
+	user, err := h.authService.ValidateSession(c.Context(), targetToken)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"error":   "Target session is invalid or has expired",
+		})
+	}
+
+	isSecure := c.Protocol() == "https" || strings.EqualFold(c.Get("X-Forwarded-Proto"), "https")
+	c.Cookie(middleware.BuildSessionCookie(targetToken, isSecure))
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"message": "Switched active account successfully",
+		"data":    user,
 	})
 }
