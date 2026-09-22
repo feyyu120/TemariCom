@@ -49,12 +49,16 @@ func (r *pgxUserRepository) Create(ctx context.Context, user *model.User) (*mode
 			email,
 			username,
 			phone,
+			full_name,
+			avatar_key,
+			bio,
+			is_verified,
 			account_status
 		) VALUES (
-			$1, $2, $3, $4
+			$1, $2, $3, $4, $5, $6, $7, $8
 		)
 		RETURNING 
-			id, email, username, phone, account_status, 
+			id, email, username, phone, full_name, avatar_key, bio, is_verified, account_status, 
 			last_login_at, last_login_ip, created_at, updated_at
 	`
 
@@ -65,12 +69,20 @@ func (r *pgxUserRepository) Create(ctx context.Context, user *model.User) (*mode
 		user.Email,
 		user.Username,
 		user.Phone,
+		user.FullName,
+		user.AvatarKey,
+		user.Bio,
+		user.IsVerified,
 		user.AccountStatus,
 	).Scan(
 		&created.ID,
 		&created.Email,
 		&created.Username,
 		&created.Phone,
+		&created.FullName,
+		&created.AvatarKey,
+		&created.Bio,
+		&created.IsVerified,
 		&created.AccountStatus,
 		&created.LastLoginAt,
 		&created.LastLoginIP,
@@ -104,22 +116,26 @@ func (r *pgxUserRepository) CreateWithRole(ctx context.Context, user *model.User
 				email,
 				username,
 				phone,
+				full_name,
+				avatar_key,
+				bio,
+				is_verified,
 				account_status
 			) VALUES (
-				$1, $2, $3, $4
+				$1, $2, $3, $4, $5, $6, $7, $8
 			)
 			RETURNING 
-				id, email, username, phone, account_status, 
+				id, email, username, phone, full_name, avatar_key, bio, is_verified, account_status, 
 				last_login_at, last_login_ip, created_at, updated_at
 		),
 		assigned_role AS (
 			INSERT INTO user_roles (user_id, role_id)
 			SELECT new_user.id, roles.id
 			FROM new_user, roles
-			WHERE roles.name = $5
+			WHERE roles.name = $9
 		)
 		SELECT 
-			id, email, username, phone, account_status, 
+			id, email, username, phone, full_name, avatar_key, bio, is_verified, account_status, 
 			last_login_at, last_login_ip, created_at, updated_at
 		FROM new_user
 	`
@@ -131,6 +147,10 @@ func (r *pgxUserRepository) CreateWithRole(ctx context.Context, user *model.User
 		user.Email,
 		user.Username,
 		user.Phone,
+		user.FullName,
+		user.AvatarKey,
+		user.Bio,
+		user.IsVerified,
 		user.AccountStatus,
 		roleName,
 	).Scan(
@@ -138,6 +158,10 @@ func (r *pgxUserRepository) CreateWithRole(ctx context.Context, user *model.User
 		&created.Email,
 		&created.Username,
 		&created.Phone,
+		&created.FullName,
+		&created.AvatarKey,
+		&created.Bio,
+		&created.IsVerified,
 		&created.AccountStatus,
 		&created.LastLoginAt,
 		&created.LastLoginIP,
