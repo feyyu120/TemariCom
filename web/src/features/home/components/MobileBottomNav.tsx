@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Home, BookOpen, Building2, MessageSquare, User } from 'lucide-react';
+import { useAuth } from '@/features/auth';
 
 interface BottomNavItem {
   id: string;
@@ -9,6 +10,7 @@ interface BottomNavItem {
 }
 
 export const MobileBottomNav: React.FC = () => {
+  const { isAuthenticated, openAuthModal } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('home');
 
   const navItems: BottomNavItem[] = [
@@ -24,6 +26,14 @@ export const MobileBottomNav: React.FC = () => {
     { id: 'profile', label: 'Profile', icon: <User className="w-5 h-5" /> },
   ];
 
+  const handleTabClick = (tabId: string) => {
+    if (tabId === 'profile' && !isAuthenticated) {
+      openAuthModal('login');
+      return;
+    }
+    setActiveTab(tabId);
+  };
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 h-14 bg-background/95 backdrop-blur-md border-t border-border-subtle flex items-center justify-around px-2 lg:hidden select-none">
       {navItems.map((item) => {
@@ -32,7 +42,7 @@ export const MobileBottomNav: React.FC = () => {
           <button
             key={item.id}
             type="button"
-            onClick={() => setActiveTab(item.id)}
+            onClick={() => handleTabClick(item.id)}
             className="flex-1 flex flex-col items-center justify-center py-1 relative focus:outline-none transition-colors"
           >
             <div className="relative">

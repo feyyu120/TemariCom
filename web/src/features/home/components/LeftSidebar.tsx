@@ -19,11 +19,11 @@ import {
   Download,
   HelpCircle,
   BadgeCheck,
+  User as UserIcon,
+  LogIn,
 } from 'lucide-react';
 import { useTheme } from '@/theme';
-import { homeService } from '@/features/home/services/homeService';
-import { mockCurrentUser } from '@/features/home/mocks/mockHomeData';
-import { UserProfile } from '@/features/home/types';
+import { useAuth, UserMenuDropdown } from '@/features/auth';
 
 interface NavItem {
   id: string;
@@ -34,24 +34,9 @@ interface NavItem {
 
 export const LeftSidebar: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
+  const { user, isAuthenticated, openAuthModal } = useAuth();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState<UserProfile>(mockCurrentUser);
-
-  // Load authenticated user profile
-  useEffect(() => {
-    let isMounted = true;
-    homeService
-      .getCurrentUser()
-      .then((user) => {
-        if (isMounted) setCurrentUser(user);
-      })
-      .catch((err) => {
-        console.error('Failed to load user profile', err);
-      });
-    return () => {
-      isMounted = false;
-    };
-  }, []);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const mainNavItems: NavItem[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
@@ -180,31 +165,71 @@ export const LeftSidebar: React.FC = () => {
         </nav>
       </div>
 
-      {/* 3. PINNED BOTTOM PROFILE FOOTER: Never scrolls, anchored firmly at bottom */}
-      <div className="shrink-0 p-3.5 border-t border-border-subtle bg-background">
-        <div className="flex items-center justify-between p-2 rounded-card hover:bg-surface-elevated cursor-pointer transition-colors duration-150">
-          <div className="flex items-center gap-3 min-w-0">
-            <img
-              src={currentUser.avatarUrl}
-              alt={currentUser.name}
-              className="w-9 h-9 rounded-full object-cover shrink-0"
-            />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <p className="text-[15px] font-bold text-textPrimary truncate">
-                  {currentUser.name}
-                </p>
-                {currentUser.isVerified && (
-                  <BadgeCheck className="w-3.5 h-3.5 text-verification shrink-0" />
-                )}
+      {/* 3. PINNED BOTTOM PROFILE / AUTH FOOTER */}
+      <div className="relative shrink-0 p-3.5 border-t border-border-subtle bg-background">
+        {!isAuthenticated || !user ? (
+          <button
+            type="button"
+            onClick={() => openAuthModal('login')}
+            className="w-full flex items-center justify-between p-2.5 rounded-card bg-surface-elevated/70 hover:bg-surface-elevated border border-border-subtle hover:border-border transition-all duration-150 group cursor-pointer"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-textSecondary group-hover:text-textPrimary shrink-0 transition-colors">
+                <UserIcon className="w-4 h-4" />
               </div>
-              <p className="text-[13px] text-textTertiary truncate">
-                @{currentUser.username}
-              </p>
+              <div className="text-left min-w-0">
+                <p className="text-[14px] font-bold text-textPrimary leading-tight">
+                  Sign In
+                </p>
+                <p className="text-[12px] text-textTertiary truncate">
+                  Join TemariCom
+                </p>
+              </div>
             </div>
-          </div>
-          <MoreHorizontal className="w-4 h-4 text-textPrimary shrink-0" />
-        </div>
+            <LogIn className="w-4 h-4 text-textTertiary group-hover:text-textPrimary shrink-0 transition-colors ml-2" />
+          </button>
+        ) : (
+          <>
+            <UserMenuDropdown
+              isOpen={isUserMenuOpen}
+              onClose={() => setIsUserMenuOpen(false)}
+              position="top"
+            />
+
+            <div
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className="flex items-center justify-between p-2 rounded-card hover:bg-surface-elevated cursor-pointer transition-colors duration-150 select-none"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                {user.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt={user.full_name || user.username}
+                    className="w-9 h-9 rounded-full object-cover shrink-0"
+                  />
+                ) : (
+                  <div className="w-9 h-9 rounded-full bg-surface border border-border flex items-center justify-center text-textSecondary shrink-0">
+                    <UserIcon className="w-5 h-5" />
+                  </div>
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-[15px] font-bold text-textPrimary truncate">
+                      {user.full_name || user.username || user.email.split('@')[0]}
+                    </p>
+                    {user.is_verified && (
+                      <BadgeCheck className="w-3.5 h-3.5 text-verification shrink-0" />
+                    )}
+                  </div>
+                  <p className="text-[13px] text-textTertiary truncate">
+                    @{user.username || user.email.split('@')[0]}
+                  </p>
+                </div>
+              </div>
+              <MoreHorizontal className="w-4 h-4 text-textPrimary shrink-0" />
+            </div>
+          </>
+        )}
       </div>
     </aside>
   );
