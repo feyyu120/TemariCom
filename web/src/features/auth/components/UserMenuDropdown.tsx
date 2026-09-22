@@ -49,10 +49,10 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
       ref={menuRef}
       className={`absolute left-2 right-2 ${
         position === 'top' ? 'bottom-full mb-2' : 'top-full mt-2'
-      } bg-[#121722] border border-white/[0.1] rounded-2xl shadow-2xl p-2 z-50 animate-fadeIn min-w-[240px]`}
+      } bg-surface border border-border rounded-2xl shadow-2xl p-2 z-50 animate-fadeIn min-w-[240px] text-textPrimary`}
     >
       {/* Current Active Account Header */}
-      <div className="p-2.5 border-b border-white/[0.06] mb-1">
+      <div className="p-2.5 border-b border-border-subtle mb-1">
         <div className="flex items-center gap-2.5">
           {user.avatar_url ? (
             <img
@@ -61,28 +61,28 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
               className="w-9 h-9 rounded-full object-cover shrink-0"
             />
           ) : (
-            <div className="w-9 h-9 rounded-full bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+            <div className="w-9 h-9 rounded-full bg-surface-elevated border border-border flex items-center justify-center text-textSecondary shrink-0">
               <UserIcon className="w-5 h-5" />
             </div>
           )}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1">
-              <p className="text-sm font-bold text-white truncate">
+              <p className="text-sm font-bold text-textPrimary truncate">
                 {user.full_name || user.username || user.email.split('@')[0]}
               </p>
               {user.is_verified && (
-                <BadgeCheck className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+                <BadgeCheck className="w-3.5 h-3.5 text-verification shrink-0" />
               )}
             </div>
-            <p className="text-xs text-gray-400 truncate">{user.email}</p>
+            <p className="text-xs text-textTertiary truncate">{user.email}</p>
           </div>
         </div>
       </div>
 
       {/* Telegram-style Multi-Account List */}
       {accounts.length > 1 && (
-        <div className="py-1 border-b border-white/[0.06] mb-1">
-          <p className="px-2.5 py-1 text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+        <div className="py-1 border-b border-border-subtle mb-1">
+          <p className="px-2.5 py-1 text-[11px] font-semibold text-textTertiary uppercase tracking-wider">
             SWITCH ACCOUNT
           </p>
           {accounts.map((acc) => {
@@ -97,10 +97,10 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
                   }
                   onClose();
                 }}
-                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left transition-colors ${
+                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-left transition-colors cursor-pointer ${
                   isActive
-                    ? 'bg-white/[0.08] text-white'
-                    : 'text-gray-300 hover:bg-white/[0.04] hover:text-white'
+                    ? 'bg-surface-elevated text-textPrimary font-semibold'
+                    : 'text-textSecondary hover:bg-surface-elevated hover:text-textPrimary'
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
@@ -111,15 +111,15 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
                       className="w-7 h-7 rounded-full object-cover shrink-0"
                     />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 shrink-0">
+                    <div className="w-7 h-7 rounded-full bg-surface-elevated border border-border flex items-center justify-center text-textTertiary shrink-0">
                       <UserIcon className="w-4 h-4" />
                     </div>
                   )}
-                  <span className="text-xs font-medium truncate">
+                  <span className="text-xs truncate">
                     {acc.user.full_name || acc.user.username || acc.user.email}
                   </span>
                 </div>
-                {isActive && <Check className="w-4 h-4 text-blue-400 shrink-0 ml-2" />}
+                {isActive && <Check className="w-4 h-4 text-textPrimary shrink-0 ml-2" />}
               </button>
             );
           })}
@@ -133,9 +133,9 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
           onClose();
           openAuthModal('login');
         }}
-        className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-medium text-gray-300 hover:bg-white/[0.05] hover:text-white transition-colors"
+        className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-medium text-textSecondary hover:bg-surface-elevated hover:text-textPrimary transition-colors cursor-pointer"
       >
-        <UserPlus className="w-4 h-4 text-gray-400" />
+        <UserPlus className="w-4 h-4 text-textTertiary" />
         <span>Add another account</span>
       </button>
 
@@ -146,9 +146,9 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
           onClose();
           await logout();
         }}
-        className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-medium text-red-400 hover:bg-red-500/10 transition-colors mt-0.5"
+        className="w-full flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-xs font-medium text-danger hover:bg-danger/10 transition-colors mt-0.5 cursor-pointer"
       >
-        <LogOut className="w-4 h-4 text-red-400" />
+        <LogOut className="w-4 h-4 text-danger" />
         <span>Log Out</span>
       </button>
     </div>
@@ -156,4 +156,3 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
 };
 
 export default UserMenuDropdown;
-
