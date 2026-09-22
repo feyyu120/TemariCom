@@ -102,7 +102,7 @@ export const AuthHelpModal: React.FC<AuthHelpModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-60 flex items-center justify-center p-4 sm:p-6 bg-black/70 backdrop-blur-sm animate-fadeIn"
+      className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6 bg-black/70 backdrop-blur-sm animate-fadeIn"
       role="dialog"
       aria-modal="true"
     >
@@ -112,7 +112,7 @@ export const AuthHelpModal: React.FC<AuthHelpModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="flex items-center gap-2 p-1 -ml-1 text-textSecondary hover:text-textPrimary transition-colors"
+            className="flex items-center gap-2 p-1 -ml-1 text-textSecondary hover:text-textPrimary transition-colors cursor-pointer"
             aria-label="Go back"
           >
             <ArrowLeft className="w-5 h-5 text-textPrimary" />
@@ -122,7 +122,7 @@ export const AuthHelpModal: React.FC<AuthHelpModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors"
+            className="p-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
             aria-label="Close FAQ"
           >
             <X className="w-5 h-5 text-textPrimary" />
@@ -139,7 +139,7 @@ export const AuthHelpModal: React.FC<AuthHelpModalProps> = ({
             {faqs.map((faq, index) => (
               <div
                 key={index}
-                className="p-4 rounded-2xl bg-surface-elevated border border-border-subtle hover:border-border transition-colors"
+                className="p-4 rounded-2xl bg-surface-elevated border border-border-subtle hover:border-border transition-colors text-left"
               >
                 <div className="flex items-start gap-3 mb-2">
                   <div className="w-7 h-7 rounded-lg bg-surface border border-border-subtle flex items-center justify-center shrink-0 mt-0.5">
