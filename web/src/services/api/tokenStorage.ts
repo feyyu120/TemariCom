@@ -164,9 +164,9 @@ export const tokenStorage = {
   },
 
   /**
-   * Retrieve serialized user data.
+   * Retrieve serialized user data synchronously (critical for zero-FOUC hydration).
    */
-  async getUserData<T = any>(): Promise<T | null> {
+  getUserDataSync<T = any>(): T | null {
     const raw = safeGetItem(USER_DATA_KEY);
     if (!raw) return null;
     try {
@@ -174,6 +174,29 @@ export const tokenStorage = {
     } catch {
       return null;
     }
+  },
+
+  /**
+   * Retrieve active account synchronously.
+   */
+  getActiveAccountSync<T = any>(): StoredAccount<T> | null {
+    const accountsRaw = safeGetItem(ACCOUNTS_KEY);
+    const activeId = safeGetItem(ACTIVE_ACCOUNT_ID_KEY);
+    if (!accountsRaw || !activeId) return null;
+    try {
+      const accounts = JSON.parse(accountsRaw) as StoredAccount<T>[];
+      if (!Array.isArray(accounts)) return null;
+      return accounts.find((acc: any) => acc.user?.id === activeId) || null;
+    } catch {
+      return null;
+    }
+  },
+
+  /**
+   * Retrieve serialized user data.
+   */
+  async getUserData<T = any>(): Promise<T | null> {
+    return this.getUserDataSync<T>();
   },
 
   /**
