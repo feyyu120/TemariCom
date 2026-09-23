@@ -14,13 +14,14 @@ import {
   mockLostItems,
   mockCurrentUser,
 } from '@/features/home/mocks/mockHomeData';
+import { ENV } from '@/config/env';
 
 /**
  * Toggle between Mock Data and Real Backend API.
  * When your Go backend is running, switch USE_MOCK to false or set VITE_USE_MOCK=false in your .env
  */
 const USE_MOCK = import.meta.env.VITE_USE_MOCK !== 'false';
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1';
+const API_BASE_URL = ENV.API_BASE_URL;
 
 // Helper for realistic async network simulation
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
