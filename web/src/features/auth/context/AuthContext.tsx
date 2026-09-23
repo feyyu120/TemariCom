@@ -1,7 +1,7 @@
 import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { authService } from '../services/authService';
-import { tokenStorage } from '@/services/api';
+import { setUnauthorizedHandler, tokenStorage } from '@/services/api';
 import {
   AuthSessionResponse,
   SendOTPResponse,
@@ -56,6 +56,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // TanStack Query: fetch current authenticated user profile
   // Hydrates synchronously from tokenStorage to eliminate unauthenticated button flash on reload
+  // Uses initialDataUpdatedAt: 0 so TanStack considers cached data stale immediately, triggering
+  // a background server revalidation to /api/v1/auth/me on reload while displaying user instantly.
   const {
     data: currentUser,
     isLoading,
@@ -67,16 +69,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const user = await authService.getMe();
         return user;
       } catch (err: any) {
-        // Expected when user is a guest (401 Unauthorized)
+        // If 401 Unauthorized, session is invalid or revoked on server
+        if (err?.status === 401) {
+          await tokenStorage.clearAll();
+          syncLocalAccounts();
+        }
         return null;
       }
     },
     initialData: () => tokenStorage.getUserDataSync<User>() || null,
+    initialDataUpdatedAt: 0,
     staleTime: 1000 * 60 * 5,
     retry: false,
   });
 
   const isAuthenticated = Boolean(currentUser);
+
+  // Hook global 401 unauthorized listener to auto-clear session on any expired API call
+  useEffect(() => {
+    setUnauthorizedHandler(() => {
+      tokenStorage.clearAll();
+      queryClient.setQueryData(AUTH_USER_QUERY_KEY, null);
+      syncLocalAccounts();
+    });
+    return () => {
+      setUnauthorizedHandler(null);
+    };
+  }, [queryClient, syncLocalAccounts]);
 
   // Sync user data to active account in storage when fetched
   useEffect(() => {
