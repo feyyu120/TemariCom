@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   Home,
   GraduationCap,
@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/theme';
 import { useAuth } from '@/features/auth';
+import { useNavigate } from 'react-router-dom';
 
 interface MobileDrawerProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ interface DrawerMenuItem {
 }
 
 export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) => {
+  const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, openAuthModal, logout } = useAuth();
   const touchStartX = useRef<number | null>(null);
@@ -258,7 +260,12 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
               <button
                 key={item.id}
                 type="button"
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  if (item.id === 'help') {
+                    navigate('/faq');
+                  }
+                }}
                 className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
               >
                 <span className="text-textSecondary">{item.icon}</span>

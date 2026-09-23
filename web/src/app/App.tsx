@@ -1,17 +1,8 @@
-import { HomeScreen } from '@/features/home';
-import { AuthModal, useAuth } from '@/features/auth';
-import { SplashScreen } from '@/components';
+import { RouterProvider } from 'react-router-dom';
+import { router } from './router';
 
 function App() {
-  const { isLoading } = useAuth();
-
-  return (
-    <>
-      <SplashScreen isLoading={isLoading} />
-      <HomeScreen />
-      <AuthModal />
-    </>
-  );
+  return <RouterProvider router={router} />;
 }
 
 export default App;
