@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   Home,
   BookOpen,
@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/theme';
 import { useAuth, UserMenuDropdown } from '@/features/auth';
+import { useNavigate } from 'react-router-dom';
 
 interface NavItem {
   id: string;
@@ -33,6 +34,7 @@ interface NavItem {
 }
 
 export const LeftSidebar: React.FC = () => {
+  const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, openAuthModal } = useAuth();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
@@ -124,6 +126,12 @@ export const LeftSidebar: React.FC = () => {
                 <button
                   key={item.id}
                   type="button"
+                  onClick={() => {
+                    if (item.id === 'help') {
+                      setIsMoreOpen(false);
+                      navigate('/faq');
+                    }
+                  }}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
                 >
                   <span className="text-textPrimary shrink-0">{item.icon}</span>
