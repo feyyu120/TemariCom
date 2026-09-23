@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
  * Splash Screen Animation Timing Configuration (in milliseconds)
  */
 export const SPLASH_CONFIG = {
-  MIN_DISPLAY_MS: 500, // Guarantees smooth entrance/pulse animation without jarring micro-flash
-  MAX_DISPLAY_MS: 1500, // Safety fallback so app never gets stuck on splash screen
-  FADE_OUT_DURATION_MS: 300, // CSS transition duration for opacity fade-out
+  MIN_DISPLAY_MS: 1200, // Display for at least 1.2s to enjoy the smooth zoom-in / pulse animation
+  MAX_DISPLAY_MS: 3000, // Maximum display time before auto-dismissing
+  FADE_OUT_DURATION_MS: 400, // Fluid 400ms CSS fade-out transition
 } as const;
 
 export interface SplashControllerState {

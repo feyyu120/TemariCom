@@ -12,7 +12,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ isLoading }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background select-none transition-opacity duration-300 ease-out ${
+      className={`fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background select-none transition-opacity duration-[400ms] ease-out ${
         isFadingOut ? 'opacity-0 pointer-events-none' : 'opacity-100'
       }`}
       aria-hidden={isFadingOut}
