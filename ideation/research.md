@@ -86,7 +86,8 @@ the TemariCom problem.
 
 ## 3. Research Conclusion
 
-The student research provides direct evidence about the experiences reported by the students we asked.
+The student interviews provide direct evidence about the experiences
+of the students we asked.
 
 The students reported using multiple sources, especially Telegram
 groups, social media, online platforms, teachers, and official social
@@ -103,4 +104,6 @@ seeking, but no directly relevant paper was identified for the specific
 TemariCom problem during our initial search. Therefore, we avoided
 using unrelated academic papers to support the problem.
 
-Together, the student research and academic search helped us better understand the information-seeking experiences reported by the students we asked and provided broader context for defining the TemariCom problem and considering its features.
+Together, the student research and academic search helped us understand
+the information-seeking challenges students experience and informed the
+problem definition and features considered for TemariCom.

@@ -90,14 +90,8 @@ Build a unified platform that combines:
 
 ## Alternative Comparison
 
-| Alternative                     | Main focus                                        | Advantages                                 | Limitations                                |
-| :------------------------------ | :------------------------------------------------ | :----------------------------------------- | :----------------------------------------- |
-| **Student Resource Website**    | Information and resources                         | Simple and easy to build                   | Limited interaction and services           |
-| **Learning-Only Platform**      | Education                                         | Clear scope and easier MVP                 | Does not cover wider student needs         |
-| **All-in-One Student Platform** | Education, opportunities, services, and community | Covers multiple student needs in one place | Larger scope and more technical complexity |
-
-### Selected Direction
-
-The **All-in-One Student Platform** was selected because it addresses the widest
-range of student needs in one place. The initial MVP should focus on the most
-important features first, while the remaining services can be added gradually.
+| Alternative | Main Focus | Advantages | Limitations |
+|---|---|---|---|
+| Student Resource Website | Information and resources | Simple and easy to build | Limited interaction and services |
+| Learning-Only Platform | Education | Clear scope and easier MVP | Does not cover wider student needs |
+| All-in-One Student Platform | Education, opportunities, services, and community | Covers multiple student needs in one place | Larger scope and more technical complexity |

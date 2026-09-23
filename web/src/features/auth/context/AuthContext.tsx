@@ -55,7 +55,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // TanStack Query: fetch current authenticated user profile
-  // If unauthenticated (401 or null), queryFn returns null and does not throw
+  // Hydrates synchronously from tokenStorage to eliminate unauthenticated button flash on reload
   const {
     data: currentUser,
     isLoading,
@@ -71,6 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
     },
+    initialData: () => tokenStorage.getUserDataSync<User>() || null,
     staleTime: 1000 * 60 * 5,
     retry: false,
   });
