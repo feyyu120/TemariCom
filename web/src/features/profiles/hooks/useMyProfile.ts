@@ -1,14 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { profileService } from '../services/profileService';
 import { useAuth } from '@/features/auth';
-import { FullProfileResponse } from '../types';
+import { FullProfileResponse, PROFILE_KEYS } from '../types';
 
-export const PROFILE_KEYS = {
-  all: ['profile'] as const,
-  me: () => [...PROFILE_KEYS.all, 'me'] as const,
-  user: (id: string) => [...PROFILE_KEYS.all, id] as const,
-  campus: (institutionId: string) => [...PROFILE_KEYS.all, 'campus', institutionId] as const,
-};
+export { PROFILE_KEYS };
 
 /**
  * Hook to retrieve the current authenticated user's complete profile.
