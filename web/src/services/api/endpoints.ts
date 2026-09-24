@@ -12,6 +12,14 @@ export const ENDPOINTS = {
     LOGOUT: '/auth/logout',
     SWITCH_ACCOUNT: '/auth/switch-account',
   },
+  PROFILE: {
+    ME: '/profile/me',
+    BY_ID: (id: string) => `/profile/${id}`,
+    UPDATE: '/profile/me',
+    PRESIGN_AVATAR: '/profile/avatar/presign',
+    DELETE_ACCOUNT: '/profile/me',
+    CAMPUS: (institutionId: string) => `/profile/campus/${institutionId}`,
+  },
 } as const;
 
 export default ENDPOINTS;
