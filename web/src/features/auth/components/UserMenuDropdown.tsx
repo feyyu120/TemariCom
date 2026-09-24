@@ -6,7 +6,8 @@ import {
   Check,
   BadgeCheck,
 } from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 
 interface UserMenuDropdownProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
   onClose,
   position = 'top',
 }) => {
+  const navigate = useNavigate();
   const {
     user,
     accounts,
@@ -78,6 +80,7 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
           </div>
         </div>
       </div>
+
 
       {/* Telegram-style Multi-Account List */}
       {Array.isArray(accounts) && accounts.length > 1 && (
