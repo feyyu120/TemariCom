@@ -252,7 +252,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                     </p>
 
                     {/* Stored Accounts List */}
-                    {accounts.map((acc) => {
+                    {Array.isArray(accounts) &&
+                      accounts.map((acc) => {
                       const isActive = acc.id === activeAccountId || acc.id === user.id;
                       return (
                         <button
