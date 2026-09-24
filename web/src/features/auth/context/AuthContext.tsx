@@ -70,19 +70,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const user = await authService.getMe();
         return user;
-      } catch (err: any) {
-        // If 401 Unauthorized, session is invalid or revoked on server
-        if (err?.status === 401) {
+      } catch (err: unknown) {
+        const status = (err as { status?: number })?.status;
+        // If 401 Unauthorized, session is definitively invalid or revoked on server
+        if (status === 401) {
           await tokenStorage.clearAll();
           syncLocalAccounts();
+          return null;
         }
+
+        // If backend is sleeping (Render cold-start), 502/503, or temporary network drop:
+        // PRESERVE the cached user from localStorage so the UI NEVER flickers to "Sign In"!
+        const cachedUser = tokenStorage.getUserDataSync<User>();
+        if (cachedUser) {
+          return cachedUser;
+        }
+
         return null;
       }
     },
     initialData: () => tokenStorage.getUserDataSync<User>() || null,
     initialDataUpdatedAt: 0,
     staleTime: 1000 * 60 * 5,
-    retry: false,
+    retry: (failureCount, error: unknown) => {
+      const status = (error as { status?: number })?.status;
+      // Never retry on 401 Unauthorized (credentials invalid)
+      if (status === 401) return false;
+      // Automatically retry up to 2 times while Render finishes spinning up
+      return failureCount < 2;
+    },
+    retryDelay: (attemptIndex) => Math.min(1500 * (attemptIndex + 1), 5000),
   });
 
   const isAuthenticated = Boolean(currentUser);
