@@ -146,17 +146,6 @@ export const authService = {
   },
 
   /**
-   * Validate active session and fetch fresh user profile from server
-   * GET /api/v1/auth/me
-   */
-  async getMe(): Promise<User> {
-    const response = await apiClient.get<User>('/auth/me', {
-      requiresAuth: true,
-    });
-    return response.data;
-  },
-
-  /**
    * Health check for auth module
    * GET /api/v1/auth/health
    */
