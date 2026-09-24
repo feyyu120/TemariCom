@@ -7,6 +7,7 @@ import (
 
 	"TemariCom/config"
 	"TemariCom/internal/auth"
+	"TemariCom/internal/profile"
 	"TemariCom/pkg/database"
 	"TemariCom/pkg/email"
 	"TemariCom/pkg/middleware"
@@ -88,7 +89,10 @@ func main() {
 	api.Use(middleware.TimeoutMiddleware(time.Second * 15))
 
 	// 7. Register Auth Module
-	_ = auth.RegisterRoutes(api, db, emailService, r2Storage)
+	authSvc := auth.RegisterRoutes(api, db, emailService, r2Storage)
+
+	// 8. Register Profile Module
+	_ = profile.RegisterRoutes(api, db, authSvc, r2Storage)
 
 	port := cfg.Port
 	log.Printf("TemariCom backend starting on port %s...", port)
