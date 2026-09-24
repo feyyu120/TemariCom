@@ -13,6 +13,13 @@ export type StudyLevel =
   | 'diploma'
   | 'other';
 
+export const PROFILE_KEYS = {
+  all: ['profile'] as const,
+  me: () => ['profile', 'me'] as const,
+  user: (id: string) => ['profile', id] as const,
+  campus: (institutionId: string) => ['profile', 'campus', institutionId] as const,
+};
+
 export interface StudentProfile {
   user_id: string;
   study_level?: StudyLevel | null;

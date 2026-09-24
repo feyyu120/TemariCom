@@ -1,8 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { profileService } from '../services/profileService';
-import { PROFILE_KEYS } from './useMyProfile';
-import { FullProfileResponse, UpdateProfileInput } from '../types';
-import { AUTH_USER_QUERY_KEY, useAuth } from '@/features/auth';
+import { FullProfileResponse, UpdateProfileInput, PROFILE_KEYS } from '../types';
+import { useAuth } from '@/features/auth';
 
 /**
  * Mutation hook for partially updating current user's profile.
@@ -22,8 +21,8 @@ export function useUpdateProfile() {
         queryClient.setQueryData(PROFILE_KEYS.user(updated.user.id), updated);
       }
 
-      // 2. Invalidate auth query to keep UserContext / Header avatar in sync
-      queryClient.invalidateQueries({ queryKey: AUTH_USER_QUERY_KEY });
+      // 2. Invalidate profile query to keep UserContext / Header avatar in sync
+      queryClient.invalidateQueries({ queryKey: PROFILE_KEYS.me() });
       refreshUser().catch(() => {});
     },
   });
