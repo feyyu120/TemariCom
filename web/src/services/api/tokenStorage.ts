@@ -42,9 +42,9 @@ function safeRemoveItem(key: string): void {
  */
 export const tokenStorage = {
   /**
-   * Retrieve all saved accounts for multi-account switching.
+   * Retrieve all saved accounts synchronously.
    */
-  async getAccounts<T = any>(): Promise<StoredAccount<T>[]> {
+  getAccountsSync<T = unknown>(): StoredAccount<T>[] {
     const raw = safeGetItem(ACCOUNTS_KEY);
     if (!raw) return [];
     try {
@@ -56,10 +56,24 @@ export const tokenStorage = {
   },
 
   /**
+   * Retrieve active account ID synchronously.
+   */
+  getActiveAccountIdSync(): string | null {
+    return safeGetItem(ACTIVE_ACCOUNT_ID_KEY);
+  },
+
+  /**
+   * Retrieve all saved accounts for multi-account switching.
+   */
+  async getAccounts<T = unknown>(): Promise<StoredAccount<T>[]> {
+    return this.getAccountsSync<T>();
+  },
+
+  /**
    * Retrieve active account ID.
    */
   async getActiveAccountId(): Promise<string | null> {
-    return safeGetItem(ACTIVE_ACCOUNT_ID_KEY);
+    return this.getActiveAccountIdSync();
   },
 
   /**

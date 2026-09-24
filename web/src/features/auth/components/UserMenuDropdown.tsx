@@ -80,7 +80,7 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
       </div>
 
       {/* Telegram-style Multi-Account List */}
-      {accounts.length > 1 && (
+      {Array.isArray(accounts) && accounts.length > 1 && (
         <div className="py-1 border-b border-border-subtle mb-1">
           <p className="px-2.5 py-1 text-[11px] font-semibold text-textTertiary uppercase tracking-wider">
             SWITCH ACCOUNT

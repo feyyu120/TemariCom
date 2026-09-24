@@ -42,16 +42,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [authModalView, setAuthModalView] = useState<AuthModalView>('register');
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
 
-  // Stored multi-accounts list
-  const [accounts, setAccounts] = useState<StoredAccount[]>(() => tokenStorage.getAccounts());
+  // Stored multi-accounts list (hydrates synchronously from localStorage)
+  const [accounts, setAccounts] = useState<StoredAccount[]>(() =>
+    tokenStorage.getAccountsSync()
+  );
   const [activeAccountId, setActiveAccountId] = useState<string | null>(() =>
-    tokenStorage.getActiveAccountId()
+    tokenStorage.getActiveAccountIdSync()
   );
 
-  // Refresh local accounts list
+  // Refresh local accounts list synchronously
   const syncLocalAccounts = useCallback(() => {
-    setAccounts(tokenStorage.getAccounts());
-    setActiveAccountId(tokenStorage.getActiveAccountId());
+    setAccounts(tokenStorage.getAccountsSync());
+    setActiveAccountId(tokenStorage.getActiveAccountIdSync());
   }, []);
 
   // TanStack Query: fetch current authenticated user profile

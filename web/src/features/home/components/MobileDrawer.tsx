@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Home,
   GraduationCap,
@@ -17,6 +17,9 @@ import {
   BadgeCheck,
   User as UserIcon,
   LogIn,
+  ChevronDown,
+  UserPlus,
+  Check,
 } from 'lucide-react';
 import { useTheme } from '@/theme';
 import { useAuth } from '@/features/auth';
@@ -37,9 +40,25 @@ interface DrawerMenuItem {
 export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
-  const { user, isAuthenticated, openAuthModal, logout } = useAuth();
+  const {
+    user,
+    isAuthenticated,
+    accounts,
+    activeAccountId,
+    switchAccount,
+    openAuthModal,
+    logout,
+  } = useAuth();
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
   const touchStartX = useRef<number | null>(null);
   const touchStartY = useRef<number | null>(null);
+
+  // Close on Escape key press and reset account menu
+  useEffect(() => {
+    if (!isOpen) {
+      setIsAccountMenuOpen(false);
+    }
+  }, [isOpen]);
 
   // Close on Escape key press
   useEffect(() => {
@@ -179,7 +198,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                     onClose();
                     openAuthModal('login');
                   }}
-                  className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm transition-colors shadow-sm cursor-pointer"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl bg-active hover:bg-active/90 active:scale-[0.99] text-active-text font-semibold text-sm transition-all shadow-sm cursor-pointer"
                 >
                   <LogIn className="w-4 h-4" />
                   <span>Sign In / Register</span>
@@ -187,23 +206,116 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
               </div>
             ) : (
               <div>
-                <div className="flex items-center gap-1.5">
-                  <span className="font-bold text-base text-textPrimary truncate">
-                    {user.full_name || user.username || user.email.split('@')[0]}
-                  </span>
-                  {user.is_verified && (
-                    <BadgeCheck className="w-4 h-4 text-verification shrink-0" />
-                  )}
+                {/* Clickable Profile Header Row to Toggle Multi-Account Drawer */}
+                <div
+                  onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+                  className="flex items-center justify-between cursor-pointer select-none group py-0.5"
+                  role="button"
+                  aria-expanded={isAccountMenuOpen}
+                  aria-label="Toggle account switcher"
+                >
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-base text-textPrimary truncate group-hover:text-active transition-colors">
+                        {user.full_name || user.username || user.email.split('@')[0]}
+                      </span>
+                      {user.is_verified && (
+                        <BadgeCheck className="w-4 h-4 text-verification shrink-0" />
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-textTertiary mt-0.5 truncate">
+                      <span>@{user.username || user.email.split('@')[0]}</span>
+                      {user.phone && (
+                        <>
+                          <span>&bull;</span>
+                          <span>{user.phone}</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Dropdown Toggle Arrow */}
+                  <div className="p-1 rounded-full text-textSecondary group-hover:text-textPrimary transition-colors ml-2">
+                    <ChevronDown
+                      className={`w-5 h-5 transition-transform duration-200 ${
+                        isAccountMenuOpen ? 'rotate-180 text-textPrimary' : ''
+                      }`}
+                    />
+                  </div>
                 </div>
-                <div className="flex items-center gap-1.5 text-xs text-textTertiary mt-0.5 truncate">
-                  <span>@{user.username || user.email.split('@')[0]}</span>
-                  {user.phone && (
-                    <>
-                      <span>&bull;</span>
-                      <span>{user.phone}</span>
-                    </>
-                  )}
-                </div>
+
+                {/* Telegram-style Multi-Account Drawer Dropdown */}
+                {isAccountMenuOpen && (
+                  <div className="mt-3 pt-3 border-t border-border-subtle space-y-1 animate-fadeIn">
+                    <p className="px-1 text-[11px] font-semibold text-textTertiary uppercase tracking-wider mb-1.5">
+                      Switch Account
+                    </p>
+
+                    {/* Stored Accounts List */}
+                    {Array.isArray(accounts) &&
+                      accounts.map((acc) => {
+                      const isActive = acc.id === activeAccountId || acc.id === user.id;
+                      return (
+                        <button
+                          key={acc.id}
+                          type="button"
+                          onClick={async () => {
+                            if (!isActive) {
+                              await switchAccount(acc.id);
+                            }
+                            setIsAccountMenuOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between p-2 rounded-xl text-left transition-colors cursor-pointer ${
+                            isActive
+                              ? 'bg-surface-elevated text-textPrimary font-semibold shadow-xs'
+                              : 'text-textSecondary hover:bg-surface-elevated hover:text-textPrimary'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            {acc.user.avatar_url ? (
+                              <img
+                                src={acc.user.avatar_url}
+                                alt={acc.user.full_name || acc.user.username}
+                                className="w-8 h-8 rounded-full object-cover shrink-0"
+                              />
+                            ) : (
+                              <div className="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-textTertiary shrink-0">
+                                <UserIcon className="w-4 h-4" />
+                              </div>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="text-xs font-semibold text-textPrimary truncate">
+                                {acc.user.full_name || acc.user.username || acc.user.email}
+                              </p>
+                              <p className="text-[11px] text-textTertiary truncate">
+                                @{acc.user.username || acc.user.email.split('@')[0]}
+                              </p>
+                            </div>
+                          </div>
+                          {isActive && (
+                            <Check className="w-4 h-4 text-textPrimary shrink-0 ml-2" />
+                          )}
+                        </button>
+                      );
+                    })}
+
+                    {/* Add Another Account Option */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        setIsAccountMenuOpen(false);
+                        openAuthModal('login');
+                      }}
+                      className="w-full flex items-center gap-2.5 p-2 rounded-xl text-xs font-semibold text-textSecondary hover:bg-surface-elevated hover:text-textPrimary transition-colors cursor-pointer"
+                    >
+                      <div className="w-8 h-8 rounded-full bg-surface border border-dashed border-border flex items-center justify-center text-textSecondary shrink-0">
+                        <UserPlus className="w-4 h-4" />
+                      </div>
+                      <span>Add another account</span>
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
