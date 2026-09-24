@@ -105,6 +105,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
 
   const menuGroup1: DrawerMenuItem[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
+    { id: 'profile', label: 'My Profile', icon: <UserIcon className="w-5 h-5" /> },
     { id: 'tutor', label: 'Find Tutor', icon: <GraduationCap className="w-5 h-5" /> },
     { id: 'promote', label: 'Promote', icon: <BadgePercent className="w-5 h-5" /> },
   ];
@@ -206,17 +207,18 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
               </div>
             ) : (
               <div>
-                {/* Clickable Profile Header Row to Toggle Multi-Account Drawer */}
-                <div
-                  onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
-                  className="flex items-center justify-between cursor-pointer select-none group py-0.5"
-                  role="button"
-                  aria-expanded={isAccountMenuOpen}
-                  aria-label="Toggle account switcher"
-                >
-                  <div className="min-w-0 flex-1">
+                {/* Profile Header Row */}
+                <div className="flex items-center justify-between select-none py-0.5">
+                  <div
+                    onClick={() => {
+                      onClose();
+                      navigate('/profile');
+                    }}
+                    className="min-w-0 flex-1 cursor-pointer group"
+                    title="View Profile"
+                  >
                     <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-base text-textPrimary truncate group-hover:text-active transition-colors">
+                      <span className="font-bold text-base text-textPrimary truncate group-hover:underline transition-colors">
                         {user.full_name || user.username || user.email.split('@')[0]}
                       </span>
                       {user.is_verified && (
@@ -235,13 +237,22 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                   </div>
 
                   {/* Dropdown Toggle Arrow */}
-                  <div className="p-1 rounded-full text-textSecondary group-hover:text-textPrimary transition-colors ml-2">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsAccountMenuOpen(!isAccountMenuOpen);
+                    }}
+                    className="p-1 rounded-full text-textSecondary hover:text-textPrimary transition-colors ml-2 cursor-pointer"
+                    aria-label="Toggle account switcher"
+                    aria-expanded={isAccountMenuOpen}
+                  >
                     <ChevronDown
                       className={`w-5 h-5 transition-transform duration-200 ${
                         isAccountMenuOpen ? 'rotate-180 text-textPrimary' : ''
                       }`}
                     />
-                  </div>
+                  </button>
                 </div>
 
                 {/* Telegram-style Multi-Account Drawer Dropdown */}
@@ -327,7 +338,18 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
               <button
                 key={item.id}
                 type="button"
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  if (item.id === 'home') {
+                    navigate('/');
+                  } else if (item.id === 'profile') {
+                    if (!isAuthenticated) {
+                      openAuthModal('login');
+                    } else {
+                      navigate('/profile');
+                    }
+                  }
+                }}
                 className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
               >
                 <span className="text-textSecondary">{item.icon}</span>

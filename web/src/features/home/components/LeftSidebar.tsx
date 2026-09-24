@@ -45,14 +45,20 @@ export const LeftSidebar: React.FC = () => {
     { id: 'learn', label: 'Learn', icon: <BookOpen className="w-5 h-5" /> },
     { id: 'tutor', label: 'Find Tutor', icon: <GraduationCap className="w-5 h-5" /> },
     { id: 'campus', label: 'Campus', icon: <Building2 className="w-5 h-5" /> },
-    { id: 'marketplace', label: 'Marketplace', icon: <ShoppingCart className="w-5 h-5" /> },
     { id: 'chat', label: 'Chat', icon: <MessageSquare className="w-5 h-5" />, badge: 3 },
     { id: 'lostfound', label: 'Lost & Found', icon: <Search className="w-5 h-5" /> },
     { id: 'promote', label: 'Promote', icon: <BadgePercent className="w-5 h-5" /> },
     { id: 'create', label: 'Create', icon: <PlusCircle className="w-5 h-5" /> },
   ];
 
+  const handleNavClick = (id: string) => {
+    if (id === 'home') {
+      navigate('/');
+    }
+  };
+
   const moreDropdownItems: NavItem[] = [
+    { id: 'marketplace', label: 'Marketplace', icon: <ShoppingCart className="w-5 h-5" /> },
     { id: 'chess', label: 'Play Chess', icon: <Trophy className="w-5 h-5" /> },
     { id: 'saved', label: 'Saved', icon: <Bookmark className="w-5 h-5" /> },
     { id: 'downloads', label: 'Downloads', icon: <Download className="w-5 h-5" /> },
@@ -82,12 +88,13 @@ export const LeftSidebar: React.FC = () => {
       </div>
 
       {/* 2. SCROLLABLE NAVIGATION LIST: Scrolls between pinned header and pinned profile */}
-      <div className="flex-1 overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-4 space-y-1">
+      <div className="flex-1 overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-4 pb-20 space-y-1">
         <nav className="space-y-1">
           {mainNavItems.map((item) => (
             <button
               key={item.id}
               type="button"
+              onClick={() => handleNavClick(item.id)}
               className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
             >
               <div className="flex items-center gap-3">
@@ -127,8 +134,10 @@ export const LeftSidebar: React.FC = () => {
                   key={item.id}
                   type="button"
                   onClick={() => {
-                    if (item.id === 'help') {
-                      setIsMoreOpen(false);
+                    setIsMoreOpen(false);
+                    if (item.id === 'settings') {
+                      navigate('/profile/settings');
+                    } else if (item.id === 'help') {
                       navigate('/faq');
                     }
                   }}
@@ -204,11 +213,12 @@ export const LeftSidebar: React.FC = () => {
               position="top"
             />
 
-            <div
-              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center justify-between p-2 rounded-card hover:bg-surface-elevated cursor-pointer transition-colors duration-150 select-none"
-            >
-              <div className="flex items-center gap-3 min-w-0">
+            <div className="flex items-center justify-between p-2 rounded-card hover:bg-surface-elevated transition-colors duration-150 select-none">
+              <div
+                onClick={() => navigate('/profile')}
+                className="flex items-center gap-3 min-w-0 flex-1 cursor-pointer"
+                title="View Profile"
+              >
                 {user.avatar_url ? (
                   <img
                     src={user.avatar_url}
@@ -222,7 +232,7 @@ export const LeftSidebar: React.FC = () => {
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <p className="text-[15px] font-bold text-textPrimary truncate">
+                    <p className="text-[15px] font-bold text-textPrimary truncate hover:underline">
                       {user.full_name || user.username || user.email.split('@')[0]}
                     </p>
                     {user.is_verified && (
@@ -234,7 +244,18 @@ export const LeftSidebar: React.FC = () => {
                   </p>
                 </div>
               </div>
-              <MoreHorizontal className="w-4 h-4 text-textPrimary shrink-0" />
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsUserMenuOpen(!isUserMenuOpen);
+                }}
+                className="p-1.5 rounded-full hover:bg-surface text-textPrimary transition-colors cursor-pointer ml-1 shrink-0"
+                title="Account options"
+                aria-label="Account options"
+              >
+                <MoreHorizontal className="w-4 h-4 text-textPrimary shrink-0" />
+              </button>
             </div>
           </>
         )}

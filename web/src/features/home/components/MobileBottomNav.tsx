@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, BookOpen, Building2, MessageSquare, User } from 'lucide-react';
 import { useAuth } from '@/features/auth';
 
@@ -10,6 +11,8 @@ interface BottomNavItem {
 }
 
 export const MobileBottomNav: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { isAuthenticated, openAuthModal } = useAuth();
   const [activeTab, setActiveTab] = useState<string>('home');
 
@@ -27,8 +30,16 @@ export const MobileBottomNav: React.FC = () => {
   ];
 
   const handleTabClick = (tabId: string) => {
-    if (tabId === 'profile' && !isAuthenticated) {
-      openAuthModal('login');
+    if (tabId === 'home') {
+      navigate('/');
+      return;
+    }
+    if (tabId === 'profile') {
+      if (!isAuthenticated) {
+        openAuthModal('login');
+        return;
+      }
+      navigate('/profile');
       return;
     }
     setActiveTab(tabId);
@@ -37,7 +48,10 @@ export const MobileBottomNav: React.FC = () => {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-30 h-14 bg-background/95 backdrop-blur-md border-t border-border-subtle flex items-center justify-around px-2 lg:hidden select-none">
       {navItems.map((item) => {
-        const isActive = activeTab === item.id;
+        const isActive =
+          (item.id === 'home' && location.pathname === '/') ||
+          (item.id === 'profile' && location.pathname.startsWith('/profile')) ||
+          (activeTab === item.id && location.pathname !== '/' && !location.pathname.startsWith('/profile'));
         return (
           <button
             key={item.id}
@@ -72,4 +86,6 @@ export const MobileBottomNav: React.FC = () => {
     </nav>
   );
 };
+
+export default MobileBottomNav;
 
