@@ -184,10 +184,22 @@ export async function request<T = any>(
     }
 
     // 7. Unwrap standard Go backend envelope ({ success: true, data: ... })
-    const payload =
-      rawData && typeof rawData === 'object' && 'data' in rawData && rawData.data !== undefined
-        ? rawData.data
-        : rawData;
+    // If the response contains pagination alongside data, retain both so callers have full pagination context
+    let payload: any;
+    if (rawData && typeof rawData === 'object') {
+      if ('pagination' in rawData && 'data' in rawData) {
+        payload = {
+          data: rawData.data,
+          pagination: rawData.pagination,
+        };
+      } else if ('data' in rawData && rawData.data !== undefined) {
+        payload = rawData.data;
+      } else {
+        payload = rawData;
+      }
+    } else {
+      payload = rawData;
+    }
 
     return {
       data: payload as T,
