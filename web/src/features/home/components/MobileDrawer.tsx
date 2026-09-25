@@ -6,7 +6,6 @@ import {
   ShoppingCart,
   Bike,
   Search,
-  Trophy,
   Bookmark,
   Download,
   Settings,
@@ -114,7 +113,6 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
     { id: 'marketplace', label: 'Marketplace', icon: <ShoppingCart className="w-5 h-5" /> },
     { id: 'delivery', label: 'Campus Delivery', icon: <Bike className="w-5 h-5" /> },
     { id: 'lostitem', label: 'Lost Item', icon: <Search className="w-5 h-5" /> },
-    { id: 'chess', label: 'Play Chess', icon: <Trophy className="w-5 h-5" /> },
   ];
 
   const menuGroup3: DrawerMenuItem[] = [
