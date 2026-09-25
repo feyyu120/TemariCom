@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Home,
+  BookOpen,
+  Microscope,
   GraduationCap,
   BadgePercent,
   ShoppingCart,
@@ -104,6 +106,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
 
   const menuGroup1: DrawerMenuItem[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
+    { id: 'learn', label: 'Learn', icon: <BookOpen className="w-5 h-5" /> },
+    { id: 'research', label: 'Research', icon: <Microscope className="w-5 h-5" /> },
     { id: 'profile', label: 'My Profile', icon: <UserIcon className="w-5 h-5" /> },
     { id: 'tutor', label: 'Find Tutor', icon: <GraduationCap className="w-5 h-5" /> },
     { id: 'promote', label: 'Promote', icon: <BadgePercent className="w-5 h-5" /> },
