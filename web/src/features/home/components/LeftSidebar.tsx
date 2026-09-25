@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   Home,
   BookOpen,
+  Microscope,
   GraduationCap,
   Building2,
   ShoppingCart,
@@ -42,6 +43,7 @@ export const LeftSidebar: React.FC = () => {
   const mainNavItems: NavItem[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
     { id: 'learn', label: 'Learn', icon: <BookOpen className="w-5 h-5" /> },
+    { id: 'research', label: 'Research', icon: <Microscope className="w-5 h-5" /> },
     { id: 'tutor', label: 'Find Tutor', icon: <GraduationCap className="w-5 h-5" /> },
     { id: 'campus', label: 'Campus', icon: <Building2 className="w-5 h-5" /> },
     { id: 'chat', label: 'Chat', icon: <MessageSquare className="w-5 h-5" />, badge: 3 },
