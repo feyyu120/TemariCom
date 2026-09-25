@@ -15,7 +15,6 @@ import {
   ChevronDown,
   Sun,
   Moon,
-  Trophy,
   Download,
   HelpCircle,
   BadgeCheck,
@@ -59,7 +58,6 @@ export const LeftSidebar: React.FC = () => {
 
   const moreDropdownItems: NavItem[] = [
     { id: 'marketplace', label: 'Marketplace', icon: <ShoppingCart className="w-5 h-5" /> },
-    { id: 'chess', label: 'Play Chess', icon: <Trophy className="w-5 h-5" /> },
     { id: 'saved', label: 'Saved', icon: <Bookmark className="w-5 h-5" /> },
     { id: 'downloads', label: 'Downloads', icon: <Download className="w-5 h-5" /> },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
