@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import {
   Home,
   BookOpen,
+  Microscope,
   GraduationCap,
   Building2,
   ShoppingCart,
@@ -15,7 +16,6 @@ import {
   ChevronDown,
   Sun,
   Moon,
-  Trophy,
   Download,
   HelpCircle,
   BadgeCheck,
@@ -43,6 +43,7 @@ export const LeftSidebar: React.FC = () => {
   const mainNavItems: NavItem[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
     { id: 'learn', label: 'Learn', icon: <BookOpen className="w-5 h-5" /> },
+    { id: 'research', label: 'Research', icon: <Microscope className="w-5 h-5" /> },
     { id: 'tutor', label: 'Find Tutor', icon: <GraduationCap className="w-5 h-5" /> },
     { id: 'campus', label: 'Campus', icon: <Building2 className="w-5 h-5" /> },
     { id: 'chat', label: 'Chat', icon: <MessageSquare className="w-5 h-5" />, badge: 3 },
@@ -59,7 +60,6 @@ export const LeftSidebar: React.FC = () => {
 
   const moreDropdownItems: NavItem[] = [
     { id: 'marketplace', label: 'Marketplace', icon: <ShoppingCart className="w-5 h-5" /> },
-    { id: 'chess', label: 'Play Chess', icon: <Trophy className="w-5 h-5" /> },
     { id: 'saved', label: 'Saved', icon: <Bookmark className="w-5 h-5" /> },
     { id: 'downloads', label: 'Downloads', icon: <Download className="w-5 h-5" /> },
     { id: 'settings', label: 'Settings', icon: <Settings className="w-5 h-5" /> },
@@ -88,7 +88,7 @@ export const LeftSidebar: React.FC = () => {
       </div>
 
       {/* 2. SCROLLABLE NAVIGATION LIST: Scrolls between pinned header and pinned profile */}
-      <div className="flex-1 overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-4 pb-20 space-y-1">
+      <div className="flex-1 overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-3 pb-20 space-y-1">
         <nav className="space-y-1">
           {mainNavItems.map((item) => (
             <button
@@ -183,7 +183,7 @@ export const LeftSidebar: React.FC = () => {
       </div>
 
       {/* 3. PINNED BOTTOM PROFILE / AUTH FOOTER */}
-      <div className="relative shrink-0 p-3.5 border-t border-border-subtle bg-background">
+      <div className="relative shrink-0 p-3 border-t border-border-subtle bg-background">
         {!isAuthenticated || !user ? (
           <button
             type="button"
