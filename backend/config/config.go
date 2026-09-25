@@ -20,6 +20,10 @@ type Config struct {
 	R2SecretAccessKey string
 	R2BucketName      string
 	R2PublicDomain    string
+
+	// ScholarXiv API
+	ScholarXivAPIKey  string
+	ScholarXivBaseURL string
 }
 
 func Load() *Config {
@@ -64,6 +68,12 @@ func Load() *Config {
 		r2Domain = os.Getenv("R2_MEDIA_BASE_URL")
 	}
 
+	scholarXivKey := os.Getenv("SCHOLARXIV_API_KEY")
+	scholarXivBaseURL := os.Getenv("SCHOLARXIV_BASE_URL")
+	if scholarXivBaseURL == "" {
+		scholarXivBaseURL = "https://www.scholarxiv.com"
+	}
+
 	return &Config{
 		DBURL:             os.Getenv("DB_URL"),
 		Port:              port,
@@ -75,5 +85,7 @@ func Load() *Config {
 		R2SecretAccessKey: r2SecretKey,
 		R2BucketName:      r2Bucket,
 		R2PublicDomain:    r2Domain,
+		ScholarXivAPIKey:  scholarXivKey,
+		ScholarXivBaseURL: scholarXivBaseURL,
 	}
 }
