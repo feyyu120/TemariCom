@@ -88,7 +88,7 @@ export const LeftSidebar: React.FC = () => {
       </div>
 
       {/* 2. SCROLLABLE NAVIGATION LIST: Scrolls between pinned header and pinned profile */}
-      <div className="flex-1 overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-4 pb-20 space-y-1">
+      <div className="flex-1 overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-3 pb-20 space-y-1">
         <nav className="space-y-1">
           {mainNavItems.map((item) => (
             <button
@@ -183,7 +183,7 @@ export const LeftSidebar: React.FC = () => {
       </div>
 
       {/* 3. PINNED BOTTOM PROFILE / AUTH FOOTER */}
-      <div className="relative shrink-0 p-3.5 border-t border-border-subtle bg-background">
+      <div className="relative shrink-0 p-3 border-t border-border-subtle bg-background">
         {!isAuthenticated || !user ? (
           <button
             type="button"
