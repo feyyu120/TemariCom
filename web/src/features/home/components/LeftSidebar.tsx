@@ -39,6 +39,7 @@ export const LeftSidebar: React.FC = () => {
   const { user, isAuthenticated, openAuthModal } = useAuth();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [navigationMessage, setNavigationMessage] = useState<string | null>(null);
 
   const mainNavItems: NavItem[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
@@ -53,11 +54,24 @@ export const LeftSidebar: React.FC = () => {
   ];
 
   const handleNavClick = (id: string) => {
-    if (id === 'home') {
-      navigate('/');
-    }
+  const routes: Record<string, string> = {
+    home: '/',
+    learn: '/learn',
+    research: '/research',
+    tutor: '/tutor',
+    campus: '/campus',
+    chat: '/chat',
+    lostfound: '/lostfound',
+    promote: '/promote',
+    create: '/create',
   };
 
+  const route = routes[id];
+
+  if (route) {
+    navigate(route);
+  }
+};
   const moreDropdownItems: NavItem[] = [
     { id: 'marketplace', label: 'Marketplace', icon: <ShoppingCart className="w-5 h-5" /> },
     { id: 'saved', label: 'Saved', icon: <Bookmark className="w-5 h-5" /> },
