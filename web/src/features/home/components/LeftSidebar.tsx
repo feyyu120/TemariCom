@@ -55,6 +55,8 @@ export const LeftSidebar: React.FC = () => {
   const handleNavClick = (id: string) => {
     if (id === 'home') {
       navigate('/');
+    } else if (id === 'research') {
+      navigate('/research');
     }
   };
 

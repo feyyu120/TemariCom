@@ -2,7 +2,8 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { HomeScreen } from '@/features/home';
 import { VerifyPage, FAQPage } from '@/features/auth/pages';
 import { ProfilePage, ProfileSettingsPage } from '@/features/profiles';
-import RootLayout from './RootLayout';
+import { ResearchPage } from '@/features/research';
+import RootLayout from '@/app/RootLayout';
 
 export const router = createBrowserRouter([
   {
@@ -24,6 +25,10 @@ export const router = createBrowserRouter([
       {
         path: 'profile/:id',
         element: <ProfilePage />,
+      },
+      {
+        path: 'research',
+        element: <ResearchPage />,
       },
       {
         path: 'verify',

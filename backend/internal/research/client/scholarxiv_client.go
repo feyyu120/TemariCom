@@ -45,7 +45,7 @@ func NewScholarXivClient(baseURL, apiKey string) ScholarXivClient {
 		baseURL: cleanURL,
 		apiKey:  strings.TrimSpace(apiKey),
 		httpClient: &http.Client{
-			Timeout: 15 * time.Second,
+			Timeout: 30 * time.Second,
 			Transport: &http.Transport{
 				MaxIdleConns:        50,
 				MaxIdleConnsPerHost: 20,
