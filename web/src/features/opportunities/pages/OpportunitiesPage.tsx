@@ -17,6 +17,7 @@ import {
   X,
 } from 'lucide-react';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
+import { RightSidebar } from '@/features/home/components/RightSidebar';
 import { MobileDrawer } from '@/features/home/components/MobileDrawer';
 import {
   OfficialAnnouncement,
@@ -168,7 +169,7 @@ export const OpportunitiesPage: React.FC = () => {
             <button
               type="button"
               onClick={handleBack}
-              className="p-2 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
+              className="lg:hidden p-2 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
               aria-label="Go back"
             >
               <ArrowLeft className="w-5 h-5 text-textPrimary" />
@@ -488,6 +489,11 @@ export const OpportunitiesPage: React.FC = () => {
           )}
         </div>
       </main>
+
+      {/* 3. Desktop Right Sidebar */}
+      <div className="hidden lg:flex shrink-0">
+        <RightSidebar />
+      </div>
 
       {/* Mobile Drawer Navigation Menu */}
       <MobileDrawer
