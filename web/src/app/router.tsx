@@ -5,6 +5,7 @@ import { ProfilePage, ProfileSettingsPage } from '@/features/profiles';
 import { TutorScreen } from '@/features/tutor';
 import { OpportunitiesPage } from '@/features/opportunities';
 import { ResearchPage } from '@/features/research';
+import { LostFoundPage } from '@/features/lostfound';
 import RootLayout from '@/app/RootLayout';
 
 export const router = createBrowserRouter([
@@ -38,7 +39,11 @@ export const router = createBrowserRouter([
       },
       {
         path: 'lostfound',
-        element: <OpportunitiesPage />,
+        element: <LostFoundPage />,
+      },
+      {
+        path: 'lost-found',
+        element: <LostFoundPage />,
       },
       {
         path: 'announcements',
