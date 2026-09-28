@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Bell,
@@ -18,6 +19,7 @@ import { homeService } from '@/features/home/services/homeService';
 import { WidgetSkeleton } from '@/features/home/components/SkeletonLoader';
 
 export const RightSidebar: React.FC = () => {
+  const navigate = useNavigate();
   const [announcements, setAnnouncements] = useState<OfficialAnnouncement[]>([]);
   const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
   const [lostItems, setLostItems] = useState<LostFoundItem[]>([]);
@@ -121,6 +123,7 @@ export const RightSidebar: React.FC = () => {
               </div>
               <button
                 type="button"
+                onClick={() => navigate('/opportunities?tab=official')}
                 className="text-[13px] text-textPrimary hover:underline font-medium transition-colors cursor-pointer"
               >
                 See all
@@ -131,6 +134,7 @@ export const RightSidebar: React.FC = () => {
               {announcements.map((item) => (
                 <div
                   key={item.id}
+                  onClick={() => navigate('/opportunities?tab=official')}
                   className="group flex items-center justify-between p-2.5 rounded-card hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -176,6 +180,7 @@ export const RightSidebar: React.FC = () => {
               </div>
               <button
                 type="button"
+                onClick={() => navigate('/opportunities?tab=opportunities')}
                 className="text-[13px] text-textPrimary hover:underline font-medium transition-colors cursor-pointer"
               >
                 See all
@@ -186,6 +191,7 @@ export const RightSidebar: React.FC = () => {
               {opportunities.map((item) => (
                 <div
                   key={item.id}
+                  onClick={() => navigate('/opportunities?tab=opportunities')}
                   className="group flex items-center justify-between p-2.5 rounded-card hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -233,6 +239,7 @@ export const RightSidebar: React.FC = () => {
               </div>
               <button
                 type="button"
+                onClick={() => navigate('/lostfound')}
                 className="text-[13px] text-textPrimary hover:underline font-medium transition-colors cursor-pointer"
               >
                 See all
