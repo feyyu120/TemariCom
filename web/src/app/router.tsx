@@ -2,7 +2,9 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { HomeScreen } from '@/features/home';
 import { VerifyPage, FAQPage } from '@/features/auth/pages';
 import { ProfilePage, ProfileSettingsPage } from '@/features/profiles';
-import RootLayout from './RootLayout';
+import { TutorScreen } from '@/features/tutor';
+import { OpportunitiesPage } from '@/features/opportunities';
+import RootLayout from '@/app/RootLayout';
 
 export const router = createBrowserRouter([
   {
@@ -24,6 +26,26 @@ export const router = createBrowserRouter([
       {
         path: 'profile/:id',
         element: <ProfilePage />,
+      },
+      {
+        path: 'tutor',
+        element: <TutorScreen />,
+      },
+      {
+        path: 'opportunities',
+        element: <OpportunitiesPage />,
+      },
+      {
+        path: 'lostfound',
+        element: <OpportunitiesPage />,
+      },
+      {
+        path: 'announcements',
+        element: <OpportunitiesPage />,
+      },
+      {
+        path: 'campus',
+        element: <OpportunitiesPage />,
       },
       {
         path: 'verify',
