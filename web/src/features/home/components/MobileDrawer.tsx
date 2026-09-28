@@ -344,6 +344,8 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                   onClose();
                   if (item.id === 'home') {
                     navigate('/');
+                  } else if (item.id === 'research') {
+                    navigate('/research');
                   } else if (item.id === 'profile') {
                     if (!isAuthenticated) {
                       openAuthModal('login');

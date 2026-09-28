@@ -4,6 +4,7 @@ import { VerifyPage, FAQPage } from '@/features/auth/pages';
 import { ProfilePage, ProfileSettingsPage } from '@/features/profiles';
 import { TutorScreen } from '@/features/tutor';
 import { OpportunitiesPage } from '@/features/opportunities';
+import { ResearchPage } from '@/features/research';
 import RootLayout from '@/app/RootLayout';
 
 export const router = createBrowserRouter([
@@ -48,6 +49,10 @@ export const router = createBrowserRouter([
         element: <OpportunitiesPage />,
       },
       {
+        path: 'research',
+        element: <ResearchPage />,
+      },
+      {
         path: 'verify',
         element: <VerifyPage />,
       },
@@ -68,4 +73,3 @@ export const router = createBrowserRouter([
 ]);
 
 export default router;
-

@@ -54,24 +54,24 @@ export const LeftSidebar: React.FC = () => {
   ];
 
   const handleNavClick = (id: string) => {
-  const routes: Record<string, string> = {
-    home: '/',
-    learn: '/learn',
-    research: '/research',
-    tutor: '/tutor',
-    campus: '/campus',
-    chat: '/chat',
-    lostfound: '/lostfound',
-    promote: '/promote',
-    create: '/create',
+    const routes: Record<string, string> = {
+      home: '/',
+      learn: '/learn',
+      research: '/research',
+      tutor: '/tutor',
+      campus: '/campus',
+      chat: '/chat',
+      lostfound: '/lostfound',
+      promote: '/promote',
+      create: '/create',
+    };
+
+    const route = routes[id];
+
+    if (route) {
+      navigate(route);
+    }
   };
-
-  const route = routes[id];
-
-  if (route) {
-    navigate(route);
-  }
-};
   const moreDropdownItems: NavItem[] = [
     { id: 'marketplace', label: 'Marketplace', icon: <ShoppingCart className="w-5 h-5" /> },
     { id: 'saved', label: 'Saved', icon: <Bookmark className="w-5 h-5" /> },
