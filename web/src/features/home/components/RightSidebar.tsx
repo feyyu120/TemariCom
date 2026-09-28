@@ -18,17 +18,26 @@ import {
 import { homeService } from '@/features/home/services/homeService';
 import { WidgetSkeleton } from '@/features/home/components/SkeletonLoader';
 
+// Module-level in-memory cache to prevent refetching or skeleton flashing across route changes
+let cachedAnnouncements: OfficialAnnouncement[] | null = null;
+let cachedOpportunities: Opportunity[] | null = null;
+let cachedLostItems: LostFoundItem[] | null = null;
+
 export const RightSidebar: React.FC = () => {
   const navigate = useNavigate();
-  const [announcements, setAnnouncements] = useState<OfficialAnnouncement[]>([]);
-  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-  const [lostItems, setLostItems] = useState<LostFoundItem[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [announcements, setAnnouncements] = useState<OfficialAnnouncement[]>(() => cachedAnnouncements || []);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>(() => cachedOpportunities || []);
+  const [lostItems, setLostItems] = useState<LostFoundItem[]>(() => cachedLostItems || []);
+  const [isLoading, setIsLoading] = useState<boolean>(() => !cachedAnnouncements);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
     let isMounted = true;
-    setIsLoading(true);
+
+    // If data is already cached, don't show skeleton or refetch needlessly
+    if (cachedAnnouncements && cachedOpportunities && cachedLostItems) {
+      return;
+    }
 
     Promise.all([
       homeService.getAnnouncements(),
@@ -36,6 +45,9 @@ export const RightSidebar: React.FC = () => {
       homeService.getLostItems(),
     ])
       .then(([annData, oppData, lostData]) => {
+        cachedAnnouncements = annData;
+        cachedOpportunities = oppData;
+        cachedLostItems = lostData;
         if (isMounted) {
           setAnnouncements(annData);
           setOpportunities(oppData);
