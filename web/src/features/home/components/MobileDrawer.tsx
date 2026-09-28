@@ -366,7 +366,12 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
               <button
                 key={item.id}
                 type="button"
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  if (item.id === 'lostitem') {
+                    navigate('/lostfound');
+                  }
+                }}
                 className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
               >
                 <span className="text-textSecondary">{item.icon}</span>
