@@ -12,6 +12,7 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
+import { RightSidebar } from '@/features/home/components/RightSidebar';
 import { MobileDrawer } from '@/features/home/components/MobileDrawer';
 import { useAuth } from '@/features/auth';
 import { usePaperSearch, useSavedPapers, useSavePaper } from '@/features/research/hooks';
@@ -450,7 +451,12 @@ export const ResearchPage: React.FC = () => {
         </div>
       </main>
 
-      {/* 3. Mobile Navigation Drawer */}
+      {/* 3. Right Sidebar on Desktop */}
+      <div className="hidden lg:flex shrink-0">
+        <RightSidebar />
+      </div>
+
+      {/* 4. Mobile Navigation Drawer */}
       <MobileDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
