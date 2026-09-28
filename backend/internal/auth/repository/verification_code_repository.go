@@ -36,6 +36,11 @@ func NewVerificationCodeRepository(db *pgxpool.Pool) VerificationCodeRepository 
 
 // Create inserts a new hashed verification code record.
 func (r *pgxVerificationCodeRepository) Create(ctx context.Context, code *model.VerificationCode) error {
+	durationSeconds := int(time.Until(code.ExpiresAt).Seconds())
+	if durationSeconds <= 0 {
+		durationSeconds = 300 // 5 minutes fallback
+	}
+
 	query := `
 		INSERT INTO verification_codes (
 			user_id,
@@ -46,9 +51,9 @@ func (r *pgxVerificationCodeRepository) Create(ctx context.Context, code *model.
 			attempts,
 			expires_at
 		) VALUES (
-			$1, $2, $3, $4, $5, $6, $7
+			$1, $2, $3, $4, $5, $6, NOW() + ($7 * INTERVAL '1 second')
 		)
-		RETURNING id, created_at
+		RETURNING id, created_at, expires_at
 	`
 
 	err := r.db.QueryRow(
@@ -60,8 +65,8 @@ func (r *pgxVerificationCodeRepository) Create(ctx context.Context, code *model.
 		code.Purpose,
 		code.Channel,
 		code.Attempts,
-		code.ExpiresAt,
-	).Scan(&code.ID, &code.CreatedAt)
+		durationSeconds,
+	).Scan(&code.ID, &code.CreatedAt, &code.ExpiresAt)
 
 	if err != nil {
 		return fmt.Errorf("failed to insert verification code: %w", err)
@@ -166,13 +171,11 @@ func (r *pgxVerificationCodeRepository) CountRecentCodes(ctx context.Context, id
 		FROM verification_codes
 		WHERE identifier = $1
 		  AND purpose = $2
-		  AND created_at >= $3
+		  AND created_at >= NOW() - ($3 * INTERVAL '1 second')
 	`
 
-	cutoff := time.Now().UTC().Add(-duration)
-
 	var count int
-	err := r.db.QueryRow(ctx, query, identifier, purpose, cutoff).Scan(&count)
+	err := r.db.QueryRow(ctx, query, identifier, purpose, int(duration.Seconds())).Scan(&count)
 	if err != nil {
 		return 0, fmt.Errorf("failed to count recent verification codes: %w", err)
 	}
