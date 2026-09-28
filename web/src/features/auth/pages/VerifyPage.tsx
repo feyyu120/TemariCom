@@ -205,6 +205,7 @@ export const VerifyPage: React.FC = () => {
   // Submit OTP code for verification
   const handleVerifySubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (isSubmitting) return;
 
     const fullCode = otpCode.join('');
     if (fullCode.length !== 6) {

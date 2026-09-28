@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Search,
   Bell,
@@ -17,16 +18,26 @@ import {
 import { homeService } from '@/features/home/services/homeService';
 import { WidgetSkeleton } from '@/features/home/components/SkeletonLoader';
 
+// Module-level in-memory cache to prevent refetching or skeleton flashing across route changes
+let cachedAnnouncements: OfficialAnnouncement[] | null = null;
+let cachedOpportunities: Opportunity[] | null = null;
+let cachedLostItems: LostFoundItem[] | null = null;
+
 export const RightSidebar: React.FC = () => {
-  const [announcements, setAnnouncements] = useState<OfficialAnnouncement[]>([]);
-  const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
-  const [lostItems, setLostItems] = useState<LostFoundItem[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const navigate = useNavigate();
+  const [announcements, setAnnouncements] = useState<OfficialAnnouncement[]>(() => cachedAnnouncements || []);
+  const [opportunities, setOpportunities] = useState<Opportunity[]>(() => cachedOpportunities || []);
+  const [lostItems, setLostItems] = useState<LostFoundItem[]>(() => cachedLostItems || []);
+  const [isLoading, setIsLoading] = useState<boolean>(() => !cachedAnnouncements);
   const [searchQuery, setSearchQuery] = useState<string>('');
 
   useEffect(() => {
     let isMounted = true;
-    setIsLoading(true);
+
+    // If data is already cached, don't show skeleton or refetch needlessly
+    if (cachedAnnouncements && cachedOpportunities && cachedLostItems) {
+      return;
+    }
 
     Promise.all([
       homeService.getAnnouncements(),
@@ -34,6 +45,9 @@ export const RightSidebar: React.FC = () => {
       homeService.getLostItems(),
     ])
       .then(([annData, oppData, lostData]) => {
+        cachedAnnouncements = annData;
+        cachedOpportunities = oppData;
+        cachedLostItems = lostData;
         if (isMounted) {
           setAnnouncements(annData);
           setOpportunities(oppData);
@@ -121,6 +135,7 @@ export const RightSidebar: React.FC = () => {
               </div>
               <button
                 type="button"
+                onClick={() => navigate('/opportunities?tab=official')}
                 className="text-[13px] text-textPrimary hover:underline font-medium transition-colors cursor-pointer"
               >
                 See all
@@ -131,6 +146,7 @@ export const RightSidebar: React.FC = () => {
               {announcements.map((item) => (
                 <div
                   key={item.id}
+                  onClick={() => navigate('/opportunities?tab=official')}
                   className="group flex items-center justify-between p-2.5 rounded-card hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -176,6 +192,7 @@ export const RightSidebar: React.FC = () => {
               </div>
               <button
                 type="button"
+                onClick={() => navigate('/opportunities?tab=opportunities')}
                 className="text-[13px] text-textPrimary hover:underline font-medium transition-colors cursor-pointer"
               >
                 See all
@@ -186,6 +203,7 @@ export const RightSidebar: React.FC = () => {
               {opportunities.map((item) => (
                 <div
                   key={item.id}
+                  onClick={() => navigate('/opportunities?tab=opportunities')}
                   className="group flex items-center justify-between p-2.5 rounded-card hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -233,6 +251,7 @@ export const RightSidebar: React.FC = () => {
               </div>
               <button
                 type="button"
+                onClick={() => navigate('/lostfound')}
                 className="text-[13px] text-textPrimary hover:underline font-medium transition-colors cursor-pointer"
               >
                 See all

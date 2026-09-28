@@ -4,10 +4,7 @@ import {
   ArrowLeft,
   LogOut,
   Trash2,
-  AlertTriangle,
-  Loader2,
   ChevronRight,
-  ShieldAlert,
   User as UserIcon,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth';
@@ -15,6 +12,7 @@ import { useMyProfile } from '@/features/profiles/hooks/useMyProfile';
 import { profileService } from '@/features/profiles/services/profileService';
 import { EditProfileModal } from '@/features/profiles/components/EditProfileModal';
 import { MobileBottomNav } from '@/features/home/components/MobileBottomNav';
+import { ConfirmDeleteModal } from '@/components';
 
 export const ProfileSettingsPage: React.FC = () => {
   const navigate = useNavigate();
@@ -49,6 +47,7 @@ export const ProfileSettingsPage: React.FC = () => {
     } catch (err: any) {
       setDeleteError(err?.message || 'Failed to delete account. Please try again.');
       setIsDeleting(false);
+      throw err;
     }
   };
 
@@ -158,64 +157,20 @@ export const ProfileSettingsPage: React.FC = () => {
       </main>
 
       {/* Delete Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn"
-          role="dialog"
-          aria-modal="true"
-        >
-          <div
-            className="w-full max-w-sm bg-surface border border-border-subtle rounded-3xl p-5 space-y-4 shadow-2xl text-textPrimary"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="w-12 h-12 rounded-full bg-danger/10 text-danger flex items-center justify-center mx-auto">
-              <AlertTriangle className="w-6 h-6" />
-            </div>
-
-            <div className="text-center space-y-1.5">
-              <h3 className="text-base font-bold text-textPrimary">
-                Delete Account Forever?
-              </h3>
-              <p className="text-xs text-textTertiary leading-relaxed">
-                This action is permanent and irreversible. All your profile information, academic records, and session data will be permanently wiped.
-              </p>
-            </div>
-
-            {deleteError && (
-              <div className="p-3 rounded-xl bg-danger/10 border border-danger/30 text-xs text-danger flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 shrink-0" />
-                <span>{deleteError}</span>
-              </div>
-            )}
-
-            <div className="flex items-center gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isDeleting}
-                className="flex-1 py-2.5 px-4 rounded-pill border border-border text-xs font-semibold text-textSecondary hover:bg-surface-elevated transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteAccount}
-                disabled={isDeleting}
-                className="flex-1 py-2.5 px-4 rounded-pill bg-danger hover:bg-danger/90 active:scale-[0.98] text-xs font-semibold text-white transition-all cursor-pointer flex items-center justify-center gap-2"
-              >
-                {isDeleting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Deleting...</span>
-                  </>
-                ) : (
-                  <span>Delete Forever</span>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ConfirmDeleteModal
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setDeleteError(null);
+        }}
+        onConfirm={handleDeleteAccount}
+        isLoading={isDeleting}
+        errorMessage={deleteError}
+        title="Delete Account Forever?"
+        description="This action is permanent and irreversible. All your profile information, academic records, and session data will be permanently wiped."
+        confirmLabel="Delete Forever"
+        icon="warning"
+      />
 
       {/* Edit Profile Modal */}
       {profile && (

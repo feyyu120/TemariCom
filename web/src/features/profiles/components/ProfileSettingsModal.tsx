@@ -5,13 +5,11 @@ import {
   Edit3,
   LogOut,
   Trash2,
-  AlertTriangle,
-  Loader2,
   ChevronRight,
-  ShieldAlert,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth';
 import { profileService } from '@/features/profiles/services/profileService';
+import { ConfirmDeleteModal } from '@/components';
 
 interface ProfileSettingsModalProps {
   isOpen: boolean;
@@ -50,40 +48,38 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
     } catch (err: any) {
       setDeleteError(err?.message || 'Failed to delete account. Please try again.');
       setIsDeleting(false);
+      throw err;
     }
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="settings-modal-title"
-    >
+    <>
       <div
-        className="w-full max-w-sm bg-surface border border-border-subtle rounded-3xl shadow-2xl overflow-hidden text-textPrimary"
-        onClick={(e) => e.stopPropagation()}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs animate-fadeIn"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-modal-title"
       >
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle bg-surface">
-          <h2 id="settings-modal-title" className="text-base font-bold text-textPrimary">
-            {showDeleteConfirm ? 'Delete Account' : 'Profile Settings'}
-          </h2>
-          <button
-            type="button"
-            onClick={() => {
-              setShowDeleteConfirm(false);
-              onClose();
-            }}
-            className="p-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
-            aria-label="Close settings"
-          >
-            <X className="w-5 h-5 text-textPrimary" />
-          </button>
-        </div>
+        <div
+          className="w-full max-w-sm bg-surface border border-border-subtle rounded-3xl shadow-2xl overflow-hidden text-textPrimary"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle bg-surface">
+            <h2 id="settings-modal-title" className="text-base font-bold text-textPrimary">
+              Profile Settings
+            </h2>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
+              aria-label="Close settings"
+            >
+              <X className="w-5 h-5 text-textPrimary" />
+            </button>
+          </div>
 
-        {/* Content */}
-        {!showDeleteConfirm ? (
+          {/* Content */}
           <div className="p-3 space-y-1">
             {/* 1. Edit Profile */}
             <button
@@ -156,58 +152,24 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
               <ChevronRight className="w-4 h-4 text-danger/60 group-hover:text-danger transition-colors" />
             </button>
           </div>
-        ) : (
-          /* Confirmation Dialog */
-          <div className="p-5 space-y-4">
-            <div className="w-12 h-12 rounded-full bg-danger/10 text-danger flex items-center justify-center mx-auto">
-              <AlertTriangle className="w-6 h-6" />
-            </div>
-
-            <div className="text-center space-y-1.5">
-              <p className="text-sm font-bold text-textPrimary">
-                Are you absolutely sure?
-              </p>
-              <p className="text-xs text-textTertiary leading-relaxed">
-                This action cannot be undone. All your profile information, academic records, and session data will be permanently deleted from our servers.
-              </p>
-            </div>
-
-            {deleteError && (
-              <div className="p-3 rounded-xl bg-danger/10 border border-danger/30 text-xs text-danger flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 shrink-0" />
-                <span>{deleteError}</span>
-              </div>
-            )}
-
-            <div className="flex items-center gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isDeleting}
-                className="flex-1 py-2.5 px-4 rounded-pill border border-border text-xs font-semibold text-textSecondary hover:bg-surface-elevated transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteAccount}
-                disabled={isDeleting}
-                className="flex-1 py-2.5 px-4 rounded-pill bg-danger hover:bg-danger/90 active:scale-[0.98] text-xs font-semibold text-white transition-all cursor-pointer flex items-center justify-center gap-2"
-              >
-                {isDeleting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Deleting...</span>
-                  </>
-                ) : (
-                  <span>Delete Forever</span>
-                )}
-              </button>
-            </div>
-          </div>
-        )}
+        </div>
       </div>
-    </div>
+
+      <ConfirmDeleteModal
+        isOpen={showDeleteConfirm}
+        onClose={() => {
+          setShowDeleteConfirm(false);
+          setDeleteError(null);
+        }}
+        onConfirm={handleDeleteAccount}
+        isLoading={isDeleting}
+        errorMessage={deleteError}
+        title="Delete Account Forever?"
+        description="This action cannot be undone. All your profile information, academic records, and session data will be permanently deleted from our servers."
+        confirmLabel="Delete Forever"
+        icon="warning"
+      />
+    </>
   );
 };
 

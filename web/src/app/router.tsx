@@ -2,7 +2,10 @@ import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { HomeScreen } from '@/features/home';
 import { VerifyPage, FAQPage } from '@/features/auth/pages';
 import { ProfilePage, ProfileSettingsPage } from '@/features/profiles';
+import { TutorScreen } from '@/features/tutor';
+import { OpportunitiesPage } from '@/features/opportunities';
 import { ResearchPage } from '@/features/research';
+import { LostFoundPage } from '@/features/lostfound';
 import RootLayout from '@/app/RootLayout';
 
 export const router = createBrowserRouter([
@@ -25,6 +28,30 @@ export const router = createBrowserRouter([
       {
         path: 'profile/:id',
         element: <ProfilePage />,
+      },
+      {
+        path: 'tutor',
+        element: <TutorScreen />,
+      },
+      {
+        path: 'opportunities',
+        element: <OpportunitiesPage />,
+      },
+      {
+        path: 'lostfound',
+        element: <LostFoundPage />,
+      },
+      {
+        path: 'lost-found',
+        element: <LostFoundPage />,
+      },
+      {
+        path: 'announcements',
+        element: <OpportunitiesPage />,
+      },
+      {
+        path: 'campus',
+        element: <OpportunitiesPage />,
       },
       {
         path: 'research',
@@ -51,4 +78,3 @@ export const router = createBrowserRouter([
 ]);
 
 export default router;
-

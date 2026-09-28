@@ -7,6 +7,7 @@ import (
 
 	"TemariCom/config"
 	"TemariCom/internal/auth"
+	"TemariCom/internal/lostfound"
 	"TemariCom/internal/profile"
 	"TemariCom/internal/research"
 	"TemariCom/pkg/database"
@@ -97,6 +98,9 @@ func main() {
 
 	// 9. Register Research Module (ScholarXiv Integration & Saved Papers)
 	_ = research.RegisterRoutes(api, db, authSvc, cfg.ScholarXivBaseURL, cfg.ScholarXivAPIKey)
+
+	// 10. Register Lost & Found Module
+	_ = lostfound.RegisterRoutes(api, db, authSvc, r2Storage)
 
 	port := cfg.Port
 	log.Printf("TemariCom backend starting on port %s...", port)

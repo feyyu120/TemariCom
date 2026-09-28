@@ -29,6 +29,13 @@ export const ENDPOINTS = {
     REMOVE_SAVED_BY_EXTERNAL: (externalId: string) => `/research/saved/paper/${externalId}`,
     CHECK_SAVED: (externalId: string) => `/research/saved/check/${externalId}`,
   },
+  LOST_FOUND: {
+    HEALTH: '/lost-found/health',
+    ITEMS: '/lost-found/items',
+    ITEM_BY_ID: (id: string) => `/lost-found/items/${id}`,
+    UPLOAD_URL: '/lost-found/upload-url',
+    UPLOAD: '/lost-found/upload',
+  },
 } as const;
 
 export default ENDPOINTS;
