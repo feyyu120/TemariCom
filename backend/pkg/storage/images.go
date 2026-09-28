@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"path"
 	"strings"
 	"time"
@@ -98,6 +99,35 @@ func (r *R2Client) AvatarURL(key string) string {
 		strings.TrimPrefix(path.Clean("/"+key), "/")
 }
 
+// MediaURL transforms any database-stored storage key (avatar, post, lost & found image) into a full public CDN/media URL.
+func (r *R2Client) MediaURL(key string) string {
+	return r.AvatarURL(key)
+}
+
+// GenerateLostFoundKey creates a collision-resistant storage key for lost & found item photos.
+// Stored in PostgreSQL as lostfound/{userID}/{unixNano}.{ext}
+func (r *R2Client) GenerateLostFoundKey(
+	userID string,
+	extension string,
+) string {
+	extension = strings.ToLower(strings.TrimPrefix(extension, "."))
+
+	if extension == "jpeg" {
+		extension = "jpg"
+	}
+
+	if extension == "" {
+		extension = "jpg"
+	}
+
+	return fmt.Sprintf(
+		"lostfound/%s/%d.%s",
+		userID,
+		time.Now().UnixNano(),
+		extension,
+	)
+}
+
 // ExtractKey normalizes a URL or key, stripping the MediaBaseURL prefix if present,
 // ensuring only the storage key (e.g. avatars/123/456.jpg) is persisted in PostgreSQL.
 func (r *R2Client) ExtractKey(keyOrURL string) string {
@@ -124,6 +154,19 @@ func (r *R2Client) DeleteObject(ctx context.Context, key string) error {
 	_, err := r.Client.DeleteObject(ctx, &s3.DeleteObjectInput{
 		Bucket: aws.String(r.BucketName),
 		Key:    aws.String(cleanKey),
+	})
+	return err
+}
+
+// UploadObject streams an image directly to Cloudflare R2 without requiring client presigned PUTs.
+func (r *R2Client) UploadObject(ctx context.Context, key string, contentType string, body io.Reader, size int64) error {
+	cleanKey := r.ExtractKey(key)
+	_, err := r.Client.PutObject(ctx, &s3.PutObjectInput{
+		Bucket:        aws.String(r.BucketName),
+		Key:           aws.String(cleanKey),
+		ContentType:   aws.String(contentType),
+		Body:          body,
+		ContentLength: aws.Int64(size),
 	})
 	return err
 }
