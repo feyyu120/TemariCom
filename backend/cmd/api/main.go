@@ -7,6 +7,7 @@ import (
 
 	"TemariCom/config"
 	"TemariCom/internal/auth"
+	"TemariCom/internal/chat"
 	"TemariCom/internal/lostfound"
 	"TemariCom/internal/profile"
 	"TemariCom/internal/research"
@@ -101,6 +102,9 @@ func main() {
 
 	// 10. Register Lost & Found Module
 	_ = lostfound.RegisterRoutes(api, db, authSvc, r2Storage)
+
+	// 11. Register Chat Module (WebSocket & REST)
+	_ = chat.RegisterRoutes(app, api, db, authSvc, r2Storage)
 
 	port := cfg.Port
 	log.Printf("TemariCom backend starting on port %s...", port)

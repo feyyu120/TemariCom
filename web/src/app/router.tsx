@@ -6,6 +6,7 @@ import { TutorScreen } from '@/features/tutor';
 import { OpportunitiesPage } from '@/features/opportunities';
 import { ResearchPage } from '@/features/research';
 import { LostFoundPage } from '@/features/lostfound';
+import { ChatPage } from '@/features/chat';
 import RootLayout from '@/app/RootLayout';
 
 export const router = createBrowserRouter([
@@ -44,6 +45,10 @@ export const router = createBrowserRouter([
       {
         path: 'lost-found',
         element: <LostFoundPage />,
+      },
+      {
+        path: 'chat',
+        element: <ChatPage />,
       },
       {
         path: 'announcements',

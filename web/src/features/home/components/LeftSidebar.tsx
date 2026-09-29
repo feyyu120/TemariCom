@@ -25,6 +25,7 @@ import {
 import { useTheme } from '@/theme';
 import { useAuth, UserMenuDropdown } from '@/features/auth';
 import { useNavigate } from 'react-router-dom';
+import { useChat } from '@/features/chat';
 
 interface NavItem {
   id: string;
@@ -37,6 +38,7 @@ export const LeftSidebar: React.FC = () => {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, openAuthModal } = useAuth();
+  const { unreadCount } = useChat();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [navigationMessage, setNavigationMessage] = useState<string | null>(null);
@@ -54,13 +56,23 @@ export const LeftSidebar: React.FC = () => {
     { id: 'research', label: 'Research', icon: <Microscope className="w-5 h-5" /> },
     { id: 'tutor', label: 'Find Tutor', icon: <GraduationCap className="w-5 h-5" /> },
     { id: 'campus', label: 'Campus', icon: <Building2 className="w-5 h-5" /> },
-    { id: 'chat', label: 'Chat', icon: <MessageSquare className="w-5 h-5" />, badge: 3 },
+    {
+      id: 'chat',
+      label: 'Chat',
+      icon: <MessageSquare className="w-5 h-5" />,
+      badge: unreadCount > 0 ? unreadCount : undefined,
+    },
     { id: 'lostfound', label: 'Lost & Found', icon: <Search className="w-5 h-5" /> },
     { id: 'promote', label: 'Promote', icon: <BadgePercent className="w-5 h-5" /> },
     { id: 'create', label: 'Create', icon: <PlusCircle className="w-5 h-5" /> },
   ];
 
   const handleNavClick = (id: string) => {
+    if (id === 'chat' && !isAuthenticated) {
+      openAuthModal('login');
+      return;
+    }
+
     const routes: Record<string, string> = {
       home: '/',
       learn: '/learn',

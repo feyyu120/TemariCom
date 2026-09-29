@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, BookOpen, Building2, MessageSquare, User } from 'lucide-react';
 import { useAuth } from '@/features/auth';
+import { useChat } from '@/features/chat';
 
 interface BottomNavItem {
   id: string;
@@ -14,6 +15,7 @@ export const MobileBottomNav: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated, openAuthModal } = useAuth();
+  const { unreadCount } = useChat();
   const [activeTab, setActiveTab] = useState<string>('home');
 
   const navItems: BottomNavItem[] = [
@@ -24,7 +26,7 @@ export const MobileBottomNav: React.FC = () => {
       id: 'chat',
       label: 'Chat',
       icon: <MessageSquare className="w-5 h-5" />,
-      badge: 3,
+      badge: unreadCount > 0 ? unreadCount : undefined,
     },
     { id: 'profile', label: 'Profile', icon: <User className="w-5 h-5" /> },
   ];
@@ -32,6 +34,14 @@ export const MobileBottomNav: React.FC = () => {
   const handleTabClick = (tabId: string) => {
     if (tabId === 'home') {
       navigate('/');
+      return;
+    }
+    if (tabId === 'chat') {
+      if (!isAuthenticated) {
+        openAuthModal('login');
+        return;
+      }
+      navigate('/chat');
       return;
     }
     if (tabId === 'profile') {
@@ -50,8 +60,9 @@ export const MobileBottomNav: React.FC = () => {
       {navItems.map((item) => {
         const isActive =
           (item.id === 'home' && location.pathname === '/') ||
+          (item.id === 'chat' && location.pathname.startsWith('/chat')) ||
           (item.id === 'profile' && location.pathname.startsWith('/profile')) ||
-          (activeTab === item.id && location.pathname !== '/' && !location.pathname.startsWith('/profile'));
+          (activeTab === item.id && location.pathname !== '/' && !location.pathname.startsWith('/profile') && !location.pathname.startsWith('/chat'));
         return (
           <button
             key={item.id}
