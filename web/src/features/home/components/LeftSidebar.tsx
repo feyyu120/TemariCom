@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   Home,
   BookOpen,
@@ -40,6 +40,13 @@ export const LeftSidebar: React.FC = () => {
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [navigationMessage, setNavigationMessage] = useState<string | null>(null);
+  const navContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isMoreOpen && navContainerRef.current) {
+      navContainerRef.current.scrollTop = 0;
+    }
+  }, [isMoreOpen]);
 
   const mainNavItems: NavItem[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
@@ -102,14 +109,21 @@ export const LeftSidebar: React.FC = () => {
       </div>
 
       {/* 2. SCROLLABLE NAVIGATION LIST: Scrolls between pinned header and pinned profile */}
-      <div className="flex-1 overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-3 pb-20 space-y-1">
+      <div
+        ref={navContainerRef}
+        className={`flex-1 min-h-0 no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden p-3 overscroll-contain ${
+          isMoreOpen
+            ? 'overflow-y-auto pb-4'
+            : 'overflow-y-hidden [@media(max-height:600px)]:overflow-y-auto'
+        }`}
+      >
         <nav className="space-y-1">
           {mainNavItems.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => handleNavClick(item.id)}
-              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
+              className="w-full flex items-center justify-between px-3.5 py-2 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 <span className="text-textPrimary shrink-0">{item.icon}</span>
@@ -127,7 +141,7 @@ export const LeftSidebar: React.FC = () => {
           <button
             type="button"
             onClick={() => setIsMoreOpen((prev) => !prev)}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
+            className="w-full flex items-center justify-between px-3.5 py-2 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
           >
             <div className="flex items-center gap-3">
               <MoreHorizontal className="w-5 h-5 text-textPrimary shrink-0" />
@@ -142,7 +156,7 @@ export const LeftSidebar: React.FC = () => {
 
           {/* Dropdown Lists when More is clicked */}
           {isMoreOpen && (
-            <div className="mt-1 pl-2 space-y-1 border-l-2 border-border-subtle ml-3.5 py-1">
+            <div className="mt-1 pl-2 space-y-1 border-l-2 border-border-subtle ml-3.5 py-1 mb-2">
               {moreDropdownItems.map((item) => (
                 <button
                   key={item.id}
