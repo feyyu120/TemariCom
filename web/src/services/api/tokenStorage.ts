@@ -157,6 +157,13 @@ export const tokenStorage = {
   },
 
   /**
+   * Retrieve session token synchronously.
+   */
+  getSessionTokenSync(): string | null {
+    return safeGetItem(SESSION_TOKEN_KEY);
+  },
+
+  /**
    * Retrieve session token.
    */
   async getSessionToken(): Promise<string | null> {
