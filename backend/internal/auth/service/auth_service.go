@@ -412,6 +412,24 @@ func (s *authService) ValidateSession(ctx context.Context, rawSessionToken strin
 		return nil, err
 	}
 
+	// Security Check: enforce account status during session validation
+	if user.AccountStatus == model.AccountStatusSuspended {
+		return nil, ErrAccountSuspended
+	}
+	if user.AccountStatus == model.AccountStatusBanned {
+		return nil, ErrAccountBanned
+	}
+	if user.AccountStatus == model.AccountStatusDeactivated {
+		return nil, ErrAccountDeactivated
+	}
+
+	// Update last_used_at timestamp asynchronously to avoid latency on the hot path
+	go func(sID uuid.UUID) {
+		bgCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		_ = s.sessionRepo.UpdateLastUsed(bgCtx, sID, nil)
+	}(session.ID)
+
 	roles, err := s.userRepo.GetUserRoles(ctx, user.ID)
 	if err != nil || len(roles) == 0 {
 		roles = []string{model.RoleStudent}
