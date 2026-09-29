@@ -36,6 +36,15 @@ export const ENDPOINTS = {
     UPLOAD_URL: '/lost-found/upload-url',
     UPLOAD: '/lost-found/upload',
   },
+  CHAT: {
+    CONVERSATIONS: '/chat/conversations',
+    CONVERSATION_BY_ID: (id: string) => `/chat/conversations/${id}`,
+    DIRECT_CONVERSATION: '/chat/conversations/direct',
+    MESSAGES: (conversationId: string) => `/chat/conversations/${conversationId}/messages`,
+    MESSAGE_ITEM: (conversationId: string, messageId: string) => `/chat/conversations/${conversationId}/messages/${messageId}`,
+    MARK_READ: (conversationId: string) => `/chat/conversations/${conversationId}/read`,
+    USERS_SEARCH: '/chat/users/search',
+  },
 } as const;
 
 export default ENDPOINTS;
