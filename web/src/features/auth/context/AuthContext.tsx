@@ -75,13 +75,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     queryKey: PROFILE_KEYS.me(),
     queryFn: async () => {
       try {
+        const token = tokenStorage.getSessionTokenSync();
+        if (!token) {
+          return null;
+        }
         const profile = await profileService.getMyProfile();
         return profile;
       } catch (err: unknown) {
         const status = (err as { status?: number })?.status;
         // If 401 Unauthorized, session is definitively invalid or revoked on server
         if (status === 401) {
-          await tokenStorage.clearAll();
+          console.warn('[AuthContext] Session token was rejected by server (401). Invalidating active session.');
+          await tokenStorage.clearActiveSession();
           syncLocalAccounts();
           return null;
         }
@@ -169,12 +174,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isAuthenticated = Boolean(currentUser);
 
-  // Hook global 401 unauthorized listener to auto-clear session on any expired API call
+  // Hook global 401 unauthorized listener to auto-clear session only on core identity expiration
   useEffect(() => {
-    setUnauthorizedHandler(() => {
-      tokenStorage.clearAll();
-      queryClient.setQueryData(AUTH_USER_QUERY_KEY, null);
-      syncLocalAccounts();
+    setUnauthorizedHandler((url) => {
+      // ONLY invalidate if the 401 came from the core identity/profile endpoint
+      const isCoreAuthEndpoint = url.includes('/profile/me') || url.includes('/auth/me');
+      if (isCoreAuthEndpoint) {
+        const token = tokenStorage.getSessionTokenSync();
+        if (token) {
+          console.warn('[AuthContext] Core identity endpoint returned 401. Invalidating active session.');
+          tokenStorage.clearActiveSession().then(() => {
+            queryClient.setQueryData(AUTH_USER_QUERY_KEY, null);
+            syncLocalAccounts();
+          });
+        }
+      } else {
+        // Non-core endpoints returning 401 must NEVER nuke the user's session!
+        console.warn(`[AuthContext] Non-core endpoint ${url} returned 401. Preserving session.`);
+      }
     });
     return () => {
       setUnauthorizedHandler(null);
