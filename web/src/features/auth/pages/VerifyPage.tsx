@@ -176,6 +176,11 @@ export const VerifyPage: React.FC = () => {
     if (digit && index < 5) {
       otpInputRefs.current[index + 1]?.focus();
     }
+
+    // Auto-submit when all 6 digits are entered
+    if (digit && index === 5 && updated.every((d) => d.length === 1)) {
+      handleVerifySubmit(undefined, updated.join(''));
+    }
   };
 
   // Handle backspace navigation
@@ -200,14 +205,18 @@ export const VerifyPage: React.FC = () => {
 
     const nextIndex = Math.min(pasted.length, 5);
     otpInputRefs.current[nextIndex]?.focus();
+
+    if (pasted.length === 6) {
+      handleVerifySubmit(undefined, pasted);
+    }
   };
 
   // Submit OTP code for verification
-  const handleVerifySubmit = async (e?: React.FormEvent) => {
+  const handleVerifySubmit = async (e?: React.FormEvent, codeOverride?: string) => {
     if (e) e.preventDefault();
     if (isSubmitting) return;
 
-    const fullCode = otpCode.join('');
+    const fullCode = codeOverride || otpCode.join('');
     if (fullCode.length !== 6) {
       setErrorMessage('Please enter the complete 6-digit code.');
       return;
@@ -236,9 +245,17 @@ export const VerifyPage: React.FC = () => {
         // Ignore
       }
 
-      // Navigate to homepage or return target
-      const returnUrl = searchParams.get('returnUrl') || '/';
-      navigate(returnUrl, { replace: true });
+      // If registration, redirect to profile setup modal with Skip Now option
+      if (purpose === 'registration') {
+        const returnUrl = searchParams.get('returnUrl');
+        const setupUrl = returnUrl
+          ? `/profile?setup=true&returnUrl=${encodeURIComponent(returnUrl)}`
+          : '/profile?setup=true';
+        navigate(setupUrl, { replace: true });
+      } else {
+        const returnUrl = searchParams.get('returnUrl') || '/';
+        navigate(returnUrl, { replace: true });
+      }
     } catch (err: unknown) {
       setErrorMessage(formatUserFacingError(err));
       setIsSubmitting(false);
