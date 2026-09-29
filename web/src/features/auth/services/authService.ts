@@ -128,8 +128,10 @@ export const authService = {
    * POST /api/v1/auth/switch-account
    */
   async switchAccount(accountIdOrToken: string): Promise<User> {
-    const accounts = tokenStorage.getAccounts();
-    const account = accounts.find((a) => a.id === accountIdOrToken);
+    const accounts = tokenStorage.getAccountsSync();
+    const account = accounts.find(
+      (a) => a.user?.id === accountIdOrToken || a.sessionToken === accountIdOrToken
+    );
     const token = account ? account.sessionToken : accountIdOrToken;
 
     const response = await apiClient.post<User>(
@@ -138,8 +140,8 @@ export const authService = {
       { requiresAuth: false }
     );
 
-    if (account) {
-      tokenStorage.switchActiveAccount(account.id);
+    if (account?.user?.id) {
+      await tokenStorage.switchActiveAccount(account.user.id);
     }
 
     return response.data;
