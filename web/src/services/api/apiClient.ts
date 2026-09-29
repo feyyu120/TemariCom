@@ -5,7 +5,7 @@ import { ApiResponse, RequestOptions, createApiError, isApiError } from './types
 // Module-scoped state
 let baseUrl: string = ENV.API_BASE_URL.replace(/\/+$/, '');
 
-type UnauthorizedListener = () => void;
+type UnauthorizedListener = (url: string, errorData?: any) => void;
 let unauthorizedListener: UnauthorizedListener | null = null;
 
 /**
@@ -149,7 +149,7 @@ export async function request<T = any>(
     // 6. Handle HTTP errors
     if (!response.ok) {
       if (response.status === 401 && requiresAuth) {
-        unauthorizedListener?.();
+        unauthorizedListener?.(url, rawData);
       }
 
       const errorData = rawData as any;
