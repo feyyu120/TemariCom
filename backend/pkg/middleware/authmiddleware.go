@@ -12,8 +12,8 @@ const (
 	// SessionCookieName is the canonical cookie name for the web session token.
 	SessionCookieName = "session_token"
 
-	// SessionDuration defines the maximum lifespan of the session cookie (30 days).
-	SessionDuration = 30 * 24 * time.Hour
+	// SessionDuration defines the lifespan of the persistent session cookie (Telegram style: 5 years).
+	SessionDuration = 5 * 365 * 24 * time.Hour
 )
 
 // ExtractSessionToken extracts the session token from the incoming request using a 2-tier priority:
@@ -42,15 +42,20 @@ func ExtractSessionToken(c fiber.Ctx) string {
 
 // BuildSessionCookie creates a secure HttpOnly fiber.Cookie configuration for web clients.
 func BuildSessionCookie(token string, isSecure bool) *fiber.Cookie {
-	return &fiber.Cookie{
+	cookie := &fiber.Cookie{
 		Name:     SessionCookieName,
 		Value:    token,
 		Path:     "/",
 		HTTPOnly: true,
 		Secure:   isSecure,
-		SameSite: "Lax",
 		MaxAge:   int(SessionDuration.Seconds()),
 	}
+	if isSecure {
+		cookie.SameSite = "None"
+	} else {
+		cookie.SameSite = "Lax"
+	}
+	return cookie
 }
 
 // BuildClearSessionCookie creates an expired fiber.Cookie to clear the session on logout.
@@ -60,6 +65,7 @@ func BuildClearSessionCookie() *fiber.Cookie {
 		Value:    "",
 		Path:     "/",
 		HTTPOnly: true,
+		SameSite: "Lax",
 		Expires:  time.Now().Add(-24 * time.Hour),
 		MaxAge:   -1,
 	}
