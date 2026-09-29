@@ -18,16 +18,20 @@ import {
 import { useUpdateProfile } from '@/features/profiles/hooks/useUpdateProfile';
 import { profileService } from '@/features/profiles/services/profileService';
 
-interface EditProfileModalProps {
+export interface EditProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   profile: FullProfileResponse;
+  isSetupMode?: boolean;
+  onSkip?: () => void;
 }
 
 export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   isOpen,
   onClose,
   profile,
+  isSetupMode = false,
+  onSkip,
 }) => {
   const updateProfileMutation = useUpdateProfile();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -212,17 +216,35 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border-subtle bg-surface">
-          <h2 id="edit-profile-title" className="text-base sm:text-lg font-bold text-textPrimary">
-            Edit Profile
-          </h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
-            aria-label="Close edit profile modal"
-          >
-            <X className="w-5 h-5 text-textPrimary" />
-          </button>
+          <div>
+            <h2 id="edit-profile-title" className="text-base sm:text-lg font-bold text-textPrimary">
+              {isSetupMode ? 'Profile Setup' : 'Edit Profile'}
+            </h2>
+            {isSetupMode && (
+              <p className="text-xs text-textTertiary mt-0.5">
+                Complete your student profile or skip to finish later.
+              </p>
+            )}
+          </div>
+          {isSetupMode ? (
+            <button
+              type="button"
+              onClick={onSkip || onClose}
+              className="py-1.5 px-3.5 rounded-full text-xs font-bold text-textPrimary border border-border bg-surface-elevated hover:bg-border transition-colors cursor-pointer active:scale-95"
+              aria-label="Skip profile setup"
+            >
+              Skip Now
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 rounded-full text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
+              aria-label="Close edit profile modal"
+            >
+              <X className="w-5 h-5 text-textPrimary" />
+            </button>
+          )}
         </div>
 
         {/* Form Body (Scrollable) */}
@@ -429,15 +451,26 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         </form>
 
         {/* Footer Actions */}
-        <div className="px-5 py-3.5 border-t border-border-subtle bg-surface flex items-center justify-end gap-2.5">
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={updateProfileMutation.isPending}
-            className="px-4 py-2 rounded-pill border border-border text-textSecondary hover:text-textPrimary hover:bg-surface-elevated text-xs sm:text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50"
-          >
-            Cancel
-          </button>
+        <div className="px-5 py-3.5 border-t border-border-subtle bg-surface flex items-center justify-between">
+          {isSetupMode ? (
+            <button
+              type="button"
+              onClick={onSkip || onClose}
+              disabled={updateProfileMutation.isPending}
+              className="px-4 py-2 rounded-pill text-textSecondary hover:text-textPrimary hover:bg-surface-elevated text-xs sm:text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Skip for now
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={updateProfileMutation.isPending}
+              className="px-4 py-2 rounded-pill border border-border text-textSecondary hover:text-textPrimary hover:bg-surface-elevated text-xs sm:text-sm font-semibold transition-colors cursor-pointer disabled:opacity-50"
+            >
+              Cancel
+            </button>
+          )}
           <button
             type="button"
             onClick={handleSubmit}
@@ -450,7 +483,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 <span>Saving...</span>
               </>
             ) : (
-              <span>Save Changes</span>
+              <span>{isSetupMode ? 'Complete Setup' : 'Save Changes'}</span>
             )}
           </button>
         </div>
