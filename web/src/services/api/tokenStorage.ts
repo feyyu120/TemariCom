@@ -157,17 +157,38 @@ export const tokenStorage = {
   },
 
   /**
-   * Retrieve session token synchronously.
+   * Retrieve session token synchronously with fallback healing.
    */
   getSessionTokenSync(): string | null {
-    return safeGetItem(SESSION_TOKEN_KEY);
+    const direct = safeGetItem(SESSION_TOKEN_KEY);
+    if (direct) return direct;
+
+    // Fallback 1: check active account
+    const active = this.getActiveAccountSync();
+    if (active?.sessionToken) {
+      safeSetItem(SESSION_TOKEN_KEY, active.sessionToken);
+      return active.sessionToken;
+    }
+
+    // Fallback 2: check first stored account
+    const accounts = this.getAccountsSync();
+    if (accounts.length > 0 && accounts[0]?.sessionToken) {
+      safeSetItem(SESSION_TOKEN_KEY, accounts[0].sessionToken);
+      if (accounts[0]?.user?.id) {
+        safeSetItem(ACTIVE_ACCOUNT_ID_KEY, accounts[0].user.id);
+        safeSetItem(USER_DATA_KEY, JSON.stringify(accounts[0].user));
+      }
+      return accounts[0].sessionToken;
+    }
+
+    return null;
   },
 
   /**
    * Retrieve session token.
    */
   async getSessionToken(): Promise<string | null> {
-    return safeGetItem(SESSION_TOKEN_KEY);
+    return this.getSessionTokenSync();
   },
 
   /**
@@ -185,16 +206,32 @@ export const tokenStorage = {
   },
 
   /**
-   * Retrieve serialized user data synchronously (critical for zero-FOUC hydration).
+   * Retrieve serialized user data synchronously (critical for zero-FOUC hydration) with fallback.
    */
   getUserDataSync<T = any>(): T | null {
     const raw = safeGetItem(USER_DATA_KEY);
-    if (!raw) return null;
-    try {
-      return JSON.parse(raw) as T;
-    } catch {
-      return null;
+    if (raw) {
+      try {
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') return parsed as T;
+      } catch {
+        // Fall through to active account fallback
+      }
     }
+
+    const active = this.getActiveAccountSync<T>();
+    if (active?.user) {
+      safeSetItem(USER_DATA_KEY, JSON.stringify(active.user));
+      return active.user;
+    }
+
+    const accounts = this.getAccountsSync<T>();
+    if (accounts.length > 0 && accounts[0]?.user) {
+      safeSetItem(USER_DATA_KEY, JSON.stringify(accounts[0].user));
+      return accounts[0].user;
+    }
+
+    return null;
   },
 
   /**
@@ -218,6 +255,23 @@ export const tokenStorage = {
    */
   async getUserData<T = any>(): Promise<T | null> {
     return this.getUserDataSync<T>();
+  },
+
+  /**
+   * Clear the active session without wiping other multi-accounts if present.
+   */
+  async clearActiveSession(): Promise<void> {
+    safeRemoveItem(SESSION_TOKEN_KEY);
+    safeRemoveItem(USER_DATA_KEY);
+    const activeId = this.getActiveAccountIdSync();
+    if (activeId) {
+      const { remaining, newActive } = await this.removeAccount(activeId);
+      if (!newActive || remaining.length === 0) {
+        await this.clearAll();
+      }
+    } else {
+      await this.clearAll();
+    }
   },
 
   /**
