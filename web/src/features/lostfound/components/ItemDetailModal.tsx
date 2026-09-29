@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { LostFoundItem } from '@/features/lostfound/types';
 import { useAuth } from '@/features/auth';
+import { useNavigate } from 'react-router-dom';
 import { ConfirmDeleteModal } from '@/components';
 
 interface ItemDetailModalProps {
@@ -37,10 +38,10 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   onStatusChange,
   onDeleteItem,
 }) => {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, openAuthModal } = useAuth();
   const [copiedLink, setCopiedLink] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
-  const [showDmToast, setShowDmToast] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -143,23 +144,6 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
           </div>
         </div>
 
-        {/* DM Coming Soon Toast Notification */}
-        {showDmToast && (
-          <div className="bg-surface-elevated border-b border-border-subtle px-4 py-2 text-[12.5px] text-textPrimary flex items-center justify-between animate-fadeIn">
-            <span className="flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-textPrimary" />
-              <span>Direct Messaging with @{item.reporter?.username || reporterName} is coming soon!</span>
-            </span>
-            <button
-              type="button"
-              onClick={() => setShowDmToast(false)}
-              className="p-1 text-textTertiary hover:text-textPrimary cursor-pointer"
-            >
-              <X className="w-3.5 h-3.5" />
-            </button>
-          </div>
-        )}
-
         {/* Content Body */}
         <div className="flex-1 overflow-y-auto p-5 space-y-4 text-[13px]">
           {/* Big Photo Preview if present, or clean placeholder if no image was provided */}
@@ -248,10 +232,25 @@ export const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
             <button
               type="button"
               onClick={() => {
-                setShowDmToast(true);
-                setTimeout(() => setShowDmToast(false), 3000);
+                if (!isAuthenticated) {
+                  openAuthModal('login');
+                  return;
+                }
+                const targetUserId = item.reporter?.id || item.user_id;
+                if (!targetUserId) return;
+                if (user?.id && targetUserId === user.id) {
+                  return;
+                }
+                onClose();
+                const name = item.reporter?.full_name || item.reporter?.username || reporterName || '';
+                const avatar = item.reporter?.avatar_url || '';
+                navigate(
+                  `/chat?userId=${encodeURIComponent(targetUserId)}&name=${encodeURIComponent(
+                    name
+                  )}&avatar=${encodeURIComponent(avatar)}`
+                );
               }}
-              className="px-4 py-2 rounded-xl bg-active text-activeText text-[13px] font-semibold hover:opacity-95 transition-all inline-flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer active:scale-95"
+              className="px-4 py-2 rounded-xl bg-active text-active-text text-[13px] font-semibold hover:opacity-95 transition-all inline-flex items-center gap-1.5 shrink-0 shadow-xs cursor-pointer active:scale-95"
             >
               <MessageSquare className="w-4 h-4" />
               <span>DM</span>
