@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // On app open, profile/me is fetched once and cached in TanStack Query.
   // When user navigates to /profile, it renders instantly from TanStack Query cache!
   const hasActiveSession = Boolean(
-    activeAccountId || tokenStorage.getActiveAccountIdSync() || tokenStorage.getSessionToken()
+    activeAccountId || tokenStorage.getActiveAccountIdSync() || tokenStorage.getSessionTokenSync()
   );
 
   const {
