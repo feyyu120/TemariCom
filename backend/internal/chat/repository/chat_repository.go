@@ -25,7 +25,6 @@ var (
 
 type ChatRepository interface {
 	GetOrCreateDirectConversation(ctx context.Context, user1ID, user2ID uuid.UUID) (*model.Conversation, error)
-	GetOrCreateSavedConversation(ctx context.Context, userID uuid.UUID) (*dto.ConversationResponse, error)
 	GetUserConversations(ctx context.Context, userID uuid.UUID, limit, offset int) ([]dto.ConversationResponse, error)
 	GetConversationByID(ctx context.Context, conversationID, userID uuid.UUID) (*model.Conversation, error)
 	DeleteConversation(ctx context.Context, conversationID, userID uuid.UUID) error
@@ -42,6 +41,7 @@ type ChatRepository interface {
 	UnblockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error
 	IsUserBlocked(ctx context.Context, user1ID, user2ID uuid.UUID) (bool, error)
 	GetBlockedUserIDs(ctx context.Context, blockerID uuid.UUID) ([]uuid.UUID, error)
+	UpdateUserLastSeen(ctx context.Context, userID uuid.UUID) error
 }
 
 type pgChatRepository struct {
@@ -49,23 +49,6 @@ type pgChatRepository struct {
 }
 
 func NewChatRepository(db *pgxpool.Pool) ChatRepository {
-	// Ensure user_blocks table exists on repository startup
-	go func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		createTableQuery := `
-			CREATE TABLE IF NOT EXISTS user_blocks (
-				blocker_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-				blocked_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-				created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-				PRIMARY KEY (blocker_id, blocked_id)
-			);
-			CREATE INDEX IF NOT EXISTS idx_user_blocks_blocker ON user_blocks(blocker_id);
-			CREATE INDEX IF NOT EXISTS idx_user_blocks_blocked ON user_blocks(blocked_id);
-		`
-		_, _ = db.Exec(ctx, createTableQuery)
-	}()
-
 	return &pgChatRepository{db: db}
 }
 
@@ -81,8 +64,8 @@ func (r *pgChatRepository) GetOrCreateDirectConversation(ctx context.Context, us
 		       c.last_message_id, c.last_message_preview, c.last_message_at,
 		       c.created_at, c.updated_at
 		FROM conversations c
-		JOIN conversation_participants p1 ON c.id = p1.conversation_id AND p1.user_id = $1 AND p1.left_at IS NULL
-		JOIN conversation_participants p2 ON c.id = p2.conversation_id AND p2.user_id = $2 AND p2.left_at IS NULL
+		JOIN conversation_participants p1 ON c.id = p1.conversation_id AND p1.user_id = $1
+		JOIN conversation_participants p2 ON c.id = p2.conversation_id AND p2.user_id = $2
 		WHERE c.type = 'direct'
 		LIMIT 1;
 	`
@@ -94,6 +77,7 @@ func (r *pgChatRepository) GetOrCreateDirectConversation(ctx context.Context, us
 		&conv.CreatedAt, &conv.UpdatedAt,
 	)
 	if err == nil {
+		_, _ = r.db.Exec(ctx, `UPDATE conversation_participants SET left_at = NULL WHERE conversation_id = $1 AND user_id = $2`, conv.ID, user1ID)
 		return &conv, nil
 	}
 	if !errors.Is(err, pgx.ErrNoRows) {
@@ -120,6 +104,7 @@ func (r *pgChatRepository) GetOrCreateDirectConversation(ctx context.Context, us
 		&conv.CreatedAt, &conv.UpdatedAt,
 	)
 	if err == nil {
+		_, _ = tx.Exec(ctx, `UPDATE conversation_participants SET left_at = NULL WHERE conversation_id = $1 AND user_id = $2`, conv.ID, user1ID)
 		_ = tx.Commit(ctx)
 		return &conv, nil
 	}
@@ -238,11 +223,7 @@ func (r *pgChatRepository) GetUserConversations(ctx context.Context, userID uuid
 			return nil, fmt.Errorf("failed to scan conversation row: %w", err)
 		}
 
-		if peerID == nil || item.Title == "Saved Messages" {
-			item.Title = "Saved Messages"
-			item.IsSavedMessages = true
-			item.IsPinned = true
-		} else if *peerID != uuid.Nil {
+		if peerID != nil && *peerID != uuid.Nil {
 			item.Peer = &dto.UserSummaryDTO{
 				ID:         *peerID,
 				FullName:   peerFullName,
@@ -402,8 +383,10 @@ func (r *pgChatRepository) CreateMessage(ctx context.Context, msg *model.Message
 	var isMember bool
 	checkQuery := `
 		SELECT EXISTS(
-			SELECT 1 FROM conversation_participants 
-			WHERE conversation_id = $1 AND user_id = $2 AND left_at IS NULL
+			SELECT 1 FROM conversation_participants cp
+			JOIN conversations c ON cp.conversation_id = c.id
+			WHERE cp.conversation_id = $1 AND cp.user_id = $2
+			  AND (c.type = 'direct' OR cp.left_at IS NULL)
 		);
 	`
 	if err := tx.QueryRow(ctx, checkQuery, msg.ConversationID, msg.SenderID).Scan(&isMember); err != nil {
@@ -411,6 +394,17 @@ func (r *pgChatRepository) CreateMessage(ctx context.Context, msg *model.Message
 	}
 	if !isMember {
 		return nil, nil, ErrForbidden
+	}
+
+	// In direct conversation, if participants had left/deleted the chat, reactivate for both
+	reactivateQuery := `
+		UPDATE conversation_participants
+		SET left_at = NULL
+		WHERE conversation_id = $1
+		  AND conversation_id IN (SELECT id FROM conversations WHERE id = $1 AND type = 'direct');
+	`
+	if _, err := tx.Exec(ctx, reactivateQuery, msg.ConversationID); err != nil {
+		return nil, nil, fmt.Errorf("failed to reactivate direct participants: %w", err)
 	}
 
 	insertMsgQuery := `
@@ -881,11 +875,10 @@ func (r *pgChatRepository) DeleteMessage(ctx context.Context, conversationID, me
 			return nil, ErrForbidden
 		}
 
+		// Hard delete message directly from database
 		query := `
-			UPDATE messages
-			SET deleted_at = NOW(),
-			    updated_at = NOW()
-			WHERE id = $1 AND conversation_id = $2 AND sender_id = $3 AND deleted_at IS NULL;
+			DELETE FROM messages
+			WHERE id = $1 AND conversation_id = $2 AND sender_id = $3;
 		`
 		cmd, err := r.db.Exec(ctx, query, messageID, conversationID, userID)
 		if err != nil {
@@ -895,18 +888,23 @@ func (r *pgChatRepository) DeleteMessage(ctx context.Context, conversationID, me
 			return nil, ErrNotFound
 		}
 
-		// Update conversation preview if this was the last message
+		// Update conversation preview and last_message_id if this was the last message
 		updateLastQuery := `
+			WITH latest AS (
+				SELECT id, 
+				       COALESCE(content, '[' || message_type || ' message]') AS preview, 
+				       created_at
+				FROM messages
+				WHERE conversation_id = $1
+				ORDER BY created_at DESC
+				LIMIT 1
+			)
 			UPDATE conversations
-			SET last_message_preview = COALESCE(
-			    (SELECT COALESCE(content, '[' || message_type || ' message]')
-			     FROM messages
-			     WHERE conversation_id = $1 AND deleted_at IS NULL
-			     ORDER BY created_at DESC LIMIT 1),
-			    ''
-			),
-			updated_at = NOW()
-			WHERE id = $1 AND last_message_id = $2;
+			SET last_message_id = (SELECT id FROM latest),
+			    last_message_preview = COALESCE((SELECT preview FROM latest), ''),
+			    last_message_at = (SELECT created_at FROM latest),
+			    updated_at = NOW()
+			WHERE id = $1 AND (last_message_id = $2 OR last_message_id IS NULL);
 		`
 		_, _ = r.db.Exec(ctx, updateLastQuery, conversationID, messageID)
 	} else {
@@ -923,87 +921,6 @@ func (r *pgChatRepository) DeleteMessage(ctx context.Context, conversationID, me
 
 	partIDs, _ := r.GetParticipantUserIDs(ctx, conversationID)
 	return partIDs, nil
-}
-
-// GetOrCreateSavedConversation returns or creates the user's private Telegram-style Saved Messages conversation
-func (r *pgChatRepository) GetOrCreateSavedConversation(ctx context.Context, userID uuid.UUID) (*dto.ConversationResponse, error) {
-	// 1. Check if user already has a saved messages conversation
-	findQuery := `
-		SELECT c.id, c.type, COALESCE(c.title, 'Saved Messages'), COALESCE(c.avatar_key, ''),
-		       COALESCE(c.last_message_preview, ''), c.last_message_at,
-		       cp.is_muted, cp.is_pinned,
-		       COALESCE(unread.count, 0) AS unread_count
-		FROM conversations c
-		JOIN conversation_participants cp ON c.id = cp.conversation_id AND cp.user_id = $1 AND cp.left_at IS NULL
-		LEFT JOIN LATERAL (
-			SELECT COUNT(*)::INT AS count
-			FROM messages m
-			WHERE m.conversation_id = c.id
-			  AND (cp.last_read_at IS NULL OR m.created_at > cp.last_read_at)
-			  AND m.sender_id != $1
-			  AND m.deleted_at IS NULL
-		) unread ON true
-		WHERE c.created_by = $1 AND (c.title = 'Saved Messages' OR (
-			SELECT COUNT(*) FROM conversation_participants p WHERE p.conversation_id = c.id AND p.left_at IS NULL
-		) = 1)
-		ORDER BY c.created_at ASC
-		LIMIT 1;
-	`
-
-	var item dto.ConversationResponse
-	err := r.db.QueryRow(ctx, findQuery, userID).Scan(
-		&item.ID, &item.Type, &item.Title, &item.AvatarKey,
-		&item.LastMessagePreview, &item.LastMessageAt,
-		&item.IsMuted, &item.IsPinned,
-		&item.UnreadCount,
-	)
-	if err == nil {
-		item.Title = "Saved Messages"
-		item.IsSavedMessages = true
-		item.IsPinned = true
-		return &item, nil
-	}
-	if !errors.Is(err, pgx.ErrNoRows) {
-		return nil, fmt.Errorf("failed to query saved messages conversation: %w", err)
-	}
-
-	// 2. Create new saved messages conversation atomically
-	tx, err := r.db.Begin(ctx)
-	if err != nil {
-		return nil, err
-	}
-	defer tx.Rollback(ctx)
-
-	insertConv := `
-		INSERT INTO conversations (type, title, created_by, last_message_at, created_at, updated_at)
-		VALUES ('direct', 'Saved Messages', $1, NOW(), NOW(), NOW())
-		RETURNING id, type, title, avatar_key, last_message_preview, last_message_at;
-	`
-	err = tx.QueryRow(ctx, insertConv, userID).Scan(
-		&item.ID, &item.Type, &item.Title, &item.AvatarKey,
-		&item.LastMessagePreview, &item.LastMessageAt,
-	)
-	if err != nil {
-		return nil, fmt.Errorf("failed to create saved messages conversation: %w", err)
-	}
-
-	insertPart := `
-		INSERT INTO conversation_participants (conversation_id, user_id, role, is_pinned, last_read_at, joined_at)
-		VALUES ($1, $2, 'admin', TRUE, NOW(), NOW());
-	`
-	if _, err := tx.Exec(ctx, insertPart, item.ID, userID); err != nil {
-		return nil, fmt.Errorf("failed to insert saved participant: %w", err)
-	}
-
-	if err := tx.Commit(ctx); err != nil {
-		return nil, err
-	}
-
-	item.Title = "Saved Messages"
-	item.IsSavedMessages = true
-	item.IsPinned = true
-	item.UnreadCount = 0
-	return &item, nil
 }
 
 // DeleteConversation deletes / leaves the conversation for the current user
@@ -1108,4 +1025,11 @@ func (r *pgChatRepository) GetBlockedUserIDs(ctx context.Context, blockerID uuid
 		blockedIDs = []uuid.UUID{}
 	}
 	return blockedIDs, nil
+}
+
+// UpdateUserLastSeen updates user's last_login_at in users table
+func (r *pgChatRepository) UpdateUserLastSeen(ctx context.Context, userID uuid.UUID) error {
+	query := `UPDATE users SET last_login_at = NOW(), updated_at = NOW() WHERE id = $1;`
+	_, err := r.db.Exec(ctx, query, userID)
+	return err
 }
