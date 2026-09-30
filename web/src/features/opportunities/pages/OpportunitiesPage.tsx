@@ -15,6 +15,8 @@ import {
   ExternalLink,
   Filter,
   X,
+  Menu,
+  MoreVertical,
 } from 'lucide-react';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
 import { MobileDrawer } from '@/features/home/components/MobileDrawer';
@@ -44,6 +46,7 @@ export const OpportunitiesPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
+  const [isMenuOpen, setIsMenuOpen] = useState<boolean>(false);
 
   // Load announcements, opportunities, and lost items
   useEffect(() => {
@@ -164,37 +167,146 @@ export const OpportunitiesPage: React.FC = () => {
       <main className="flex-1 h-screen overflow-y-auto min-w-0 bg-background flex flex-col">
         {/* Sticky Pinned Header */}
         <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border-subtle shrink-0">
-          <div className="max-w-4xl mx-auto px-4 py-2.5 flex items-center gap-2.5">
-            <button
-              type="button"
-              onClick={handleBack}
-              className="lg:hidden p-2 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
-              aria-label="Go back"
-            >
-              <ArrowLeft className="w-5 h-5 text-textPrimary" />
-            </button>
+          {/* Top Bar Row */}
+          <div className="max-w-4xl mx-auto px-3 sm:px-4 h-[53px] flex items-center justify-between">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(true)}
+                className="lg:hidden p-1.5 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
+                aria-label="Open mobile menu"
+              >
+                <Menu className="w-5 h-5 text-textPrimary" />
+              </button>
 
-            {/* Search Input Bar */}
-            <div className="relative flex-1 flex items-center">
-              <Search className="w-4 h-4 text-textTertiary absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search announcements, opportunities, or lost items..."
-                className="w-full pl-10 pr-9 py-2 bg-surface border border-border-subtle hover:border-border focus:border-active rounded-card text-textPrimary text-[13px] placeholder:text-textTertiary outline-none transition-colors"
-              />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-2.5 p-1 rounded-full text-textTertiary hover:text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
-                  aria-label="Clear search"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
+              <div className="flex items-center gap-2 min-w-0">
+                <Megaphone className="w-5 h-5 text-textPrimary shrink-0" />
+                <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
+                  Announcements
+                </h1>
+              </div>
+            </div>
+
+            {/* Top Right: 3-Vertical-Dots Menu */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsMenuOpen((prev) => !prev)}
+                className="p-1.5 -mr-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer"
+                aria-label="More options"
+                aria-expanded={isMenuOpen}
+              >
+                <MoreVertical className="w-5 h-5 text-textPrimary" />
+              </button>
+
+              {/* 3-Dot Dropdown Menu */}
+              {isMenuOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40 bg-transparent"
+                    onClick={() => setIsMenuOpen(false)}
+                    aria-hidden="true"
+                  />
+                  <div className="absolute right-0 mt-1 w-52 rounded-card bg-surface-elevated border border-border-subtle shadow-xl z-50 py-1 animate-fadeIn">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleTabChange('all');
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-between px-3.5 py-2.5 text-[13px] font-medium text-textPrimary hover:bg-surface transition-colors cursor-pointer text-left"
+                    >
+                      <span>All Announcements</span>
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface text-textSecondary">
+                        {totalCount}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleTabChange('official');
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-between px-3.5 py-2.5 text-[13px] font-medium text-textPrimary hover:bg-surface transition-colors cursor-pointer text-left"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Megaphone className="w-4 h-4 text-textSecondary shrink-0" />
+                        <span>Official</span>
+                      </div>
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface text-textSecondary">
+                        {filteredAnnouncements.length}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleTabChange('opportunities');
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-between px-3.5 py-2.5 text-[13px] font-medium text-textPrimary hover:bg-surface transition-colors cursor-pointer text-left"
+                    >
+                      <div className="flex items-center gap-2">
+                        <BriefcaseBusiness className="w-4 h-4 text-textSecondary shrink-0" />
+                        <span>Opportunities</span>
+                      </div>
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface text-textSecondary">
+                        {filteredOpportunities.length}
+                      </span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleTabChange('lostfound');
+                        setIsMenuOpen(false);
+                      }}
+                      className="w-full flex items-center justify-between px-3.5 py-2.5 text-[13px] font-medium text-textPrimary hover:bg-surface transition-colors cursor-pointer text-left"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Search className="w-4 h-4 text-textSecondary shrink-0" />
+                        <span>Lost & Found</span>
+                      </div>
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface text-textSecondary">
+                        {filteredLostItems.length}
+                      </span>
+                    </button>
+                  </div>
+                </>
               )}
             </div>
+          </div>
+
+          {/* Search Bar Row (Matches reference design) */}
+          <div className="max-w-4xl mx-auto px-3 sm:px-4 pb-2 pt-0.5">
+            <form onSubmit={(e) => e.preventDefault()} className="relative flex items-center gap-2">
+              <div className="relative flex-1 flex items-center min-w-0">
+                <Search className="absolute left-3.5 w-4 h-4 text-textTertiary pointer-events-none shrink-0" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search announcements, opportunities, or lost items..."
+                  className="w-full pl-10 pr-9 py-2.5 bg-surface border border-border-subtle hover:border-border focus:border-active rounded-card text-textPrimary text-[14px] placeholder:text-textTertiary outline-none transition-colors"
+                />
+                {searchQuery.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-2.5 p-1 rounded-full text-textTertiary hover:text-textPrimary hover:bg-surface-elevated transition-colors"
+                    aria-label="Clear search input"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                className="px-3.5 sm:px-5 py-2.5 rounded-card bg-active text-activeText font-semibold text-[14px] hover:opacity-95 active:scale-95 transition-all duration-150 flex items-center justify-center gap-1.5 shrink-0 cursor-pointer shadow-xs"
+              >
+                <Search className="w-4 h-4" />
+                <span>Search</span>
+              </button>
+            </form>
           </div>
 
           {/* Navigation Filter Tabs */}
