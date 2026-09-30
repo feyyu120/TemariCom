@@ -53,14 +53,14 @@ export const ProfileSettingsPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background text-textPrimary antialiased selection:bg-surface-elevated">
+    <div className="flex h-full h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-background text-textPrimary antialiased selection:bg-surface-elevated">
       {/* 1. Desktop Left Navigation Sidebar */}
       <div className="hidden lg:flex shrink-0">
         <LeftSidebar />
       </div>
 
       {/* 2. Main Scrollable Container */}
-      <div className="flex-1 h-screen overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-w-0 bg-background flex flex-col pb-20 lg:pb-12">
+      <div className="flex-1 min-h-0 h-full max-h-full overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-w-0 bg-background flex flex-col pb-20 lg:pb-12">
         {/* Top Header */}
         <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border-subtle shrink-0">
           <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
