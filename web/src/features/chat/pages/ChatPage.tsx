@@ -5,7 +5,6 @@ import { MobileDrawer } from '@/features/home/components/MobileDrawer';
 import { MobileBottomNav } from '@/features/home/components/MobileBottomNav';
 import {
   ChatHeader,
-  StoriesCarousel,
   ChatSearchBar,
   ConversationItem,
   UserSearchResults,
@@ -234,6 +233,39 @@ export const ChatPage: React.FC = () => {
     },
     [queryClient, showToast]
   );
+
+  const handleSavedMessagesPress = useCallback(() => {
+    const savedConv = conversations.find((c) => c.is_saved_messages);
+    if (savedConv) {
+      handleOpenConversation(savedConv);
+    } else {
+      showToast({
+        title: 'Saved Messages',
+        message: 'Saved Messages feature is coming soon in the next update.',
+        type: 'info',
+      });
+    }
+  }, [conversations, handleOpenConversation, showToast]);
+
+  const handleCreateGroupPress = useCallback(() => {
+    showToast({
+      title: 'Create Group',
+      message: 'Group chat creation is coming soon in the next update.',
+      type: 'info',
+    });
+  }, [showToast]);
+
+  const handleNewChannelPress = useCallback(() => {
+    showToast({
+      title: 'New Channel',
+      message: 'Channel creation is coming soon in the next update.',
+      type: 'info',
+    });
+  }, [showToast]);
+
+  const handleSettingsPress = useCallback(() => {
+    navigate('/profile/settings');
+  }, [navigate]);
 
   // Clear active conversation on unmount so background notifications/badges function correctly
   useEffect(() => {
@@ -564,7 +596,11 @@ export const ChatPage: React.FC = () => {
         >
           {/* Bespoke Chat Header (clean top header for mobile & desktop) */}
           <ChatHeader
-            onMenuPress={() => setIsDrawerOpen(true)}
+            onOpenMobileMenu={() => setIsDrawerOpen(true)}
+            onSavedMessagesPress={handleSavedMessagesPress}
+            onCreateGroupPress={handleCreateGroupPress}
+            onNewChannelPress={handleNewChannelPress}
+            onSettingsPress={handleSettingsPress}
           />
 
           {/* Forwarding Banner */}
@@ -588,9 +624,6 @@ export const ChatPage: React.FC = () => {
               </button>
             </div>
           )}
-
-          {/* Stories Carousel */}
-          <StoriesCarousel />
 
           {/* Search Bar */}
           <ChatSearchBar
