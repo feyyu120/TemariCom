@@ -93,7 +93,6 @@ type ConversationResponse struct {
 	UnreadCount        int             `json:"unread_count"`
 	IsMuted            bool            `json:"is_muted"`
 	IsPinned           bool            `json:"is_pinned"`
-	IsSavedMessages    bool            `json:"is_saved_messages"`
 	IsBlocked          bool            `json:"is_blocked,omitempty"`
 	Peer               *UserSummaryDTO `json:"peer,omitempty"` // For direct 1-on-1 chats, details of the other user
 }
