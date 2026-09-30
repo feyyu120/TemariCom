@@ -13,7 +13,6 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/features/auth';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
-import { RightSidebar } from '@/features/home/components/RightSidebar';
 import { MobileDrawer } from '@/features/home/components/MobileDrawer';
 import { lostFoundService } from '@/features/lostfound/services/lostFoundService';
 import { LostFoundItem, LostFoundType } from '@/features/lostfound/types';
@@ -457,11 +456,6 @@ export const LostFoundPage: React.FC = () => {
           </section>
         </div>
       </main>
-
-      {/* 3. Desktop Right Sidebar */}
-      <div className="hidden lg:flex shrink-0">
-        <RightSidebar />
-      </div>
 
       {/* Post Item Modal (with auto-saving draft) */}
       <PostItemModal
