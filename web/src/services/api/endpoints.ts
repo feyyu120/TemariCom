@@ -40,7 +40,6 @@ export const ENDPOINTS = {
     CONVERSATIONS: '/chat/conversations',
     CONVERSATION_BY_ID: (id: string) => `/chat/conversations/${id}`,
     DIRECT_CONVERSATION: '/chat/conversations/direct',
-    SAVED: '/chat/saved',
     BLOCK: '/chat/block',
     UNBLOCK: '/chat/unblock',
     BLOCKED: '/chat/blocked',
