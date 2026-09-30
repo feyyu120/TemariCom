@@ -23,7 +23,6 @@ import {
   Loader2,
   Users,
   AlertCircle,
-  Bookmark,
   Trash2,
   UserX,
   UserCheck,
@@ -94,9 +93,6 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const conversationId = conversation?.id;
 
-  const isSavedMessages = Boolean(
-    conversation?.is_saved_messages || conversation?.title === 'Saved Messages'
-  );
   const isBlocked = Boolean(conversation?.is_blocked || conversation?.peer?.is_blocked);
 
   // Close header menu on click outside
@@ -663,37 +659,6 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
     }
   };
 
-  const handleSaveMessage = async (msg: ChatMessage) => {
-    try {
-      const savedChat = await chatApiService.getOrCreateSavedChat();
-      if (!savedChat || !savedChat.id) return;
-
-      const content = msg.content;
-      const senderName = msg.sender?.full_name || msg.sender?.username || 'User';
-
-      await chatApiService.sendMessage(savedChat.id, content, 'text', {
-        forwarded_from_message_id: msg.id,
-        forwarded_from_content: content,
-        forwarded_from_name: senderName,
-      });
-
-      queryClient.invalidateQueries({ queryKey: chatQueryKeys.conversations() });
-
-      showToast({
-        title: 'Saved to Saved Messages',
-        message: 'Message stored in your private Saved Messages.',
-        type: 'success',
-        durationMs: 3000,
-      });
-    } catch (err: any) {
-      showToast({
-        title: 'Could not save message',
-        message: err?.message || 'Failed to save to Saved Messages',
-        type: 'error',
-      });
-    }
-  };
-
   const handleLoadOlder = useCallback(async () => {
     if (isLoadingOlder || !conversationId || messages.length === 0) return;
     if (messagesQuery.data?.has_more === false) return;
@@ -736,14 +701,13 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
     );
   }
 
-  const title = isSavedMessages
-    ? 'Saved Messages'
-    : conversation.peer?.full_name ||
-      conversation.title ||
-      conversation.peer?.username ||
-      'Chat';
-  const avatarUrl = isSavedMessages ? '' : conversation.peer?.avatar_url || conversation.avatar_url;
-  const isOnline = isSavedMessages ? false : conversation.peer?.is_online;
+  const title =
+    conversation.peer?.full_name ||
+    conversation.title ||
+    conversation.peer?.username ||
+    'Chat';
+  const avatarUrl = conversation.peer?.avatar_url || conversation.avatar_url;
+  const isOnline = conversation.peer?.is_online;
 
   return (
     <div className="flex-1 h-full max-h-full flex flex-col min-w-0 bg-background overflow-hidden relative overscroll-none">
@@ -763,25 +727,17 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
 
           {/* Avatar with Online indicator */}
           <div className="relative shrink-0">
-            {isSavedMessages ? (
-              <div className="w-9 h-9 rounded-full bg-blue-500/15 text-blue-500 flex items-center justify-center border border-blue-500/20 shadow-xs">
-                <Bookmark className="w-4.5 h-4.5 fill-blue-500/20" />
-              </div>
-            ) : (
-              <>
-                <div className="w-9 h-9 rounded-full overflow-hidden bg-surface flex items-center justify-center border border-border-subtle">
-                  {avatarUrl ? (
-                    <img src={avatarUrl} alt={title} className="w-full h-full object-cover" />
-                  ) : (
-                    <span className="text-xs font-bold text-textPrimary">
-                      {getInitials(title)}
-                    </span>
-                  )}
-                </div>
-                {isOnline && (
-                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-background" />
-                )}
-              </>
+            <div className="w-9 h-9 rounded-full overflow-hidden bg-surface flex items-center justify-center border border-border-subtle">
+              {avatarUrl ? (
+                <img src={avatarUrl} alt={title} className="w-full h-full object-cover" />
+              ) : (
+                <span className="text-xs font-bold text-textPrimary">
+                  {getInitials(title)}
+                </span>
+              )}
+            </div>
+            {isOnline && (
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 border-2 border-background" />
             )}
           </div>
 
@@ -791,16 +747,9 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
               <h2 className="text-sm font-bold text-textPrimary truncate leading-snug">
                 {title}
               </h2>
-              {isSavedMessages && (
-                <span className="text-[10px] bg-blue-500/10 text-blue-500 font-medium px-1.5 py-0.2 rounded-full border border-blue-500/20">
-                  Cloud
-                </span>
-              )}
             </div>
             <p className="text-[11px] truncate leading-tight">
-              {isSavedMessages ? (
-                <span className="text-textTertiary">Forward messages here or save notes</span>
-              ) : isBlocked ? (
+              {isBlocked ? (
                 <span className="text-danger font-medium">Blocked</span>
               ) : isPeerTyping ? (
                 <span className="text-emerald-500 font-semibold animate-pulse">Typing...</span>
@@ -808,7 +757,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
                 <span className="text-emerald-500 font-medium">Active now</span>
               ) : (
                 <span className="text-textTertiary">
-                  {formatLastSeen(conversation.peer?.last_seen_at || conversation.last_message_at, isOnline)}
+                  {formatLastSeen(conversation.peer?.last_seen_at, isOnline)}
                 </span>
               )}
             </p>
@@ -817,15 +766,13 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
 
         {/* Right Header Actions */}
         <div className="flex items-center gap-1 relative" ref={headerMenuRef}>
-          {!isSavedMessages && (
-            <button
-              type="button"
-              className="w-8 h-8 rounded-full flex items-center justify-center text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
-              aria-label="Call student"
-            >
-              <Phone className="w-4 h-4" />
-            </button>
-          )}
+          <button
+            type="button"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
+            aria-label="Call student"
+          >
+            <Phone className="w-4 h-4" />
+          </button>
           <button
             type="button"
             onClick={() => setIsHeaderMenuOpen((prev) => !prev)}
@@ -838,7 +785,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
           {/* 3-dot Context Menu Dropdown */}
           {isHeaderMenuOpen && (
             <div className="absolute right-0 top-10 w-48 bg-surface-elevated border border-border rounded-large shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 select-none">
-              {!isSavedMessages && conversation?.peer?.id && (
+              {conversation?.peer?.id && (
                 <button
                   type="button"
                   onClick={() => {
@@ -937,15 +884,13 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
         ) : messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-4">
             <div className="w-14 h-14 rounded-full bg-surface flex items-center justify-center mb-3 text-textTertiary">
-              {isSavedMessages ? <Bookmark className="w-7 h-7 text-blue-500" /> : <Users className="w-7 h-7" />}
+              <Users className="w-7 h-7" />
             </div>
             <p className="text-sm font-semibold text-textPrimary">
-              {isSavedMessages ? 'Your Saved Messages' : `Say hello to ${title}!`}
+              Say hello to {title}!
             </p>
             <p className="text-xs text-textSecondary mt-1 max-w-xs">
-              {isSavedMessages
-                ? 'Save your notes, text snippets, and links, or forward messages here for instant safe keeping.'
-                : 'Send a message to start this real-time conversation.'}
+              Send a message to start this real-time conversation.
             </p>
           </div>
         ) : (
@@ -1032,7 +977,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
                       {item.edited_at && <span>edited</span>}
                       <span>{formatMessageTime(item.created_at)}</span>
 
-                      {isMine && !isSavedMessages && (
+                      {isMine && (
                         <span className="shrink-0">
                           {item.status === 'error' ? (
                             <AlertCircle className="w-3.5 h-3.5 text-danger" />
@@ -1159,8 +1104,6 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
                   ? 'Edit message...'
                   : forwardedMessage
                   ? 'Add a caption (or send directly)...'
-                  : isSavedMessages
-                  ? 'Write a note or save text...'
                   : 'Message'
               }
               className="flex-1 bg-transparent text-sm text-textPrimary placeholder:text-textTertiary focus:outline-none resize-none max-h-32 py-1 leading-snug"
@@ -1220,7 +1163,6 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
         onReply={handleReply}
         onCopy={handleCopy}
         onForward={handleForward}
-        onSaveMessage={handleSaveMessage}
         onEdit={handleEdit}
         onDelete={handleDeletePrompt}
       />
