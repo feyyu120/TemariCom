@@ -179,8 +179,7 @@ export const OpportunitiesPage: React.FC = () => {
                 <Menu className="w-5 h-5 text-textPrimary" />
               </button>
 
-              <div className="flex items-center gap-2 min-w-0">
-                <Megaphone className="w-5 h-5 text-textPrimary shrink-0" />
+              <div className="flex items-center min-w-0">
                 <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
                   Announcements
                 </h1>

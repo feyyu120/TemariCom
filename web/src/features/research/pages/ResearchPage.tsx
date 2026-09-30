@@ -135,21 +135,15 @@ export const ResearchPage: React.FC = () => {
                 </button>
               )}
 
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center min-w-0">
                 {activeTab === 'saved' ? (
-                  <>
-                    <Bookmark className="w-5 h-5 text-textPrimary shrink-0" />
-                    <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
-                      Saved Papers
-                    </h1>
-                  </>
+                  <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
+                    Saved Papers
+                  </h1>
                 ) : (
-                  <>
-                    <Microscope className="w-5 h-5 text-textPrimary shrink-0" />
-                    <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
-                      Research Papers
-                    </h1>
-                  </>
+                  <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
+                    Research Papers
+                  </h1>
                 )}
               </div>
             </div>
