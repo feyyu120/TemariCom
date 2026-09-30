@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import { useTheme } from '@/theme';
 import { useAuth, UserMenuDropdown } from '@/features/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useChat } from '@/features/chat';
 
 interface NavItem {
@@ -36,6 +36,7 @@ interface NavItem {
 
 export const LeftSidebar: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, openAuthModal } = useAuth();
   const { unreadCount } = useChat();
@@ -72,6 +73,7 @@ export const LeftSidebar: React.FC = () => {
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
     { id: 'learn', label: 'Learn', icon: <BookOpen className="w-5 h-5" /> },
     { id: 'research', label: 'Research', icon: <Microscope className="w-5 h-5" /> },
+    { id: 'profile', label: 'Profile', icon: <UserIcon className="w-5 h-5" /> },
     { id: 'tutor', label: 'Find Tutor', icon: <GraduationCap className="w-5 h-5" /> },
     { id: 'campus', label: 'Campus', icon: <Building2 className="w-5 h-5" /> },
     {
@@ -85,9 +87,26 @@ export const LeftSidebar: React.FC = () => {
     { id: 'create', label: 'Create', icon: <PlusCircle className="w-5 h-5" /> },
   ];
 
+  const isNavActive = (id: string) => {
+    if (id === 'home') return location.pathname === '/';
+    if (id === 'profile') return location.pathname.startsWith('/profile');
+    if (id === 'research') return location.pathname.startsWith('/research');
+    if (id === 'chat') return location.pathname.startsWith('/chat');
+    if (id === 'lostfound') return location.pathname.startsWith('/lostfound');
+    return location.pathname.startsWith(`/${id}`);
+  };
+
   const handleNavClick = (id: string) => {
     if (id === 'chat' && !isAuthenticated) {
       openAuthModal('login');
+      return;
+    }
+    if (id === 'profile') {
+      if (!isAuthenticated) {
+        openAuthModal('login');
+      } else {
+        navigate('/profile');
+      }
       return;
     }
 
@@ -95,6 +114,7 @@ export const LeftSidebar: React.FC = () => {
       home: '/',
       learn: '/learn',
       research: '/research',
+      profile: '/profile',
       tutor: '/tutor',
       campus: '/campus',
       chat: '/chat',
@@ -148,26 +168,33 @@ export const LeftSidebar: React.FC = () => {
         }`}
       >
         <nav className="space-y-1">
-          {mainNavItems.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => handleNavClick(item.id)}
-              className="w-full flex items-center justify-between px-3.5 py-2 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
-            >
-              <div className="flex items-center gap-3">
-                <span className="relative text-textPrimary shrink-0">
-                  {item.icon}
-                  {item.badge !== undefined && (
-                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 bg-danger text-white text-[10px] font-bold px-1 rounded-full flex items-center justify-center leading-none">
-                      {item.badge}
-                    </span>
-                  )}
-                </span>
-                <span>{item.label}</span>
-              </div>
-            </button>
-          ))}
+          {mainNavItems.map((item) => {
+            const active = isNavActive(item.id);
+            return (
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => handleNavClick(item.id)}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-card text-[15px] transition-colors duration-150 cursor-pointer ${
+                  active
+                    ? 'bg-surface-elevated font-bold text-textPrimary shadow-xs'
+                    : 'font-medium text-textPrimary hover:bg-surface-elevated/70'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className={`relative text-textPrimary shrink-0 ${active ? 'stroke-[2.5px]' : ''}`}>
+                    {item.icon}
+                    {item.badge !== undefined && (
+                      <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 bg-danger text-white text-[10px] font-bold px-1 rounded-full flex items-center justify-center leading-none">
+                        {item.badge}
+                      </span>
+                    )}
+                  </span>
+                  <span>{item.label}</span>
+                </div>
+              </button>
+            );
+          })}
 
           {/* MORE Button: Positioned immediately after Create */}
           <button
