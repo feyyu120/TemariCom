@@ -12,7 +12,6 @@ import {
   ArrowLeft,
 } from 'lucide-react';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
-import { RightSidebar } from '@/features/home/components/RightSidebar';
 import { MobileDrawer } from '@/features/home/components/MobileDrawer';
 import { useAuth } from '@/features/auth';
 import { usePaperSearch, useSavedPapers, useSavePaper } from '@/features/research/hooks';
@@ -136,55 +135,21 @@ export const ResearchPage: React.FC = () => {
                 </button>
               )}
 
-              <div className="flex items-center gap-2 min-w-0">
+              <div className="flex items-center min-w-0">
                 {activeTab === 'saved' ? (
-                  <>
-                    <Bookmark className="w-5 h-5 text-textPrimary shrink-0" />
-                    <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
-                      Saved Papers
-                    </h1>
-                  </>
+                  <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
+                    Saved Papers
+                  </h1>
                 ) : (
-                  <>
-                    <Microscope className="w-5 h-5 text-textPrimary shrink-0" />
-                    <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
-                      Research Papers
-                    </h1>
-                  </>
+                  <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
+                    Research Papers
+                  </h1>
                 )}
               </div>
             </div>
 
-            {/* Desktop / Tablet: Saved Papers Button */}
-            <div className="hidden sm:flex items-center gap-2">
-              {activeTab === 'saved' ? (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('explore')}
-                  className="px-3 py-1.5 rounded-lg bg-surface-elevated hover:bg-surface border border-border-subtle text-[13px] font-semibold text-textPrimary transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
-                >
-                  <Microscope className="w-4 h-4" />
-                  <span>Back to Explore</span>
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('saved')}
-                  className="px-3 py-1.5 rounded-lg bg-surface-elevated hover:bg-surface border border-border-subtle text-[13px] font-semibold text-textSecondary hover:text-textPrimary transition-colors inline-flex items-center gap-1.5 cursor-pointer shadow-xs"
-                >
-                  <Bookmark className="w-3.5 h-3.5" />
-                  <span>Saved</span>
-                  {savedData?.pagination?.total !== undefined && savedData.pagination.total > 0 && (
-                    <span className="text-[11px] px-1.5 py-0.2 rounded-full bg-surface text-textSecondary font-bold">
-                      {savedData.pagination.total}
-                    </span>
-                  )}
-                </button>
-              )}
-            </div>
-
-            {/* Mobile View: Vertical 3-Dot Button at Top Right Header */}
-            <div className="sm:hidden relative">
+            {/* Top Right: 3-Vertical-Dots Menu (Shows Saved Papers / Explore) */}
+            <div className="relative">
               <button
                 type="button"
                 onClick={() => setIsMenuOpen((prev) => !prev)}
@@ -204,7 +169,7 @@ export const ResearchPage: React.FC = () => {
                     onClick={() => setIsMenuOpen(false)}
                     aria-hidden="true"
                   />
-                  <div className="absolute right-0 mt-1 w-44 rounded-card bg-surface-elevated border border-border-subtle shadow-xl z-50 py-1">
+                  <div className="absolute right-0 mt-1 w-48 rounded-card bg-surface-elevated border border-border-subtle shadow-xl z-50 py-1 animate-fadeIn">
                     {activeTab === 'saved' ? (
                       <button
                         type="button"
@@ -451,12 +416,7 @@ export const ResearchPage: React.FC = () => {
         </div>
       </main>
 
-      {/* 3. Right Sidebar on Desktop */}
-      <div className="hidden lg:flex shrink-0">
-        <RightSidebar />
-      </div>
-
-      {/* 4. Mobile Navigation Drawer */}
+      {/* 3. Mobile Navigation Drawer */}
       <MobileDrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}

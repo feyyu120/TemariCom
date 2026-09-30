@@ -39,10 +39,28 @@ export const LeftSidebar: React.FC = () => {
   const { isDark, toggleTheme } = useTheme();
   const { user, isAuthenticated, openAuthModal } = useAuth();
   const { unreadCount } = useChat();
-  const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isMoreOpen, setIsMoreOpen] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('temaricom_sidebar_more_open') === 'true';
+    } catch {
+      return false;
+    }
+  });
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [navigationMessage, setNavigationMessage] = useState<string | null>(null);
   const navContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleToggleMore = () => {
+    setIsMoreOpen((prev) => {
+      const next = !prev;
+      try {
+        localStorage.setItem('temaricom_sidebar_more_open', String(next));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
 
   useEffect(() => {
     if (!isMoreOpen && navContainerRef.current) {
@@ -62,7 +80,7 @@ export const LeftSidebar: React.FC = () => {
       icon: <MessageSquare className="w-5 h-5" />,
       badge: unreadCount > 0 ? unreadCount : undefined,
     },
-    { id: 'lostfound', label: 'Lost & Found', icon: <Search className="w-5 h-5" /> },
+    { id: 'lostfound', label: 'Lost Item', icon: <Search className="w-5 h-5" /> },
     { id: 'promote', label: 'Promote', icon: <BadgePercent className="w-5 h-5" /> },
     { id: 'create', label: 'Create', icon: <PlusCircle className="w-5 h-5" /> },
   ];
@@ -152,7 +170,7 @@ export const LeftSidebar: React.FC = () => {
           {/* MORE Button: Positioned immediately after Create */}
           <button
             type="button"
-            onClick={() => setIsMoreOpen((prev) => !prev)}
+            onClick={handleToggleMore}
             className="w-full flex items-center justify-between px-3.5 py-2 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
           >
             <div className="flex items-center gap-3">
@@ -174,11 +192,16 @@ export const LeftSidebar: React.FC = () => {
                   key={item.id}
                   type="button"
                   onClick={() => {
-                    setIsMoreOpen(false);
                     if (item.id === 'settings') {
                       navigate('/profile/settings');
                     } else if (item.id === 'help') {
                       navigate('/faq');
+                    } else if (item.id === 'marketplace') {
+                      navigate('/marketplace');
+                    } else if (item.id === 'downloads') {
+                      navigate('/downloads');
+                    } else if (item.id === 'saved') {
+                      navigate('/saved');
                     }
                   }}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
