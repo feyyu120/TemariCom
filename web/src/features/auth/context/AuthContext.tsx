@@ -244,7 +244,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Update TanStack query cache with the verified user
       if (authSession.user) {
-        queryClient.setQueryData<FullProfileResponse | null>(PROFILE_KEYS.me(), {
+        queryClient.setQueryData<FullProfileResponse>(PROFILE_KEYS.me(), {
           user: {
             id: authSession.user.id,
             username: authSession.user.username || null,
@@ -290,7 +290,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     async (accountId: string): Promise<void> => {
       const targetUser = await authService.switchAccount(accountId);
       if (targetUser) {
-        queryClient.setQueryData<FullProfileResponse | null>(PROFILE_KEYS.me(), {
+        queryClient.setQueryData<FullProfileResponse>(PROFILE_KEYS.me(), {
           user: {
             id: targetUser.id,
             username: targetUser.username || null,

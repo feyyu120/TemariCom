@@ -311,7 +311,7 @@ export const ResearchPage: React.FC = () => {
 
                     <button
                       type="button"
-                      disabled={!searchData.pagination?.hasMore || isSearchLoading}
+                      disabled={!searchData?.pagination?.hasMore || isSearchLoading}
                       onClick={() => setCurrentPage((prev) => prev + 1)}
                       className="px-3.5 py-2 rounded-card bg-surface border border-border-subtle hover:border-border text-textPrimary text-[13px] font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-colors inline-flex items-center gap-1.5 cursor-pointer"
                     >
