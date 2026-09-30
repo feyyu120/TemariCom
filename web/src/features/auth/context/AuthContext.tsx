@@ -136,7 +136,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         is_own_profile: true,
       };
     },
-    initialDataUpdatedAt: 0,
+    initialDataUpdatedAt: Date.now(),
     staleTime: 1000 * 60 * 5,
     enabled: hasActiveSession,
     retry: (failureCount, error: unknown) => {
@@ -174,29 +174,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const isAuthenticated = Boolean(currentUser);
 
-  // Hook global 401 unauthorized listener to auto-clear session only on core identity expiration
+  // Hook global 401 unauthorized listener for non-query endpoints.
+  // IMPORTANT: /profile/me 401 is already handled by the TanStack Query queryFn above.
+  // This handler covers OTHER authenticated endpoints (e.g., /chat/*, /research/saved/*).
   useEffect(() => {
     setUnauthorizedHandler((url) => {
-      // ONLY invalidate if the 401 came from the core identity/profile endpoint
+      // The queryFn already handles /profile/me and /auth/me 401s.
+      // DO NOT duplicate clearActiveSession() here — it causes a race condition
+      // that nukes localStorage and permanently logs out the user (especially in Chrome
+      // where the HttpOnly cookie doesn't work cross-port on localhost).
       const isCoreAuthEndpoint = url.includes('/profile/me') || url.includes('/auth/me');
       if (isCoreAuthEndpoint) {
-        const token = tokenStorage.getSessionTokenSync();
-        if (token) {
-          console.warn('[AuthContext] Core identity endpoint returned 401. Invalidating active session.');
-          tokenStorage.clearActiveSession().then(() => {
-            queryClient.setQueryData(AUTH_USER_QUERY_KEY, null);
-            syncLocalAccounts();
-          });
-        }
-      } else {
-        // Non-core endpoints returning 401 must NEVER nuke the user's session!
-        console.warn(`[AuthContext] Non-core endpoint ${url} returned 401. Preserving session.`);
+        // Handled by queryFn catch block — do nothing here
+        return;
       }
+      // Non-core endpoints returning 401 must NEVER nuke the user's session!
+      console.warn(`[AuthContext] Non-core endpoint ${url} returned 401. Preserving session.`);
     });
     return () => {
       setUnauthorizedHandler(null);
     };
-  }, [queryClient, syncLocalAccounts]);
+  }, []);
 
   // Sync user data to active account in storage when fetched
   useEffect(() => {
