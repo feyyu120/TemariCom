@@ -4,6 +4,7 @@
 
 ALTER TABLE IF EXISTS conversations DROP CONSTRAINT IF EXISTS fk_conversations_last_message;
 
+DROP TABLE IF EXISTS user_blocks CASCADE;
 DROP TABLE IF EXISTS message_deletions CASCADE;
 DROP TABLE IF EXISTS message_receipts CASCADE;
 DROP TABLE IF EXISTS messages CASCADE;
