@@ -174,7 +174,6 @@ export const LeftSidebar: React.FC = () => {
                   key={item.id}
                   type="button"
                   onClick={() => {
-                    setIsMoreOpen(false);
                     if (item.id === 'settings') {
                       navigate('/profile/settings');
                     } else if (item.id === 'help') {
