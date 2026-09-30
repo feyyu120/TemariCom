@@ -9,13 +9,16 @@ import {
   AlertCircle,
   LogIn,
   Sparkles,
+  Menu,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth';
 import { useMyProfile, useUserProfile } from '@/features/profiles/hooks';
 import { ProfileSkeleton } from '@/features/profiles/components/ProfileSkeleton';
 import { ProfileHeader } from '@/features/profiles/components/ProfileHeader';
 import { EditProfileModal } from '@/features/profiles/components/EditProfileModal';
+import { ProfileSettingsModal } from '@/features/profiles/components/ProfileSettingsModal';
 import { MobileBottomNav } from '@/features/home/components/MobileBottomNav';
+import { MobileDrawer } from '@/features/home/components/MobileDrawer';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
 
 type ProfileTab = 'posts' | 'reposts' | 'saved';
@@ -28,6 +31,8 @@ export const ProfilePage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<ProfileTab>('posts');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Setup mode check from URL query params (e.g. fresh registration)
   const isSetupMode = searchParams.get('setup') === 'true';
@@ -79,19 +84,19 @@ export const ProfilePage: React.FC = () => {
 
         {/* Main Content Area */}
         <div className="flex-1 min-h-0 h-full max-h-full overflow-y-auto min-w-0 bg-background flex flex-col justify-between">
-          <header className="sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border-subtle shrink-0">
-            <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
+          <header className="h-[53px] sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border-subtle flex items-center justify-between px-3.5 sm:px-4 shrink-0">
+            <div className="flex items-center gap-2.5">
               <button
                 type="button"
-                onClick={handleBack}
-                className="p-2 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer"
-                aria-label="Go back"
+                onClick={() => setIsDrawerOpen(true)}
+                className="lg:hidden p-1.5 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer"
+                aria-label="Open mobile menu"
               >
-                <ArrowLeft className="w-5 h-5" />
+                <Menu className="w-5 h-5 text-textPrimary" />
               </button>
               <span className="font-bold text-base text-textPrimary">Profile</span>
-              <div className="w-9" />
             </div>
+            <div className="w-6" />
           </header>
 
           <main className="flex-1 flex items-center justify-center p-4">
@@ -117,6 +122,11 @@ export const ProfilePage: React.FC = () => {
           </main>
 
           <MobileBottomNav />
+
+          <MobileDrawer
+            isOpen={isDrawerOpen}
+            onClose={() => setIsDrawerOpen(false)}
+          />
         </div>
       </div>
     );
@@ -130,39 +140,48 @@ export const ProfilePage: React.FC = () => {
       </div>
 
       {/* 2. Main Scrollable Container */}
-      <div className="flex-1 min-h-0 h-full max-h-full overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-w-0 bg-background flex flex-col pb-20 lg:pb-12">
-        {/* TOP STICKY HEADER: Back Button | "Profile" | Settings Gear */}
-        <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border-subtle shrink-0">
-          <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
-            <div className="flex items-center gap-4">
+      <main className="flex-1 min-w-0 min-h-0 h-full max-h-full overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden border-r-0 lg:border-r border-border-subtle bg-background pb-20 lg:pb-12">
+        {/* TOP STICKY HEADER: Hamburger/Back Button | "Profile" | Settings Gear */}
+        <header className="h-[53px] sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border-subtle flex items-center justify-between px-3.5 sm:px-4 shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            {isViewingSpecificUser ? (
               <button
                 type="button"
                 onClick={handleBack}
-                className="lg:hidden p-1.5 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer"
+                className="p-1.5 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
                 aria-label="Go back"
               >
                 <ArrowLeft className="w-5 h-5 text-textPrimary" />
               </button>
-              <h1 className="text-base sm:text-lg font-bold text-textPrimary tracking-tight">
-                Profile
-              </h1>
-            </div>
-
-            {/* Settings Icon -> navigates to /profile/settings */}
-            <button
-              type="button"
-              onClick={() => navigate('/profile/settings')}
-              className="p-2 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer"
-              title="Profile Settings"
-              aria-label="Profile Settings"
-            >
-              <Settings className="w-5 h-5 text-textPrimary" />
-            </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(true)}
+                className="lg:hidden p-1.5 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
+                aria-label="Open mobile menu"
+              >
+                <Menu className="w-5 h-5 text-textPrimary" />
+              </button>
+            )}
+            <h1 className="text-base sm:text-lg font-bold text-textPrimary tracking-tight truncate">
+              {isViewingSpecificUser ? (profile?.user?.full_name || 'Profile') : 'Profile'}
+            </h1>
           </div>
+
+          {/* Settings Icon -> opens ProfileSettingsModal */}
+          <button
+            type="button"
+            onClick={() => setIsSettingsModalOpen(true)}
+            className="p-1.5 -mr-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
+            title="Profile Settings"
+            aria-label="Profile Settings"
+          >
+            <Settings className="w-5 h-5 text-textPrimary" />
+          </button>
         </header>
 
         {/* MAIN PROFILE CONTAINER */}
-        <main className="max-w-2xl mx-auto w-full flex-1">
+        <div className="max-w-2xl mx-auto w-full">
         {isLoading ? (
           <ProfileSkeleton />
         ) : isError || !profile ? (
@@ -291,8 +310,21 @@ export const ProfilePage: React.FC = () => {
             )}
           </>
         )}
-        </main>
-      </div>
+        </div>
+      </main>
+
+      {/* Profile Settings Modal */}
+      <ProfileSettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        onOpenEdit={() => setIsEditModalOpen(true)}
+      />
+
+      {/* Mobile Navigation Drawer */}
+      <MobileDrawer
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+      />
 
       {/* Fixed bottom navigation for mobile */}
       <MobileBottomNav />
