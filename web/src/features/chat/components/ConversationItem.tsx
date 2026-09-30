@@ -181,7 +181,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
                   setContextMenuPos(null);
                   onToggleBlock(conversation);
                 }}
-                className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-textPrimary hover:bg-surface transition-colors cursor-pointer text-left"
+                className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-textPrimary hover:bg-textPrimary/5 transition-colors cursor-pointer text-left"
               >
                 {isBlocked ? (
                   <>
