@@ -118,7 +118,7 @@ export const LeftSidebar: React.FC = () => {
   ];
 
   return (
-    <aside className="w-64 h-screen shrink-0 border-r border-border-subtle bg-background flex flex-col justify-between select-none">
+    <aside className="w-64 h-full max-h-full shrink-0 border-r border-border-subtle bg-background flex flex-col justify-between select-none">
       {/* 1. PINNED TOP HEADER: Logo & Brand Name (Aligned with CenterFeed header) */}
       <div className="h-[53px] shrink-0 border-b border-border-subtle flex items-center px-4 bg-background">
         <div className="flex items-center gap-3 px-1">
