@@ -82,7 +82,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
 
   const privacySetting: PlaceholderSetting = {
     title: 'Privacy & Policy',
-    icon: <Shield className="w-4 h-4 text-emerald-500" />,
+    icon: <Shield className="w-4 h-4 text-textPrimary" />,
     subtitle: 'Profile visibility, read receipts & data policies',
     badge: 'Standard',
     details: {
@@ -103,7 +103,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
 
   const securitySetting: PlaceholderSetting = {
     title: 'Security & Access',
-    icon: <Lock className="w-4 h-4 text-blue-500" />,
+    icon: <Lock className="w-4 h-4 text-textPrimary" />,
     subtitle: 'Password, two-step verification & active sessions',
     badge: 'Secure',
     details: {
@@ -123,7 +123,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
 
   const notificationsSetting: PlaceholderSetting = {
     title: 'Notifications & Alerts',
-    icon: <Bell className="w-4 h-4 text-amber-500" />,
+    icon: <Bell className="w-4 h-4 text-textPrimary" />,
     subtitle: 'Direct messages, campus updates & study alerts',
     badge: 'On',
     details: {
@@ -142,7 +142,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
 
   const termsSetting: PlaceholderSetting = {
     title: 'Terms of Service',
-    icon: <FileText className="w-4 h-4 text-purple-500" />,
+    icon: <FileText className="w-4 h-4 text-textPrimary" />,
     subtitle: 'Student guidelines and campus community terms',
     details: {
       heading: 'Campus Community Terms & Guidelines',
@@ -236,7 +236,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                 className="w-full flex items-center justify-between p-3.5 hover:bg-surface-elevated transition-colors text-left cursor-pointer group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-surface-elevated border border-border-subtle flex items-center justify-center shrink-0 text-textPrimary">
                     {privacySetting.icon}
                   </div>
                   <div className="min-w-0">
@@ -245,7 +245,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                         {privacySetting.title}
                       </p>
                       {privacySetting.badge && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-elevated border border-border-subtle text-textSecondary">
                           {privacySetting.badge}
                         </span>
                       )}
@@ -265,7 +265,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                 className="w-full flex items-center justify-between p-3.5 hover:bg-surface-elevated transition-colors text-left cursor-pointer group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-surface-elevated border border-border-subtle flex items-center justify-center shrink-0 text-textPrimary">
                     {securitySetting.icon}
                   </div>
                   <div className="min-w-0">
@@ -274,7 +274,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                         {securitySetting.title}
                       </p>
                       {securitySetting.badge && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-500">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-elevated border border-border-subtle text-textSecondary">
                           {securitySetting.badge}
                         </span>
                       )}
@@ -294,7 +294,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                 className="w-full flex items-center justify-between p-3.5 hover:bg-surface-elevated transition-colors text-left cursor-pointer group"
               >
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-surface-elevated border border-border-subtle flex items-center justify-center shrink-0 text-textPrimary">
                     {notificationsSetting.icon}
                   </div>
                   <div className="min-w-0">
@@ -303,7 +303,7 @@ export const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
                         {notificationsSetting.title}
                       </p>
                       {notificationsSetting.badge && (
-                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-500">
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-surface-elevated border border-border-subtle text-textSecondary">
                           {notificationsSetting.badge}
                         </span>
                       )}
