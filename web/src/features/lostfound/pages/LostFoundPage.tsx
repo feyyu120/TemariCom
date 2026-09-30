@@ -202,7 +202,7 @@ export const LostFoundPage: React.FC = () => {
 
               <div className="flex items-center min-w-0">
                 <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
-                  Lost & Found
+                  Lost Item
                 </h1>
               </div>
             </div>
