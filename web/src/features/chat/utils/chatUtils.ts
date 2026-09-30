@@ -72,21 +72,27 @@ export function formatLastSeen(lastSeenAt?: string | null, isOnline?: boolean): 
   }
 
   try {
-    const date = new Date(lastSeenAt);
+    let raw = String(lastSeenAt).trim();
+    // Normalize date string with timezone if omitted
+    if (raw.includes(' ') && !raw.includes('Z') && !raw.includes('+')) {
+      raw = raw.replace(' ', 'T') + 'Z';
+    } else if (raw.includes('T') && !raw.includes('Z') && !raw.includes('+')) {
+      raw = raw + 'Z';
+    }
+
+    const date = new Date(raw);
     if (isNaN(date.getTime())) return 'Offline';
 
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
-    if (diffMs < 0) return 'Active just now';
-
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHour = Math.floor(diffMin / 60);
-    const diffDay = Math.floor(diffHour / 24);
-
-    if (diffMin < 1) {
+    if (diffMs < 60 * 1000) {
       return 'Active just now';
     }
+
+    const diffMin = Math.floor(diffMs / (60 * 1000));
+    const diffHour = Math.floor(diffMs / (60 * 60 * 1000));
+    const diffDay = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+
     if (diffMin < 60) {
       return `Active ${diffMin}m ago`;
     }
