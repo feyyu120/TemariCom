@@ -35,6 +35,17 @@ type SendMessageRequest struct {
 	ForwardedFromName      string     `json:"forwarded_from_name,omitempty"`
 }
 
+// BlockUserRequest payload to block or unblock a user
+type BlockUserRequest struct {
+	TargetUserID uuid.UUID `json:"target_user_id" validate:"required"`
+}
+
+// BlockStatusResponse represents current blocking relationship
+type BlockStatusResponse struct {
+	TargetUserID uuid.UUID `json:"target_user_id"`
+	IsBlocked    bool      `json:"is_blocked"`
+}
+
 // UserSummaryDTO provides sender or peer identification with CDN avatar resolution
 type UserSummaryDTO struct {
 	ID         uuid.UUID  `json:"id"`
@@ -43,6 +54,7 @@ type UserSummaryDTO struct {
 	AvatarURL  string     `json:"avatar_url"`
 	IsOnline   bool       `json:"is_online"`
 	LastSeenAt *time.Time `json:"last_seen_at,omitempty"`
+	IsBlocked  bool       `json:"is_blocked,omitempty"`
 }
 
 // MessageResponse represents a single message with populated sender profile and delivery status
@@ -81,6 +93,8 @@ type ConversationResponse struct {
 	UnreadCount        int             `json:"unread_count"`
 	IsMuted            bool            `json:"is_muted"`
 	IsPinned           bool            `json:"is_pinned"`
+	IsSavedMessages    bool            `json:"is_saved_messages"`
+	IsBlocked          bool            `json:"is_blocked,omitempty"`
 	Peer               *UserSummaryDTO `json:"peer,omitempty"` // For direct 1-on-1 chats, details of the other user
 }
 

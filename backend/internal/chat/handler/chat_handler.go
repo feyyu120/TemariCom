@@ -548,6 +548,173 @@ func (h *ChatHandler) SearchUsers(c fiber.Ctx) error {
 	})
 }
 
+// GetOrCreateSavedChat handles fetching or creating the private saved messages conversation
+func (h *ChatHandler) GetOrCreateSavedChat(c fiber.Ctx) error {
+	currentUserID, err := h.extractAuthUser(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"error":   "Unauthorized session",
+		})
+	}
+
+	conv, err := h.chatService.GetOrCreateSavedChat(c.Context(), currentUserID)
+	if err != nil {
+		log.Printf("[ChatHandler] GetOrCreateSavedChat error: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   "Failed to fetch saved messages chat",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success":      true,
+		"data":         conv,
+		"conversation": conv,
+	})
+}
+
+// DeleteConversation deletes / clears conversation for current user
+func (h *ChatHandler) DeleteConversation(c fiber.Ctx) error {
+	currentUserID, err := h.extractAuthUser(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"error":   "Unauthorized session",
+		})
+	}
+
+	convID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "Invalid conversation ID",
+		})
+	}
+
+	if err := h.chatService.DeleteConversation(c.Context(), convID, currentUserID); err != nil {
+		if errors.Is(err, repository.ErrForbidden) {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"success": false,
+				"error":   "You are not a participant in this conversation",
+			})
+		}
+		log.Printf("[ChatHandler] DeleteConversation error: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   "Failed to delete conversation",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"message": "Conversation deleted successfully",
+	})
+}
+
+// BlockUser blocks target user
+func (h *ChatHandler) BlockUser(c fiber.Ctx) error {
+	currentUserID, err := h.extractAuthUser(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"error":   "Unauthorized session",
+		})
+	}
+
+	var req dto.BlockUserRequest
+	if err := c.Bind().Body(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "Invalid request body",
+		})
+	}
+
+	if req.TargetUserID == uuid.Nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "Target user ID is required",
+		})
+	}
+
+	if err := h.chatService.BlockUser(c.Context(), currentUserID, req.TargetUserID); err != nil {
+		log.Printf("[ChatHandler] BlockUser error: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   "Failed to block user",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"message": "User blocked successfully",
+	})
+}
+
+// UnblockUser unblocks target user
+func (h *ChatHandler) UnblockUser(c fiber.Ctx) error {
+	currentUserID, err := h.extractAuthUser(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"error":   "Unauthorized session",
+		})
+	}
+
+	var req dto.BlockUserRequest
+	if err := c.Bind().Body(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "Invalid request body",
+		})
+	}
+
+	if req.TargetUserID == uuid.Nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "Target user ID is required",
+		})
+	}
+
+	if err := h.chatService.UnblockUser(c.Context(), currentUserID, req.TargetUserID); err != nil {
+		log.Printf("[ChatHandler] UnblockUser error: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   "Failed to unblock user",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"message": "User unblocked successfully",
+	})
+}
+
+// GetBlockedUsers returns list of user IDs blocked by current user
+func (h *ChatHandler) GetBlockedUsers(c fiber.Ctx) error {
+	currentUserID, err := h.extractAuthUser(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"error":   "Unauthorized session",
+		})
+	}
+
+	blockedIDs, err := h.chatService.GetBlockedUsers(c.Context(), currentUserID)
+	if err != nil {
+		log.Printf("[ChatHandler] GetBlockedUsers error: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   "Failed to fetch blocked users",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"data":    blockedIDs,
+	})
+}
+
 // ============================================================================
 // WEBSOCKET REAL-TIME HANDLERS (GoFiber contrib websocket/event)
 // ============================================================================

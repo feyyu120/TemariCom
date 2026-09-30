@@ -48,6 +48,16 @@ func RegisterRoutes(
 	chatGroup.Get("/conversations", chatHandler.GetUserConversations)
 	chatGroup.Post("/conversations/direct", chatHandler.CreateDirectChat)
 	chatGroup.Post("/direct", chatHandler.CreateDirectChat)
+	chatGroup.Delete("/conversations/:id", chatHandler.DeleteConversation)
+
+	// Saved Messages (Telegram-style private chat)
+	chatGroup.Get("/saved", chatHandler.GetOrCreateSavedChat)
+	chatGroup.Post("/saved", chatHandler.GetOrCreateSavedChat)
+
+	// User Blocking / Safety
+	chatGroup.Post("/block", chatHandler.BlockUser)
+	chatGroup.Post("/unblock", chatHandler.UnblockUser)
+	chatGroup.Get("/blocked", chatHandler.GetBlockedUsers)
 
 	// Messages with Cursor-Based Pagination, Editing & Deletion
 	chatGroup.Get("/conversations/:id/messages", chatHandler.GetMessages)

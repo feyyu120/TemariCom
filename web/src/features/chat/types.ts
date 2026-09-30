@@ -10,6 +10,7 @@ export interface PeerUser {
   avatar_url: string;
   is_online?: boolean;
   last_seen_at?: string | null;
+  is_blocked?: boolean;
 }
 
 export interface Conversation {
@@ -23,6 +24,8 @@ export interface Conversation {
   unread_count: number;
   is_muted: boolean;
   is_pinned: boolean;
+  is_saved_messages?: boolean;
+  is_blocked?: boolean;
   peer?: PeerUser;
 }
 

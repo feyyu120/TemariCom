@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { Reply, Copy, CornerUpRight, Pencil, Trash2 } from 'lucide-react';
+import { Reply, Copy, CornerUpRight, Pencil, Trash2, Bookmark } from 'lucide-react';
 import { ChatMessage } from '@/features/chat/types';
 
 interface MessageActionModalProps {
@@ -11,6 +11,7 @@ interface MessageActionModalProps {
   onReply: (message: ChatMessage) => void;
   onCopy: (message: ChatMessage) => void;
   onForward: (message: ChatMessage) => void;
+  onSaveMessage?: (message: ChatMessage) => void;
   onEdit: (message: ChatMessage) => void;
   onDelete: (message: ChatMessage) => void;
 }
@@ -24,6 +25,7 @@ export const MessageActionModal: React.FC<MessageActionModalProps> = ({
   onReply,
   onCopy,
   onForward,
+  onSaveMessage,
   onEdit,
   onDelete,
 }) => {
@@ -102,6 +104,21 @@ export const MessageActionModal: React.FC<MessageActionModalProps> = ({
           <CornerUpRight className="w-4 h-4 text-textSecondary" />
           <span>Forward</span>
         </button>
+
+        {/* Save to Saved Messages */}
+        {onSaveMessage && !isPending && (
+          <button
+            type="button"
+            onClick={() => {
+              onClose();
+              onSaveMessage(message);
+            }}
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-xs font-medium text-textPrimary hover:bg-surface transition-colors cursor-pointer text-left"
+          >
+            <Bookmark className="w-4 h-4 text-textSecondary" />
+            <span>Save Message</span>
+          </button>
+        )}
 
         {/* Edit (only own text) */}
         {canEdit && (

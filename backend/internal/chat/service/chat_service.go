@@ -22,6 +22,7 @@ var (
 
 type ChatService interface {
 	CreateDirectChat(ctx context.Context, currentUserID, targetUserID uuid.UUID) (*dto.ConversationResponse, error)
+	GetOrCreateSavedChat(ctx context.Context, userID uuid.UUID) (*dto.ConversationResponse, error)
 	GetUserConversations(ctx context.Context, currentUserID uuid.UUID, limit, offset int) ([]dto.ConversationResponse, error)
 	GetMessages(ctx context.Context, conversationID, currentUserID uuid.UUID, limit int, beforeStr string) (*dto.MessagesPageResponse, error)
 	SendMessage(ctx context.Context, conversationID, senderID uuid.UUID, req dto.SendMessageRequest) (*dto.MessageResponse, []uuid.UUID, error)
@@ -32,6 +33,10 @@ type ChatService interface {
 	SearchUsers(ctx context.Context, currentUserID uuid.UUID, query string, limit int) ([]dto.UserSearchResponse, error)
 	EditMessage(ctx context.Context, conversationID, messageID, userID uuid.UUID, content string) (*dto.MessageResponse, []uuid.UUID, error)
 	DeleteMessage(ctx context.Context, conversationID, messageID, userID uuid.UUID, forAll bool) ([]uuid.UUID, error)
+	DeleteConversation(ctx context.Context, conversationID, userID uuid.UUID) error
+	BlockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error
+	UnblockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error
+	GetBlockedUsers(ctx context.Context, blockerID uuid.UUID) ([]uuid.UUID, error)
 }
 
 type chatService struct {
@@ -64,7 +69,7 @@ func (s *chatService) resolveMediaURL(raw string) string {
 // CreateDirectChat finds or creates a direct conversation between two users
 func (s *chatService) CreateDirectChat(ctx context.Context, currentUserID, targetUserID uuid.UUID) (*dto.ConversationResponse, error) {
 	if currentUserID == targetUserID {
-		return nil, repository.ErrCannotChatSelf
+		return s.GetOrCreateSavedChat(ctx, currentUserID)
 	}
 
 	conv, err := s.repo.GetOrCreateDirectConversation(ctx, currentUserID, targetUserID)
@@ -104,6 +109,18 @@ func (s *chatService) CreateDirectChat(ctx context.Context, currentUserID, targe
 		AvatarURL:     avatarURL,
 		LastMessageAt: conv.LastMessageAt,
 	}, nil
+}
+
+// GetOrCreateSavedChat returns or initializes the user's private Saved Messages conversation
+func (s *chatService) GetOrCreateSavedChat(ctx context.Context, userID uuid.UUID) (*dto.ConversationResponse, error) {
+	conv, err := s.repo.GetOrCreateSavedConversation(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if conv.AvatarKey != "" {
+		conv.AvatarURL = s.resolveMediaURL(conv.AvatarKey)
+	}
+	return conv, nil
 }
 
 // GetUserConversations fetches user inbox items with resolved avatars
@@ -331,4 +348,24 @@ func (s *chatService) EditMessage(ctx context.Context, conversationID, messageID
 // DeleteMessage delegates scope-aware deletion to the repository layer
 func (s *chatService) DeleteMessage(ctx context.Context, conversationID, messageID, userID uuid.UUID, forAll bool) ([]uuid.UUID, error) {
 	return s.repo.DeleteMessage(ctx, conversationID, messageID, userID, forAll)
+}
+
+// DeleteConversation hides / leaves the conversation for the user
+func (s *chatService) DeleteConversation(ctx context.Context, conversationID, userID uuid.UUID) error {
+	return s.repo.DeleteConversation(ctx, conversationID, userID)
+}
+
+// BlockUser blocks target user
+func (s *chatService) BlockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error {
+	return s.repo.BlockUser(ctx, blockerID, blockedID)
+}
+
+// UnblockUser unblocks target user
+func (s *chatService) UnblockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error {
+	return s.repo.UnblockUser(ctx, blockerID, blockedID)
+}
+
+// GetBlockedUsers returns list of blocked user IDs
+func (s *chatService) GetBlockedUsers(ctx context.Context, blockerID uuid.UUID) ([]uuid.UUID, error) {
+	return s.repo.GetBlockedUserIDs(ctx, blockerID)
 }

@@ -143,6 +143,51 @@ export const chatApiService = {
       return [];
     }
   },
+
+  /**
+   * Get or initialize the user's private Saved Messages conversation (Telegram-style)
+   */
+  async getOrCreateSavedChat(): Promise<Conversation> {
+    const response = await post<any>(ENDPOINTS.CHAT.SAVED, {});
+    const raw = response.data;
+    return (raw && raw.conversation) || (raw && raw.data) || raw;
+  },
+
+  /**
+   * Delete / leave conversation for the current user
+   */
+  async deleteConversation(conversationId: string): Promise<void> {
+    await del(ENDPOINTS.CHAT.CONVERSATION_BY_ID(conversationId));
+  },
+
+  /**
+   * Block a user
+   */
+  async blockUser(targetUserId: string): Promise<void> {
+    await post(ENDPOINTS.CHAT.BLOCK, { target_user_id: targetUserId });
+  },
+
+  /**
+   * Unblock a user
+   */
+  async unblockUser(targetUserId: string): Promise<void> {
+    await post(ENDPOINTS.CHAT.UNBLOCK, { target_user_id: targetUserId });
+  },
+
+  /**
+   * Get list of blocked user IDs
+   */
+  async getBlockedUsers(): Promise<string[]> {
+    try {
+      const response = await get<any>(ENDPOINTS.CHAT.BLOCKED);
+      const raw = response.data;
+      if (Array.isArray(raw)) return raw;
+      if (raw && Array.isArray(raw.data)) return raw.data;
+      return [];
+    } catch {
+      return [];
+    }
+  },
 };
 
 export default chatApiService;

@@ -13,7 +13,7 @@ import {
 } from '@/features/chat/components';
 import { useChat } from '@/features/chat/context/ChatContext';
 import { useUserSearch } from '@/features/chat/hooks/useUserSearch';
-import { chatQueryKeys } from '@/features/chat/services/chatApiService';
+import { chatApiService, chatQueryKeys } from '@/features/chat/services/chatApiService';
 import { ChatMessage, Conversation, UserSearchResult } from '@/features/chat/types';
 import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from '@/context';
@@ -147,6 +147,79 @@ export const ChatPage: React.FC = () => {
     setActiveConversationId(null);
     setSearchParams({}, { replace: true });
   }, [setActiveConversationId, setSearchParams]);
+
+  const handleDeleteConversation = useCallback(
+    async (conv: Conversation) => {
+      try {
+        await chatApiService.deleteConversation(conv.id);
+        queryClient.setQueryData<Conversation[]>(chatQueryKeys.conversations(), (old) => {
+          if (!old) return old;
+          return old.filter((c) => c.id !== conv.id);
+        });
+        if (selectedConversation?.id === conv.id) {
+          handleBackToList();
+        }
+        showToast({
+          title: 'Conversation Deleted',
+          message: 'The chat has been cleared and removed.',
+          type: 'info',
+        });
+      } catch (err: any) {
+        showToast({
+          title: 'Delete Failed',
+          message: err?.message || 'Failed to delete conversation',
+          type: 'error',
+        });
+      }
+    },
+    [selectedConversation?.id, handleBackToList, queryClient, showToast]
+  );
+
+  const handleToggleBlock = useCallback(
+    async (conv: Conversation) => {
+      const peerId = conv.peer?.id;
+      if (!peerId) return;
+      const isBlocked = Boolean(conv.is_blocked || conv.peer?.is_blocked);
+      try {
+        if (isBlocked) {
+          await chatApiService.unblockUser(peerId);
+          showToast({
+            title: 'User Unblocked',
+            message: `${conv.peer?.full_name || conv.peer?.username || 'User'} has been unblocked.`,
+            type: 'success',
+          });
+        } else {
+          await chatApiService.blockUser(peerId);
+          showToast({
+            title: 'User Blocked',
+            message: `${conv.peer?.full_name || conv.peer?.username || 'User'} has been blocked.`,
+            type: 'info',
+          });
+        }
+
+        queryClient.setQueryData<Conversation[]>(chatQueryKeys.conversations(), (old) => {
+          if (!old) return old;
+          return old.map((c) => {
+            if (c.id === conv.id || c.peer?.id === peerId) {
+              return {
+                ...c,
+                is_blocked: !isBlocked,
+                peer: c.peer ? { ...c.peer, is_blocked: !isBlocked } : undefined,
+              };
+            }
+            return c;
+          });
+        });
+      } catch (err: any) {
+        showToast({
+          title: 'Action Failed',
+          message: err?.message || 'Failed to update block status',
+          type: 'error',
+        });
+      }
+    },
+    [queryClient, showToast]
+  );
 
   // Clear active conversation on unmount so background notifications/badges function correctly
   useEffect(() => {
@@ -379,6 +452,26 @@ export const ChatPage: React.FC = () => {
     });
   }, [conversations, query]);
 
+  const handleOpenSavedMessages = useCallback(async () => {
+    try {
+      const savedConv = await chatApiService.getOrCreateSavedChat();
+      if (savedConv && savedConv.id) {
+        handleOpenConversation(savedConv);
+        queryClient.setQueryData<Conversation[]>(chatQueryKeys.conversations(), (prev) => {
+          const list = Array.isArray(prev) ? prev : [];
+          if (list.some((c) => c.id === savedConv.id)) return list;
+          return [savedConv, ...list];
+        });
+      }
+    } catch (err: any) {
+      showToast({
+        title: 'Error',
+        message: err?.message || 'Could not open Saved Messages',
+        type: 'error',
+      });
+    }
+  }, [handleOpenConversation, queryClient, showToast]);
+
   if (isAuthLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background text-textPrimary">
@@ -478,6 +571,7 @@ export const ChatPage: React.FC = () => {
           {/* Bespoke Chat Header (clean top header for mobile & desktop) */}
           <ChatHeader
             onMenuPress={() => setIsDrawerOpen(true)}
+            onSavedMessagesPress={handleOpenSavedMessages}
           />
 
           {/* Forwarding Banner */}
@@ -533,6 +627,8 @@ export const ChatPage: React.FC = () => {
                           isTyping={Boolean(typingUsers[c.id])}
                           typingUser={typingUsers[c.id]}
                           onPress={handleOpenConversation}
+                          onDelete={handleDeleteConversation}
+                          onToggleBlock={handleToggleBlock}
                         />
                       ))}
                     </div>
@@ -580,6 +676,8 @@ export const ChatPage: React.FC = () => {
                     isTyping={Boolean(typingUsers[c.id])}
                     typingUser={typingUsers[c.id]}
                     onPress={handleOpenConversation}
+                    onDelete={handleDeleteConversation}
+                    onToggleBlock={handleToggleBlock}
                   />
                 ))}
               </div>

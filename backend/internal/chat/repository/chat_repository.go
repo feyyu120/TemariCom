@@ -20,12 +20,15 @@ var (
 	ErrForbidden      = errors.New("not a participant in this conversation")
 	ErrDuplicateChat  = errors.New("conversation already exists")
 	ErrCannotChatSelf = errors.New("cannot create direct chat with yourself")
+	ErrUserBlocked    = errors.New("cannot send message: user is blocked")
 )
 
 type ChatRepository interface {
 	GetOrCreateDirectConversation(ctx context.Context, user1ID, user2ID uuid.UUID) (*model.Conversation, error)
+	GetOrCreateSavedConversation(ctx context.Context, userID uuid.UUID) (*dto.ConversationResponse, error)
 	GetUserConversations(ctx context.Context, userID uuid.UUID, limit, offset int) ([]dto.ConversationResponse, error)
 	GetConversationByID(ctx context.Context, conversationID, userID uuid.UUID) (*model.Conversation, error)
+	DeleteConversation(ctx context.Context, conversationID, userID uuid.UUID) error
 	GetMessages(ctx context.Context, conversationID, currentUserID uuid.UUID, limit int, before *time.Time) ([]dto.MessageResponse, error)
 	CreateMessage(ctx context.Context, msg *model.Message) (*dto.MessageResponse, []uuid.UUID, error)
 	MarkMessageDelivered(ctx context.Context, messageID, userID uuid.UUID) error
@@ -35,6 +38,10 @@ type ChatRepository interface {
 	SearchUsers(ctx context.Context, currentUserID uuid.UUID, query string, limit int) ([]dto.UserSearchResponse, error)
 	UpdateMessageContent(ctx context.Context, conversationID, messageID, userID uuid.UUID, newContent string) (*dto.MessageResponse, []uuid.UUID, error)
 	DeleteMessage(ctx context.Context, conversationID, messageID, userID uuid.UUID, forAll bool) ([]uuid.UUID, error)
+	BlockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error
+	UnblockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error
+	IsUserBlocked(ctx context.Context, user1ID, user2ID uuid.UUID) (bool, error)
+	GetBlockedUserIDs(ctx context.Context, blockerID uuid.UUID) ([]uuid.UUID, error)
 }
 
 type pgChatRepository struct {
@@ -42,6 +49,23 @@ type pgChatRepository struct {
 }
 
 func NewChatRepository(db *pgxpool.Pool) ChatRepository {
+	// Ensure user_blocks table exists on repository startup
+	go func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		createTableQuery := `
+			CREATE TABLE IF NOT EXISTS user_blocks (
+				blocker_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+				blocked_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+				created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+				PRIMARY KEY (blocker_id, blocked_id)
+			);
+			CREATE INDEX IF NOT EXISTS idx_user_blocks_blocker ON user_blocks(blocker_id);
+			CREATE INDEX IF NOT EXISTS idx_user_blocks_blocked ON user_blocks(blocked_id);
+		`
+		_, _ = db.Exec(ctx, createTableQuery)
+	}()
+
 	return &pgChatRepository{db: db}
 }
 
@@ -151,7 +175,8 @@ func (r *pgChatRepository) GetUserConversations(ctx context.Context, userID uuid
 			COALESCE(c.last_message_preview, ''), c.last_message_at,
 			cp.is_muted, cp.is_pinned,
 			COALESCE(unread.count, 0) AS unread_count,
-			peer.id, COALESCE(peer.full_name, ''), COALESCE(peer.username, ''), COALESCE(peer.avatar_key, '')
+			peer.id, COALESCE(peer.full_name, ''), COALESCE(peer.username, ''), COALESCE(peer.avatar_key, ''), peer.last_login_at,
+			COALESCE(blk.is_blocked, FALSE) AS is_blocked
 		FROM conversation_participants cp
 		JOIN conversations c ON cp.conversation_id = c.id
 		LEFT JOIN LATERAL (
@@ -174,6 +199,13 @@ func (r *pgChatRepository) GetUserConversations(ctx context.Context, userID uuid
 			  AND p_other.user_id != $1
 			LIMIT 1
 		) peer ON c.type = 'direct'
+		LEFT JOIN LATERAL (
+			SELECT EXISTS (
+				SELECT 1 FROM user_blocks ub
+				WHERE (ub.blocker_id = $1 AND ub.blocked_id = peer.id)
+				   OR (ub.blocker_id = peer.id AND ub.blocked_id = $1)
+			) AS is_blocked
+		) blk ON peer.id IS NOT NULL
 		WHERE cp.user_id = $1
 		  AND cp.left_at IS NULL
 		ORDER BY cp.is_pinned DESC, c.last_message_at DESC NULLS LAST
@@ -192,6 +224,7 @@ func (r *pgChatRepository) GetUserConversations(ctx context.Context, userID uuid
 		var peerID *uuid.UUID
 		var peerFullName, peerUsername, peerAvatar string
 		var peerLastLoginAt *time.Time
+		var isBlocked bool
 
 		err := rows.Scan(
 			&item.ID, &item.Type, &item.Title, &item.AvatarKey,
@@ -199,19 +232,26 @@ func (r *pgChatRepository) GetUserConversations(ctx context.Context, userID uuid
 			&item.IsMuted, &item.IsPinned,
 			&item.UnreadCount,
 			&peerID, &peerFullName, &peerUsername, &peerAvatar, &peerLastLoginAt,
+			&isBlocked,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan conversation row: %w", err)
 		}
 
-		if peerID != nil && *peerID != uuid.Nil {
+		if peerID == nil || item.Title == "Saved Messages" {
+			item.Title = "Saved Messages"
+			item.IsSavedMessages = true
+			item.IsPinned = true
+		} else if *peerID != uuid.Nil {
 			item.Peer = &dto.UserSummaryDTO{
 				ID:         *peerID,
 				FullName:   peerFullName,
 				Username:   peerUsername,
 				AvatarURL:  peerAvatar,
 				LastSeenAt: peerLastLoginAt,
+				IsBlocked:  isBlocked,
 			}
+			item.IsBlocked = isBlocked
 			if item.Title == "" {
 				if peerFullName != "" {
 					item.Title = peerFullName
@@ -449,6 +489,14 @@ func (r *pgChatRepository) CreateMessage(ctx context.Context, msg *model.Message
 		recipientIDs = append(recipientIDs, uid)
 	}
 	rows.Close()
+
+	// Verify neither party has blocked the other
+	for _, recID := range recipientIDs {
+		blocked, _ := r.IsUserBlocked(ctx, msg.SenderID, recID)
+		if blocked {
+			return nil, nil, ErrUserBlocked
+		}
+	}
 
 	// Pre-insert receipt records for other participants
 	if len(recipientIDs) > 0 {
@@ -875,4 +923,189 @@ func (r *pgChatRepository) DeleteMessage(ctx context.Context, conversationID, me
 
 	partIDs, _ := r.GetParticipantUserIDs(ctx, conversationID)
 	return partIDs, nil
+}
+
+// GetOrCreateSavedConversation returns or creates the user's private Telegram-style Saved Messages conversation
+func (r *pgChatRepository) GetOrCreateSavedConversation(ctx context.Context, userID uuid.UUID) (*dto.ConversationResponse, error) {
+	// 1. Check if user already has a saved messages conversation
+	findQuery := `
+		SELECT c.id, c.type, COALESCE(c.title, 'Saved Messages'), COALESCE(c.avatar_key, ''),
+		       COALESCE(c.last_message_preview, ''), c.last_message_at,
+		       cp.is_muted, cp.is_pinned,
+		       COALESCE(unread.count, 0) AS unread_count
+		FROM conversations c
+		JOIN conversation_participants cp ON c.id = cp.conversation_id AND cp.user_id = $1 AND cp.left_at IS NULL
+		LEFT JOIN LATERAL (
+			SELECT COUNT(*)::INT AS count
+			FROM messages m
+			WHERE m.conversation_id = c.id
+			  AND (cp.last_read_at IS NULL OR m.created_at > cp.last_read_at)
+			  AND m.sender_id != $1
+			  AND m.deleted_at IS NULL
+		) unread ON true
+		WHERE c.created_by = $1 AND (c.title = 'Saved Messages' OR (
+			SELECT COUNT(*) FROM conversation_participants p WHERE p.conversation_id = c.id AND p.left_at IS NULL
+		) = 1)
+		ORDER BY c.created_at ASC
+		LIMIT 1;
+	`
+
+	var item dto.ConversationResponse
+	err := r.db.QueryRow(ctx, findQuery, userID).Scan(
+		&item.ID, &item.Type, &item.Title, &item.AvatarKey,
+		&item.LastMessagePreview, &item.LastMessageAt,
+		&item.IsMuted, &item.IsPinned,
+		&item.UnreadCount,
+	)
+	if err == nil {
+		item.Title = "Saved Messages"
+		item.IsSavedMessages = true
+		item.IsPinned = true
+		return &item, nil
+	}
+	if !errors.Is(err, pgx.ErrNoRows) {
+		return nil, fmt.Errorf("failed to query saved messages conversation: %w", err)
+	}
+
+	// 2. Create new saved messages conversation atomically
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	insertConv := `
+		INSERT INTO conversations (type, title, created_by, last_message_at, created_at, updated_at)
+		VALUES ('direct', 'Saved Messages', $1, NOW(), NOW(), NOW())
+		RETURNING id, type, title, avatar_key, last_message_preview, last_message_at;
+	`
+	err = tx.QueryRow(ctx, insertConv, userID).Scan(
+		&item.ID, &item.Type, &item.Title, &item.AvatarKey,
+		&item.LastMessagePreview, &item.LastMessageAt,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create saved messages conversation: %w", err)
+	}
+
+	insertPart := `
+		INSERT INTO conversation_participants (conversation_id, user_id, role, is_pinned, last_read_at, joined_at)
+		VALUES ($1, $2, 'admin', TRUE, NOW(), NOW());
+	`
+	if _, err := tx.Exec(ctx, insertPart, item.ID, userID); err != nil {
+		return nil, fmt.Errorf("failed to insert saved participant: %w", err)
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+
+	item.Title = "Saved Messages"
+	item.IsSavedMessages = true
+	item.IsPinned = true
+	item.UnreadCount = 0
+	return &item, nil
+}
+
+// DeleteConversation deletes / leaves the conversation for the current user
+func (r *pgChatRepository) DeleteConversation(ctx context.Context, conversationID, userID uuid.UUID) error {
+	isPart, err := r.IsParticipant(ctx, conversationID, userID)
+	if err != nil {
+		return err
+	}
+	if !isPart {
+		return ErrForbidden
+	}
+
+	tx, err := r.db.Begin(ctx)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback(ctx)
+
+	// 1. Hide all current messages for this user in message_deletions
+	hideMessagesQuery := `
+		INSERT INTO message_deletions (message_id, user_id, created_at)
+		SELECT id, $2, NOW()
+		FROM messages
+		WHERE conversation_id = $1
+		ON CONFLICT (message_id, user_id) DO NOTHING;
+	`
+	_, err = tx.Exec(ctx, hideMessagesQuery, conversationID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to hide messages on delete: %w", err)
+	}
+
+	// 2. Mark participant as left
+	leaveQuery := `
+		UPDATE conversation_participants
+		SET left_at = NOW()
+		WHERE conversation_id = $1 AND user_id = $2;
+	`
+	_, err = tx.Exec(ctx, leaveQuery, conversationID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to mark participant left: %w", err)
+	}
+
+	return tx.Commit(ctx)
+}
+
+// BlockUser blocks target user
+func (r *pgChatRepository) BlockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error {
+	if blockerID == blockedID {
+		return errors.New("cannot block yourself")
+	}
+
+	query := `
+		INSERT INTO user_blocks (blocker_id, blocked_id, created_at)
+		VALUES ($1, $2, NOW())
+		ON CONFLICT (blocker_id, blocked_id) DO NOTHING;
+	`
+	_, err := r.db.Exec(ctx, query, blockerID, blockedID)
+	return err
+}
+
+// UnblockUser unblocks target user
+func (r *pgChatRepository) UnblockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error {
+	query := `
+		DELETE FROM user_blocks
+		WHERE blocker_id = $1 AND blocked_id = $2;
+	`
+	_, err := r.db.Exec(ctx, query, blockerID, blockedID)
+	return err
+}
+
+// IsUserBlocked checks if either user has blocked the other
+func (r *pgChatRepository) IsUserBlocked(ctx context.Context, user1ID, user2ID uuid.UUID) (bool, error) {
+	query := `
+		SELECT EXISTS (
+			SELECT 1 FROM user_blocks
+			WHERE (blocker_id = $1 AND blocked_id = $2)
+			   OR (blocker_id = $2 AND blocked_id = $1)
+		);
+	`
+	var blocked bool
+	err := r.db.QueryRow(ctx, query, user1ID, user2ID).Scan(&blocked)
+	return blocked, err
+}
+
+// GetBlockedUserIDs returns all user IDs blocked by blockerID
+func (r *pgChatRepository) GetBlockedUserIDs(ctx context.Context, blockerID uuid.UUID) ([]uuid.UUID, error) {
+	query := `SELECT blocked_id FROM user_blocks WHERE blocker_id = $1;`
+	rows, err := r.db.Query(ctx, query, blockerID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var blockedIDs []uuid.UUID
+	for rows.Next() {
+		var id uuid.UUID
+		if err := rows.Scan(&id); err == nil {
+			blockedIDs = append(blockedIDs, id)
+		}
+	}
+	if blockedIDs == nil {
+		blockedIDs = []uuid.UUID{}
+	}
+	return blockedIDs, nil
 }
