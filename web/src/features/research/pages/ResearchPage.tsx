@@ -102,14 +102,14 @@ export const ResearchPage: React.FC = () => {
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background text-textPrimary antialiased">
+    <div className="flex h-full h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-background text-textPrimary antialiased">
       {/* 1. Desktop Left Navigation Sidebar */}
       <div className="hidden lg:flex shrink-0">
         <LeftSidebar />
       </div>
 
       {/* 2. Main Research Center Content */}
-      <main className="flex-1 h-screen overflow-y-auto min-w-0 bg-background flex flex-col">
+      <main className="flex-1 min-h-0 h-full max-h-full overflow-y-auto min-w-0 bg-background flex flex-col">
         {/* Pinned Top Header (Contains Header Bar and Search Bar so papers scroll UNDER them) */}
         <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border-subtle shrink-0">
           {/* Top Bar Row */}
