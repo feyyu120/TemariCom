@@ -116,9 +116,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return null;
       }
     },
-    initialData: () => {
+    placeholderData: () => {
       const cached = tokenStorage.getUserDataSync<User>();
-      if (!cached || !cached.id) return null;
+      if (!cached || !cached.id) return undefined;
       return {
         user: {
           id: cached.id,
@@ -136,7 +136,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         is_own_profile: true,
       };
     },
-    initialDataUpdatedAt: Date.now(),
     staleTime: 1000 * 60 * 5,
     enabled: hasActiveSession,
     retry: (failureCount, error: unknown) => {
@@ -168,9 +167,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updated_at: cached?.updated_at ?? new Date().toISOString(),
       };
     }
+    // If not loading and myProfile is null, the session was invalidated on backend
+    if (!isLoading && myProfile === null) {
+      return null;
+    }
     const cachedUser = tokenStorage.getUserDataSync<User>();
     return cachedUser || null;
-  }, [myProfile]);
+  }, [myProfile, isLoading]);
 
   const isAuthenticated = Boolean(currentUser);
 
