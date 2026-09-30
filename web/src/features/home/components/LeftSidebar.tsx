@@ -73,7 +73,6 @@ export const LeftSidebar: React.FC = () => {
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
     { id: 'learn', label: 'Learn', icon: <BookOpen className="w-5 h-5" /> },
     { id: 'research', label: 'Research', icon: <Microscope className="w-5 h-5" /> },
-    { id: 'profile', label: 'Profile', icon: <UserIcon className="w-5 h-5" /> },
     { id: 'tutor', label: 'Find Tutor', icon: <GraduationCap className="w-5 h-5" /> },
     { id: 'campus', label: 'Campus', icon: <Building2 className="w-5 h-5" /> },
     {
@@ -89,7 +88,6 @@ export const LeftSidebar: React.FC = () => {
 
   const isNavActive = (id: string) => {
     if (id === 'home') return location.pathname === '/';
-    if (id === 'profile') return location.pathname.startsWith('/profile');
     if (id === 'research') return location.pathname.startsWith('/research');
     if (id === 'chat') return location.pathname.startsWith('/chat');
     if (id === 'lostfound') return location.pathname.startsWith('/lostfound');
@@ -101,20 +99,11 @@ export const LeftSidebar: React.FC = () => {
       openAuthModal('login');
       return;
     }
-    if (id === 'profile') {
-      if (!isAuthenticated) {
-        openAuthModal('login');
-      } else {
-        navigate('/profile');
-      }
-      return;
-    }
 
     const routes: Record<string, string> = {
       home: '/',
       learn: '/learn',
       research: '/research',
-      profile: '/profile',
       tutor: '/tutor',
       campus: '/campus',
       chat: '/chat',
