@@ -145,15 +145,6 @@ export const chatApiService = {
   },
 
   /**
-   * Get or initialize the user's private Saved Messages conversation (Telegram-style)
-   */
-  async getOrCreateSavedChat(): Promise<Conversation> {
-    const response = await post<any>(ENDPOINTS.CHAT.SAVED, {});
-    const raw = response.data;
-    return (raw && raw.conversation) || (raw && raw.data) || raw;
-  },
-
-  /**
    * Delete / leave conversation for the current user
    */
   async deleteConversation(conversationId: string): Promise<void> {
