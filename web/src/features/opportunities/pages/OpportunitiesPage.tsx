@@ -17,7 +17,6 @@ import {
   X,
 } from 'lucide-react';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
-import { RightSidebar } from '@/features/home/components/RightSidebar';
 import { MobileDrawer } from '@/features/home/components/MobileDrawer';
 import {
   OfficialAnnouncement,
@@ -489,11 +488,6 @@ export const OpportunitiesPage: React.FC = () => {
           )}
         </div>
       </main>
-
-      {/* 3. Desktop Right Sidebar */}
-      <div className="hidden lg:flex shrink-0">
-        <RightSidebar />
-      </div>
 
       {/* Mobile Drawer Navigation Menu */}
       <MobileDrawer
