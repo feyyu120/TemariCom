@@ -13,14 +13,16 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({ onMenuPress }) => {
         <h1 className="text-xl font-bold tracking-tight text-textPrimary">Chat</h1>
       </div>
 
-      <button
-        type="button"
-        onClick={onMenuPress}
-        className="w-8 h-8 rounded-full flex items-center justify-center text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
-        aria-label="Chat options"
-      >
-        <MoreVertical className="w-4 h-4" />
-      </button>
+      <div className="flex items-center gap-1">
+        <button
+          type="button"
+          onClick={onMenuPress}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
+          aria-label="Chat options"
+        >
+          <MoreVertical className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 };

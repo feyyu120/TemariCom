@@ -113,9 +113,7 @@ export const chatApiService = {
     messageId: string,
     scope: 'me' | 'everyone'
   ): Promise<void> {
-    await del(ENDPOINTS.CHAT.MESSAGE_ITEM(conversationId, messageId), {
-      body: { scope },
-    });
+    await del(ENDPOINTS.CHAT.MESSAGE_ITEM(conversationId, messageId), { scope });
   },
 
   /**
@@ -139,6 +137,42 @@ export const chatApiService = {
       const raw = response.data;
       if (Array.isArray(raw)) return raw;
       if (raw && Array.isArray(raw.users)) return raw.users;
+      if (raw && Array.isArray(raw.data)) return raw.data;
+      return [];
+    } catch {
+      return [];
+    }
+  },
+
+  /**
+   * Delete / leave conversation for the current user
+   */
+  async deleteConversation(conversationId: string): Promise<void> {
+    await del(ENDPOINTS.CHAT.CONVERSATION_BY_ID(conversationId));
+  },
+
+  /**
+   * Block a user
+   */
+  async blockUser(targetUserId: string): Promise<void> {
+    await post(ENDPOINTS.CHAT.BLOCK, { target_user_id: targetUserId });
+  },
+
+  /**
+   * Unblock a user
+   */
+  async unblockUser(targetUserId: string): Promise<void> {
+    await post(ENDPOINTS.CHAT.UNBLOCK, { target_user_id: targetUserId });
+  },
+
+  /**
+   * Get list of blocked user IDs
+   */
+  async getBlockedUsers(): Promise<string[]> {
+    try {
+      const response = await get<any>(ENDPOINTS.CHAT.BLOCKED);
+      const raw = response.data;
+      if (Array.isArray(raw)) return raw;
       if (raw && Array.isArray(raw.data)) return raw.data;
       return [];
     } catch {

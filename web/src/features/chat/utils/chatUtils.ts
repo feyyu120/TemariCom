@@ -59,3 +59,55 @@ export function formatMessageTime(timestamp?: string | null): string {
     return '';
   }
 }
+
+/**
+ * Returns human-readable relative activity status (e.g. "Active now", "Active 5m ago", "Active 2h ago", "Active yesterday")
+ */
+export function formatLastSeen(lastSeenAt?: string | null, isOnline?: boolean): string {
+  if (isOnline) {
+    return 'Active now';
+  }
+  if (!lastSeenAt) {
+    return 'Offline';
+  }
+
+  try {
+    let raw = String(lastSeenAt).trim();
+    // Normalize date string with timezone if omitted
+    if (raw.includes(' ') && !raw.includes('Z') && !raw.includes('+')) {
+      raw = raw.replace(' ', 'T') + 'Z';
+    } else if (raw.includes('T') && !raw.includes('Z') && !raw.includes('+')) {
+      raw = raw + 'Z';
+    }
+
+    const date = new Date(raw);
+    if (isNaN(date.getTime())) return 'Offline';
+
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    if (diffMs < 60 * 1000) {
+      return 'Active just now';
+    }
+
+    const diffMin = Math.floor(diffMs / (60 * 1000));
+    const diffHour = Math.floor(diffMs / (60 * 60 * 1000));
+    const diffDay = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+
+    if (diffMin < 60) {
+      return `Active ${diffMin}m ago`;
+    }
+    if (diffHour < 24) {
+      return `Active ${diffHour}h ago`;
+    }
+    if (diffDay === 1) {
+      return 'Active yesterday';
+    }
+    if (diffDay < 7) {
+      return `Active ${diffDay}d ago`;
+    }
+
+    return `Active ${date.toLocaleDateString([], { month: 'short', day: 'numeric' })}`;
+  } catch {
+    return 'Offline';
+  }
+}

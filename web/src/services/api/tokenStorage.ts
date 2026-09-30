@@ -44,7 +44,7 @@ export const tokenStorage = {
   /**
    * Retrieve all saved accounts synchronously.
    */
-  getAccountsSync<T = unknown>(): StoredAccount<T>[] {
+  getAccountsSync<T = any>(): StoredAccount<T>[] {
     const raw = safeGetItem(ACCOUNTS_KEY);
     if (!raw) return [];
     try {
@@ -65,7 +65,7 @@ export const tokenStorage = {
   /**
    * Retrieve all saved accounts for multi-account switching.
    */
-  async getAccounts<T = unknown>(): Promise<StoredAccount<T>[]> {
+  async getAccounts<T = any>(): Promise<StoredAccount<T>[]> {
     return this.getAccountsSync<T>();
   },
 

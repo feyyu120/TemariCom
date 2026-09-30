@@ -144,6 +144,10 @@ func (h *ChatHandler) CreateDirectChat(c fiber.Ctx) error {
 		})
 	}
 
+	if conv.Peer != nil {
+		conv.Peer.IsOnline = h.hub.IsUserOnline(conv.Peer.ID)
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success":      true,
 		"data":         conv,
@@ -171,6 +175,13 @@ func (h *ChatHandler) GetUserConversations(c fiber.Ctx) error {
 			"success": false,
 			"error":   "Failed to fetch conversations",
 		})
+	}
+
+	// Enrich with real-time online presence status from WebSocket Hub
+	for i := range convs {
+		if convs[i].Peer != nil {
+			convs[i].Peer.IsOnline = h.hub.IsUserOnline(convs[i].Peer.ID)
+		}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -537,6 +548,147 @@ func (h *ChatHandler) SearchUsers(c fiber.Ctx) error {
 	})
 }
 
+// DeleteConversation deletes / clears conversation for current user
+func (h *ChatHandler) DeleteConversation(c fiber.Ctx) error {
+	currentUserID, err := h.extractAuthUser(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"error":   "Unauthorized session",
+		})
+	}
+
+	convID, err := uuid.Parse(c.Params("id"))
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "Invalid conversation ID",
+		})
+	}
+
+	if err := h.chatService.DeleteConversation(c.Context(), convID, currentUserID); err != nil {
+		if errors.Is(err, repository.ErrForbidden) {
+			return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+				"success": false,
+				"error":   "You are not a participant in this conversation",
+			})
+		}
+		log.Printf("[ChatHandler] DeleteConversation error: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   "Failed to delete conversation",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"message": "Conversation deleted successfully",
+	})
+}
+
+// BlockUser blocks target user
+func (h *ChatHandler) BlockUser(c fiber.Ctx) error {
+	currentUserID, err := h.extractAuthUser(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"error":   "Unauthorized session",
+		})
+	}
+
+	var req dto.BlockUserRequest
+	if err := c.Bind().Body(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "Invalid request body",
+		})
+	}
+
+	if req.TargetUserID == uuid.Nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "Target user ID is required",
+		})
+	}
+
+	if err := h.chatService.BlockUser(c.Context(), currentUserID, req.TargetUserID); err != nil {
+		log.Printf("[ChatHandler] BlockUser error: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   "Failed to block user",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"message": "User blocked successfully",
+	})
+}
+
+// UnblockUser unblocks target user
+func (h *ChatHandler) UnblockUser(c fiber.Ctx) error {
+	currentUserID, err := h.extractAuthUser(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"error":   "Unauthorized session",
+		})
+	}
+
+	var req dto.BlockUserRequest
+	if err := c.Bind().Body(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "Invalid request body",
+		})
+	}
+
+	if req.TargetUserID == uuid.Nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"success": false,
+			"error":   "Target user ID is required",
+		})
+	}
+
+	if err := h.chatService.UnblockUser(c.Context(), currentUserID, req.TargetUserID); err != nil {
+		log.Printf("[ChatHandler] UnblockUser error: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   "Failed to unblock user",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"message": "User unblocked successfully",
+	})
+}
+
+// GetBlockedUsers returns list of user IDs blocked by current user
+func (h *ChatHandler) GetBlockedUsers(c fiber.Ctx) error {
+	currentUserID, err := h.extractAuthUser(c)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+			"success": false,
+			"error":   "Unauthorized session",
+		})
+	}
+
+	blockedIDs, err := h.chatService.GetBlockedUsers(c.Context(), currentUserID)
+	if err != nil {
+		log.Printf("[ChatHandler] GetBlockedUsers error: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"success": false,
+			"error":   "Failed to fetch blocked users",
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"success": true,
+		"data":    blockedIDs,
+	})
+}
+
 // ============================================================================
 // WEBSOCKET REAL-TIME HANDLERS (GoFiber contrib websocket/event)
 // ============================================================================
@@ -634,6 +786,22 @@ func (h *ChatHandler) WSConnectionHandler() fiber.Handler {
 
 		// Register connection in hub
 		h.hub.Register(userID, kws)
+
+		// Broadcast online presence to peers
+		safeGo(func() {
+			_ = h.chatService.UpdateUserLastSeen(context.Background(), userID)
+			convs, err := h.chatService.GetUserConversations(context.Background(), userID, 50, 0)
+			if err == nil {
+				for _, conv := range convs {
+					if conv.Peer != nil {
+						h.hub.SendToUser(conv.Peer.ID, dto.WSEventPresence, map[string]interface{}{
+							"user_id":   userID,
+							"is_online": true,
+						})
+					}
+				}
+			}
+		})
 
 		// Connection-scoped token bucket rate limiter
 		limiter := NewConnectionRateLimiter(DefaultRateLimitTokensPerSec, DefaultRateLimitBurst)
@@ -781,6 +949,25 @@ func (h *ChatHandler) WSConnectionHandler() fiber.Handler {
 			}()
 			log.Printf("[WS] Connection closed: user_id=%s, err=%v", userID, ep.Error)
 			h.hub.Unregister(userID, kws)
+
+			if !h.hub.IsUserOnline(userID) {
+				safeGo(func() {
+					now := time.Now().UTC()
+					_ = h.chatService.UpdateUserLastSeen(context.Background(), userID)
+					convs, err := h.chatService.GetUserConversations(context.Background(), userID, 50, 0)
+					if err == nil {
+						for _, conv := range convs {
+							if conv.Peer != nil {
+								h.hub.SendToUser(conv.Peer.ID, dto.WSEventPresence, map[string]interface{}{
+									"user_id":      userID,
+									"is_online":    false,
+									"last_seen_at": now.Format(time.RFC3339),
+								})
+							}
+						}
+					}
+				})
+			}
 		})
 	}, eventCfg)
 }

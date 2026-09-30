@@ -162,7 +162,7 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
               {user?.avatar_url ? (
                 <img
                   src={user.avatar_url}
-                  alt={user.full_name || user.username}
+                  alt={user.full_name || user.username || 'User'}
                   className="w-14 h-14 rounded-full object-cover shadow-sm border border-border shrink-0"
                 />
               ) : (
@@ -221,14 +221,14 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                   >
                     <div className="flex items-center gap-1.5">
                       <span className="font-bold text-base text-textPrimary truncate group-hover:underline transition-colors">
-                        {user.full_name || user.username || user.email.split('@')[0]}
+                        {user.full_name || user.username || user.email?.split('@')[0] || 'User'}
                       </span>
                       {user.is_verified && (
                         <BadgeCheck className="w-4 h-4 text-verification shrink-0" />
                       )}
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-textTertiary mt-0.5 truncate">
-                      <span>@{user.username || user.email.split('@')[0]}</span>
+                      <span>@{user.username || user.email?.split('@')[0] || 'user'}</span>
                       {user.phone && (
                         <>
                           <span>&bull;</span>

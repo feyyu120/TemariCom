@@ -32,6 +32,11 @@ type ChatService interface {
 	SearchUsers(ctx context.Context, currentUserID uuid.UUID, query string, limit int) ([]dto.UserSearchResponse, error)
 	EditMessage(ctx context.Context, conversationID, messageID, userID uuid.UUID, content string) (*dto.MessageResponse, []uuid.UUID, error)
 	DeleteMessage(ctx context.Context, conversationID, messageID, userID uuid.UUID, forAll bool) ([]uuid.UUID, error)
+	DeleteConversation(ctx context.Context, conversationID, userID uuid.UUID) error
+	BlockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error
+	UnblockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error
+	GetBlockedUsers(ctx context.Context, blockerID uuid.UUID) ([]uuid.UUID, error)
+	UpdateUserLastSeen(ctx context.Context, userID uuid.UUID) error
 }
 
 type chatService struct {
@@ -331,4 +336,29 @@ func (s *chatService) EditMessage(ctx context.Context, conversationID, messageID
 // DeleteMessage delegates scope-aware deletion to the repository layer
 func (s *chatService) DeleteMessage(ctx context.Context, conversationID, messageID, userID uuid.UUID, forAll bool) ([]uuid.UUID, error) {
 	return s.repo.DeleteMessage(ctx, conversationID, messageID, userID, forAll)
+}
+
+// DeleteConversation hides / leaves the conversation for the user
+func (s *chatService) DeleteConversation(ctx context.Context, conversationID, userID uuid.UUID) error {
+	return s.repo.DeleteConversation(ctx, conversationID, userID)
+}
+
+// BlockUser blocks target user
+func (s *chatService) BlockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error {
+	return s.repo.BlockUser(ctx, blockerID, blockedID)
+}
+
+// UnblockUser unblocks target user
+func (s *chatService) UnblockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error {
+	return s.repo.UnblockUser(ctx, blockerID, blockedID)
+}
+
+// GetBlockedUsers returns list of blocked user IDs
+func (s *chatService) GetBlockedUsers(ctx context.Context, blockerID uuid.UUID) ([]uuid.UUID, error) {
+	return s.repo.GetBlockedUserIDs(ctx, blockerID)
+}
+
+// UpdateUserLastSeen updates user's last_login_at timestamp in database
+func (s *chatService) UpdateUserLastSeen(ctx context.Context, userID uuid.UUID) error {
+	return s.repo.UpdateUserLastSeen(ctx, userID)
 }

@@ -156,14 +156,16 @@ export const LeftSidebar: React.FC = () => {
               className="w-full flex items-center justify-between px-3.5 py-2 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"
             >
               <div className="flex items-center gap-3">
-                <span className="text-textPrimary shrink-0">{item.icon}</span>
+                <span className="relative text-textPrimary shrink-0">
+                  {item.icon}
+                  {item.badge !== undefined && (
+                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 bg-danger text-white text-[10px] font-bold px-1 rounded-full flex items-center justify-center leading-none">
+                      {item.badge}
+                    </span>
+                  )}
+                </span>
                 <span>{item.label}</span>
               </div>
-              {item.badge !== undefined && (
-                <span className="bg-danger text-white text-[11px] font-bold px-2 py-0.5 rounded-full leading-none">
-                  {item.badge}
-                </span>
-              )}
             </button>
           ))}
 

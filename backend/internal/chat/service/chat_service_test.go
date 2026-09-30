@@ -124,6 +124,30 @@ func (m *MockChatRepository) DeleteMessage(ctx context.Context, conversationID, 
 	return []uuid.UUID{uuid.New()}, nil
 }
 
+func (m *MockChatRepository) BlockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error {
+	return nil
+}
+
+func (m *MockChatRepository) UnblockUser(ctx context.Context, blockerID, blockedID uuid.UUID) error {
+	return nil
+}
+
+func (m *MockChatRepository) IsUserBlocked(ctx context.Context, user1ID, user2ID uuid.UUID) (bool, error) {
+	return false, nil
+}
+
+func (m *MockChatRepository) DeleteConversation(ctx context.Context, conversationID, userID uuid.UUID) error {
+	return nil
+}
+
+func (m *MockChatRepository) GetBlockedUserIDs(ctx context.Context, blockerID uuid.UUID) ([]uuid.UUID, error) {
+	return []uuid.UUID{}, nil
+}
+
+func (m *MockChatRepository) UpdateUserLastSeen(ctx context.Context, userID uuid.UUID) error {
+	return nil
+}
+
 func TestCannotChatWithSelf(t *testing.T) {
 	mockRepo := &MockChatRepository{}
 	svc := service.NewChatService(mockRepo, nil)

@@ -23,6 +23,10 @@ import {
   Loader2,
   Users,
   AlertCircle,
+  Trash2,
+  UserX,
+  UserCheck,
+  ShieldAlert,
 } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/features/auth';
@@ -32,6 +36,7 @@ import { chatWebSocketService } from '@/features/chat/services/chatWebSocketServ
 import { ChatMessage, Conversation, MessagesPage } from '@/features/chat/types';
 import {
   formatMessageTime,
+  formatLastSeen,
   getInitials,
 } from '@/features/chat/utils/chatUtils';
 import { MessageActionModal } from '@/features/chat/components/MessageActionModal';
@@ -75,10 +80,35 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
   // Delete modal state
   const [messageToDelete, setMessageToDelete] = useState<ChatMessage | null>(null);
 
+  // Header 3-dot dropdown & modals state
+  const [isHeaderMenuOpen, setIsHeaderMenuOpen] = useState<boolean>(false);
+  const [showDeleteChatModal, setShowDeleteChatModal] = useState<boolean>(false);
+  const [showBlockModal, setShowBlockModal] = useState<boolean>(false);
+  const [isDeletingChat, setIsDeletingChat] = useState<boolean>(false);
+  const [isBlockingUser, setIsBlockingUser] = useState<boolean>(false);
+
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  const headerMenuRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const conversationId = conversation?.id;
+
+  const isBlocked = Boolean(conversation?.is_blocked || conversation?.peer?.is_blocked);
+
+  // Close header menu on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (headerMenuRef.current && !headerMenuRef.current.contains(e.target as Node)) {
+        setIsHeaderMenuOpen(false);
+      }
+    };
+    if (isHeaderMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isHeaderMenuOpen]);
 
   const isMyMessage = useCallback(
     (msg: ChatMessage | null | undefined): boolean => {
@@ -197,18 +227,88 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
     };
   }, [conversationId, conversation?.unread_count, isTempConversation, onConversationRead]);
 
-  // Typing event listener for active chat
+  // Real-time WebSocket Listeners (Typing, Instant Message Edit, Instant Message Delete)
   useEffect(() => {
     if (!conversationId) return;
 
+    let clearTypingTimer: ReturnType<typeof setTimeout> | null = null;
+
     const unsubTyping = chatWebSocketService.on('chat:typing', (payload: any) => {
       if (payload?.conversation_id === conversationId) {
-        setIsPeerTyping(Boolean(payload.is_typing));
+        const isTyping = Boolean(payload.is_typing);
+        setIsPeerTyping(isTyping);
+
+        if (clearTypingTimer) {
+          clearTimeout(clearTypingTimer);
+          clearTypingTimer = null;
+        }
+
+        // Auto-clear typing indicator if stop event is delayed/dropped
+        if (isTyping) {
+          clearTypingTimer = setTimeout(() => {
+            setIsPeerTyping(false);
+          }, 3500);
+        }
+      }
+    });
+
+    const unsubEdited = chatWebSocketService.on('chat:message_edited', (payload: any) => {
+      if (payload && payload.conversation_id === conversationId) {
+        queryClient.setQueryData<MessagesPage>(messagesQueryKey, (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            messages: old.messages.map((m) =>
+              m.id === payload.id ? { ...m, ...payload } : m
+            ),
+          };
+        });
+
+        // Also update conversation preview in sidebar
+        queryClient.setQueryData<Conversation[]>(chatQueryKeys.conversations(), (old) => {
+          if (!old) return old;
+          return old.map((c) =>
+            c.id === conversationId
+              ? { ...c, last_message_preview: payload.content || c.last_message_preview }
+              : c
+          );
+        });
+      }
+    });
+
+    const unsubDeleted = chatWebSocketService.on('chat:message_deleted', (payload: any) => {
+      if (payload && payload.conversation_id === conversationId) {
+        queryClient.setQueryData<MessagesPage>(messagesQueryKey, (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            messages: old.messages.filter((m) => m.id !== payload.message_id),
+          };
+        });
       }
     });
 
     return () => {
       unsubTyping();
+      unsubEdited();
+      unsubDeleted();
+      if (clearTypingTimer) {
+        clearTimeout(clearTypingTimer);
+      }
+      setIsPeerTyping(false);
+    };
+  }, [conversationId, messagesQueryKey, queryClient]);
+
+  // Clean up typing state on conversation change or unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      if (conversationId) {
+        chatWebSocketService.sendTyping(conversationId, false);
+      }
     };
   }, [conversationId]);
 
@@ -217,14 +317,22 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
     setInputText(text);
     if (!conversationId) return;
 
-    chatWebSocketService.sendTyping(conversationId, text.trim().length > 0);
+    if (text.trim().length > 0) {
+      chatWebSocketService.sendTyping(conversationId, true);
 
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    typingTimeoutRef.current = setTimeout(() => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      typingTimeoutRef.current = setTimeout(() => {
+        chatWebSocketService.sendTyping(conversationId, false);
+      }, 2000);
+    } else {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
       chatWebSocketService.sendTyping(conversationId, false);
-    }, 2000);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -381,8 +489,8 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
       sender: {
         id: currentUser?.id || 'me',
         username: currentUser?.username || 'me',
-        full_name: currentUser?.fullName || currentUser?.username || 'Me',
-        avatar_url: currentUser?.avatarUrl || '',
+        full_name: currentUser?.full_name || currentUser?.username || 'Me',
+        avatar_url: currentUser?.avatar_url || '',
       },
       content: messageContent,
       message_type: 'text',
@@ -405,6 +513,13 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
     setForwardedMessage(null);
     onClearInitialForward?.();
     setIsSending(true);
+
+    // Stop typing state immediately on send
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    chatWebSocketService.sendTyping(conversationId, false);
 
     // Optimistically update TanStack Query cache
     queryClient.setQueryData<MessagesPage>(messagesQueryKey, (old) => {
@@ -466,6 +581,84 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
     }
   };
 
+  const handleDeleteConversation = async () => {
+    if (!conversationId) return;
+    setIsDeletingChat(true);
+    try {
+      await chatApiService.deleteConversation(conversationId);
+      // Remove from query cache
+      queryClient.setQueryData<Conversation[]>(chatQueryKeys.conversations(), (old) => {
+        if (!old) return old;
+        return old.filter((c) => c.id !== conversationId);
+      });
+      showToast({
+        title: 'Conversation Deleted',
+        message: 'The chat has been cleared and removed.',
+        type: 'info',
+      });
+      setShowDeleteChatModal(false);
+      setIsHeaderMenuOpen(false);
+      onBack?.();
+    } catch (err: any) {
+      showToast({
+        title: 'Delete Failed',
+        message: err?.message || 'Could not delete conversation',
+        type: 'error',
+      });
+    } finally {
+      setIsDeletingChat(false);
+    }
+  };
+
+  const handleToggleBlock = async () => {
+    const peerId = conversation?.peer?.id;
+    if (!peerId) return;
+    setIsBlockingUser(true);
+    try {
+      if (isBlocked) {
+        await chatApiService.unblockUser(peerId);
+        showToast({
+          title: 'User Unblocked',
+          message: `${title} has been unblocked.`,
+          type: 'success',
+        });
+      } else {
+        await chatApiService.blockUser(peerId);
+        showToast({
+          title: 'User Blocked',
+          message: `${title} has been blocked.`,
+          type: 'info',
+        });
+      }
+
+      // Update conversations cache
+      queryClient.setQueryData<Conversation[]>(chatQueryKeys.conversations(), (old) => {
+        if (!old) return old;
+        return old.map((c) => {
+          if (c.id === conversationId || c.peer?.id === peerId) {
+            return {
+              ...c,
+              is_blocked: !isBlocked,
+              peer: c.peer ? { ...c.peer, is_blocked: !isBlocked } : undefined,
+            };
+          }
+          return c;
+        });
+      });
+
+      setShowBlockModal(false);
+      setIsHeaderMenuOpen(false);
+    } catch (err: any) {
+      showToast({
+        title: 'Action Failed',
+        message: err?.message || 'Failed to update block status',
+        type: 'error',
+      });
+    } finally {
+      setIsBlockingUser(false);
+    }
+  };
+
   const handleLoadOlder = useCallback(async () => {
     if (isLoadingOlder || !conversationId || messages.length === 0) return;
     if (messagesQuery.data?.has_more === false) return;
@@ -517,9 +710,9 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
   const isOnline = conversation.peer?.is_online;
 
   return (
-    <div className="flex-1 h-full flex flex-col min-w-0 bg-background overflow-hidden relative">
+    <div className="flex-1 h-full max-h-full flex flex-col min-w-0 bg-background overflow-hidden relative overscroll-none">
       {/* 1. Bespoke Direct Chat Header */}
-      <header className="h-[53px] shrink-0 border-b border-border-subtle px-4 flex items-center justify-between bg-background/95 backdrop-blur-md z-10 select-none">
+      <header className="h-[54px] shrink-0 border-b border-border-subtle px-4 flex items-center justify-between bg-background/95 backdrop-blur-md z-20 select-none">
         <div className="flex items-center gap-3 min-w-0">
           {onBack && (
             <button
@@ -549,24 +742,30 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
           </div>
 
           {/* Title & Status */}
-          <div className="min-w-0">
-            <h2 className="text-sm font-bold text-textPrimary truncate leading-snug">
-              {title}
-            </h2>
-            <p className="text-[11px] truncate leading-none">
-              {isPeerTyping ? (
+          <div className="min-w-0 flex flex-col justify-center gap-0.5">
+            <div className="flex items-center gap-1.5">
+              <h2 className="text-sm font-bold text-textPrimary truncate leading-snug">
+                {title}
+              </h2>
+            </div>
+            <p className="text-[11px] truncate leading-tight">
+              {isBlocked ? (
+                <span className="text-danger font-medium">Blocked</span>
+              ) : isPeerTyping ? (
                 <span className="text-emerald-500 font-semibold animate-pulse">Typing...</span>
               ) : isOnline ? (
                 <span className="text-emerald-500 font-medium">Active now</span>
               ) : (
-                <span className="text-textTertiary">Offline</span>
+                <span className="text-textTertiary">
+                  {formatLastSeen(conversation.peer?.last_seen_at, isOnline)}
+                </span>
               )}
             </p>
           </div>
         </div>
 
         {/* Right Header Actions */}
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 relative" ref={headerMenuRef}>
           <button
             type="button"
             className="w-8 h-8 rounded-full flex items-center justify-center text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
@@ -576,18 +775,59 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
           </button>
           <button
             type="button"
+            onClick={() => setIsHeaderMenuOpen((prev) => !prev)}
             className="w-8 h-8 rounded-full flex items-center justify-center text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
             aria-label="More options"
           >
             <MoreVertical className="w-4 h-4" />
           </button>
+
+          {/* 3-dot Context Menu Dropdown */}
+          {isHeaderMenuOpen && (
+            <div className="absolute right-0 top-10 w-48 bg-surface-elevated border border-border rounded-large shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-100 select-none">
+              {conversation?.peer?.id && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsHeaderMenuOpen(false);
+                    setShowBlockModal(true);
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-textPrimary hover:bg-surface transition-colors cursor-pointer text-left"
+                >
+                  {isBlocked ? (
+                    <>
+                      <UserCheck className="w-4 h-4 text-emerald-500" />
+                      <span>Unblock User</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserX className="w-4 h-4 text-danger" />
+                      <span>Block User</span>
+                    </>
+                  )}
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsHeaderMenuOpen(false);
+                  setShowDeleteChatModal(true);
+                }}
+                className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-danger hover:bg-danger/10 transition-colors cursor-pointer text-left"
+              >
+                <Trash2 className="w-4 h-4 text-danger" />
+                <span>Delete Chat</span>
+              </button>
+            </div>
+          )}
         </div>
       </header>
 
       {/* 2. Messages Thread List */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-background/50 select-text"
+        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-background/50 select-text touch-pan-y"
       >
         {messagesQuery.data?.has_more && (
           <div className="flex justify-center pb-2">
@@ -649,121 +889,121 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
             <p className="text-sm font-semibold text-textPrimary">
               Say hello to {title}!
             </p>
-            <p className="text-xs text-textSecondary mt-1">
+            <p className="text-xs text-textSecondary mt-1 max-w-xs">
               Send a message to start this real-time conversation.
             </p>
           </div>
         ) : (
           <div className="flex flex-col justify-end min-h-full space-y-3">
             {messages.map((item) => {
-            const isMine = isMyMessage(item);
-            const isPending = item.id.startsWith('temp-');
-            const isHighlighted = highlightedMessageId === item.id;
+              const isMine = isMyMessage(item);
+              const isPending = item.id.startsWith('temp-');
+              const isHighlighted = highlightedMessageId === item.id;
 
-            const hasForwardHeader = Boolean(
-              item.forwarded_from_name || item.forwarded_from_message_id
-            );
-            const hasReplyCard = Boolean(item.reply_to_content || item.reply_to_id);
+              const hasForwardHeader = Boolean(
+                item.forwarded_from_name || item.forwarded_from_message_id
+              );
+              const hasReplyCard = Boolean(item.reply_to_content || item.reply_to_id);
 
-            return (
-              <div
-                key={item.id}
-                id={`msg-${item.id}`}
-                className={`flex flex-col ${isMine ? 'items-end' : 'items-start'} group transition-all duration-200`}
-              >
+              return (
                 <div
-                  onContextMenu={(e) => handleOpenActionMenu(e, item)}
-                  onClick={(e) => {
-                    if (window.innerWidth <= 768) {
-                      handleOpenActionMenu(e, item);
-                    }
-                  }}
-                  className={`max-w-[85%] md:max-w-[70%] px-3.5 py-2.5 rounded-2xl cursor-pointer relative shadow-xs transition-all ${
-                    isMine
-                      ? 'bg-active text-active-text rounded-br-xs'
-                      : 'bg-surface-elevated text-textPrimary border border-border-subtle rounded-bl-xs'
-                  } ${
-                    isHighlighted ? 'ring-2 ring-active ring-offset-2' : ''
-                  }`}
+                  key={item.id}
+                  id={`msg-${item.id}`}
+                  className={`flex flex-col ${isMine ? 'items-end' : 'items-start'} group transition-all duration-200`}
                 >
-                  {/* Forwarded Header */}
-                  {hasForwardHeader && (
-                    <div className="flex items-center gap-1 text-[11px] font-medium opacity-80 mb-1">
-                      <CornerUpRight className="w-3 h-3 shrink-0" />
-                      <span className="truncate">
-                        Forwarded from {item.forwarded_from_name || 'User'}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Replied Message Quote Block */}
-                  {hasReplyCard && (
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (item.reply_to_id) {
-                          handleJumpToMessage(item.reply_to_id);
-                        }
-                      }}
-                      className={`p-2 rounded-card mb-1.5 border-l-3 text-xs cursor-pointer select-none ${
-                        isMine
-                          ? 'bg-black/20 border-white/80'
-                          : 'bg-surface border-active'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between gap-1 font-bold mb-0.5">
-                        <span className="truncate">
-                          {item.reply_to_sender_name || 'Replied Message'}
-                        </span>
-                        <Reply className="w-3 h-3 opacity-75 shrink-0" />
-                      </div>
-                      <p className="line-clamp-2 opacity-85 text-[11px]">
-                        {item.reply_to_content}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Message Content */}
-                  <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-                    {item.content}
-                  </p>
-
-                  {/* Meta: Time, Edited, Markers */}
                   <div
-                    className={`flex items-center gap-1.5 text-[10px] mt-1 opacity-70 ${
-                      isMine ? 'justify-end' : 'justify-start'
+                    onContextMenu={(e) => handleOpenActionMenu(e, item)}
+                    onClick={(e) => {
+                      if (window.innerWidth <= 768) {
+                        handleOpenActionMenu(e, item);
+                      }
+                    }}
+                    className={`max-w-[85%] md:max-w-[70%] px-3.5 py-2.5 rounded-2xl cursor-pointer relative shadow-xs transition-all ${
+                      isMine
+                        ? 'bg-active text-active-text rounded-br-xs'
+                        : 'bg-surface-elevated text-textPrimary border border-border-subtle rounded-bl-xs'
+                    } ${
+                      isHighlighted ? 'ring-2 ring-active ring-offset-2' : ''
                     }`}
                   >
-                    {item.edited_at && <span>edited</span>}
-                    <span>{formatMessageTime(item.created_at)}</span>
-
-                    {isMine && (
-                      <span className="shrink-0">
-                        {item.status === 'error' ? (
-                          <AlertCircle className="w-3.5 h-3.5 text-danger" />
-                        ) : isPending ? (
-                          <Clock className="w-3 h-3 animate-spin" />
-                        ) : item.is_read ? (
-                          <CheckCheck className="w-3.5 h-3.5 text-sky-300" />
-                        ) : item.is_delivered ? (
-                          <CheckCheck className="w-3.5 h-3.5" />
-                        ) : (
-                          <Check className="w-3.5 h-3.5" />
-                        )}
-                      </span>
+                    {/* Forwarded Header */}
+                    {hasForwardHeader && (
+                      <div className="flex items-center gap-1 text-[11px] font-medium opacity-80 mb-1">
+                        <CornerUpRight className="w-3 h-3 shrink-0" />
+                        <span className="truncate">
+                          Forwarded from {item.forwarded_from_name || 'User'}
+                        </span>
+                      </div>
                     )}
+
+                    {/* Replied Message Quote Block */}
+                    {hasReplyCard && (
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.reply_to_id) {
+                            handleJumpToMessage(item.reply_to_id);
+                          }
+                        }}
+                        className={`p-2 rounded-card mb-1.5 border-l-3 text-xs cursor-pointer select-none ${
+                          isMine
+                            ? 'bg-black/20 border-white/80'
+                            : 'bg-surface border-active'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-1 font-bold mb-0.5">
+                          <span className="truncate">
+                            {item.reply_to_sender_name || 'Replied Message'}
+                          </span>
+                          <Reply className="w-3 h-3 opacity-75 shrink-0" />
+                        </div>
+                        <p className="line-clamp-2 opacity-85 text-[11px]">
+                          {item.reply_to_content}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Message Content */}
+                    <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                      {item.content}
+                    </p>
+
+                    {/* Meta: Time, Edited, Markers */}
+                    <div
+                      className={`flex items-center gap-1.5 text-[10px] mt-1 opacity-70 ${
+                        isMine ? 'justify-end' : 'justify-start'
+                      }`}
+                    >
+                      {item.edited_at && <span>edited</span>}
+                      <span>{formatMessageTime(item.created_at)}</span>
+
+                      {isMine && (
+                        <span className="shrink-0">
+                          {item.status === 'error' ? (
+                            <AlertCircle className="w-3.5 h-3.5 text-danger" />
+                          ) : isPending ? (
+                            <Clock className="w-3 h-3 animate-spin" />
+                          ) : item.is_read ? (
+                            <CheckCheck className="w-3.5 h-3.5 text-sky-300" />
+                          ) : item.is_delivered ? (
+                            <CheckCheck className="w-3.5 h-3.5" />
+                          ) : (
+                            <Check className="w-3.5 h-3.5" />
+                          )}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
           </div>
         )}
       </div>
 
       {/* 3. Action Banners: Replying / Editing / Forwarding */}
       {editingMessage ? (
-        <div className="flex items-center justify-between px-4 py-2 bg-surface-elevated border-t border-border-subtle border-l-4 border-l-active">
+        <div className="shrink-0 flex items-center justify-between px-4 py-2 bg-surface-elevated border-t border-border-subtle border-l-4 border-l-active">
           <div className="min-w-0 mr-2">
             <span className="text-xs font-bold text-active block">Edit Message</span>
             <span className="text-xs text-textSecondary truncate block">
@@ -782,7 +1022,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
           </button>
         </div>
       ) : replyingTo ? (
-        <div className="flex items-center justify-between px-4 py-2 bg-surface-elevated border-t border-border-subtle border-l-4 border-l-active">
+        <div className="shrink-0 flex items-center justify-between px-4 py-2 bg-surface-elevated border-t border-border-subtle border-l-4 border-l-active">
           <div className="min-w-0 mr-2">
             <span className="text-xs font-bold text-active block">
               Replying to{' '}
@@ -803,7 +1043,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
           </button>
         </div>
       ) : forwardedMessage ? (
-        <div className="flex items-center justify-between px-4 py-2 bg-surface-elevated border-t border-border-subtle border-l-4 border-l-active">
+        <div className="shrink-0 flex items-center justify-between px-4 py-2 bg-surface-elevated border-t border-border-subtle border-l-4 border-l-active">
           <div className="min-w-0 mr-2">
             <span className="text-xs font-bold text-active block">
               Forwarded from{' '}
@@ -826,72 +1066,89 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
         </div>
       ) : null}
 
-      {/* 4. WhatsApp / Telegram Style Bottom Input Bar */}
-      <div className="p-3 border-t border-border-subtle bg-background flex items-end gap-2">
-        <div className="flex-1 flex items-center gap-1.5 bg-surface-elevated border border-border-subtle rounded-2xl px-3 py-1.5 focus-within:border-active transition-colors">
+      {/* 4. Blocked Banner OR WhatsApp/Telegram Input Bar */}
+      {isBlocked ? (
+        <div className="shrink-0 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border-subtle bg-surface/80 flex items-center justify-between gap-3 px-4">
+          <div className="flex items-center gap-2 text-xs text-textSecondary min-w-0">
+            <ShieldAlert className="w-4 h-4 text-danger shrink-0" />
+            <span className="truncate">You have blocked this contact. Unblock to send messages.</span>
+          </div>
           <button
             type="button"
-            className="p-1.5 text-textTertiary hover:text-textPrimary rounded-full hover:bg-surface transition-colors cursor-pointer shrink-0"
-            aria-label="Add emoji"
+            onClick={handleToggleBlock}
+            disabled={isBlockingUser}
+            className="px-3 py-1.5 rounded-card bg-surface-elevated hover:bg-surface border border-border text-xs font-semibold text-textPrimary hover:text-active transition-colors cursor-pointer shrink-0"
           >
-            <Smile className="w-5 h-5" />
-          </button>
-
-          <textarea
-            ref={inputRef}
-            rows={1}
-            value={inputText}
-            onChange={handleTextChange}
-            onKeyDown={handleKeyDown}
-            placeholder={
-              editingMessage
-                ? 'Edit message...'
-                : forwardedMessage
-                ? 'Add a caption (or send directly)...'
-                : 'Message'
-            }
-            className="flex-1 bg-transparent text-sm text-textPrimary placeholder:text-textTertiary focus:outline-none resize-none max-h-32 py-1 leading-snug"
-          />
-
-          <button
-            type="button"
-            className="p-1.5 text-textTertiary hover:text-textPrimary rounded-full hover:bg-surface transition-colors cursor-pointer shrink-0"
-            aria-label="Attach file"
-          >
-            <Paperclip className="w-4 h-4" />
-          </button>
-
-          <button
-            type="button"
-            className="p-1.5 text-textTertiary hover:text-textPrimary rounded-full hover:bg-surface transition-colors cursor-pointer shrink-0"
-            aria-label="Take photo"
-          >
-            <Camera className="w-4 h-4" />
+            {isBlockingUser ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Unblock'}
           </button>
         </div>
+      ) : (
+        <div className="shrink-0 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border-subtle bg-background flex items-end gap-2">
+          <div className="flex-1 flex items-center gap-1.5 bg-surface-elevated border border-border-subtle rounded-2xl px-3 py-1.5 focus-within:border-active transition-colors">
+            <button
+              type="button"
+              className="p-1.5 text-textTertiary hover:text-textPrimary rounded-full hover:bg-surface transition-colors cursor-pointer shrink-0"
+              aria-label="Add emoji"
+            >
+              <Smile className="w-5 h-5" />
+            </button>
 
-        {/* Circular Send / Confirm / Mic Action Button */}
-        <button
-          type="button"
-          onClick={
-            editingMessage
-              ? handleSaveEdit
-              : inputText.trim() || forwardedMessage
-              ? handleSendMessage
-              : undefined
-          }
-          className="w-10 h-10 rounded-full bg-active text-active-text flex items-center justify-center shrink-0 shadow-md hover:opacity-90 active:scale-95 transition-all cursor-pointer"
-          aria-label={editingMessage ? 'Save edit' : 'Send message'}
-        >
-          {editingMessage ? (
-            <Check className="w-5 h-5" />
-          ) : inputText.trim() || forwardedMessage ? (
-            <Send className="w-4 h-4 ml-0.5" />
-          ) : (
-            <Mic className="w-4 h-4" />
-          )}
-        </button>
-      </div>
+            <textarea
+              ref={inputRef}
+              rows={1}
+              value={inputText}
+              onChange={handleTextChange}
+              onKeyDown={handleKeyDown}
+              placeholder={
+                editingMessage
+                  ? 'Edit message...'
+                  : forwardedMessage
+                  ? 'Add a caption (or send directly)...'
+                  : 'Message'
+              }
+              className="flex-1 bg-transparent text-sm text-textPrimary placeholder:text-textTertiary focus:outline-none resize-none max-h-32 py-1 leading-snug"
+            />
+
+            <button
+              type="button"
+              className="p-1.5 text-textTertiary hover:text-textPrimary rounded-full hover:bg-surface transition-colors cursor-pointer shrink-0"
+              aria-label="Attach file"
+            >
+              <Paperclip className="w-4 h-4" />
+            </button>
+
+            <button
+              type="button"
+              className="p-1.5 text-textTertiary hover:text-textPrimary rounded-full hover:bg-surface transition-colors cursor-pointer shrink-0"
+              aria-label="Take photo"
+            >
+              <Camera className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Circular Send / Confirm / Mic Action Button */}
+          <button
+            type="button"
+            onClick={
+              editingMessage
+                ? handleSaveEdit
+                : inputText.trim() || forwardedMessage
+                ? handleSendMessage
+                : undefined
+            }
+            className="w-10 h-10 rounded-full bg-active text-active-text flex items-center justify-center shrink-0 shadow-md hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+            aria-label={editingMessage ? 'Save edit' : 'Send message'}
+          >
+            {editingMessage ? (
+              <Check className="w-5 h-5" />
+            ) : inputText.trim() || forwardedMessage ? (
+              <Send className="w-4 h-4 ml-0.5" />
+            ) : (
+              <Mic className="w-4 h-4" />
+            )}
+          </button>
+        </div>
+      )}
 
       {/* Message Action Menu Modal */}
       <MessageActionModal
@@ -910,7 +1167,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
         onDelete={handleDeletePrompt}
       />
 
-      {/* Delete Confirmation Modal */}
+      {/* Message Delete Confirmation Modal */}
       {messageToDelete && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="w-full max-w-sm bg-surface-elevated border border-border rounded-large p-5 shadow-2xl space-y-4">
@@ -940,6 +1197,77 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
               <button
                 type="button"
                 onClick={() => setMessageToDelete(null)}
+                className="w-full py-1.5 text-xs text-textTertiary hover:text-textPrimary transition-colors cursor-pointer text-center"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Chat Confirmation Modal */}
+      {showDeleteChatModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-surface-elevated border border-border rounded-large p-5 shadow-2xl space-y-4">
+            <h3 className="text-base font-bold text-textPrimary">Delete Chat</h3>
+            <p className="text-xs text-textSecondary leading-relaxed">
+              Are you sure you want to delete this conversation with{' '}
+              <span className="font-semibold text-textPrimary">{title}</span>? All messages will be removed from your inbox.
+            </p>
+            <div className="flex flex-col gap-2 pt-2">
+              <button
+                type="button"
+                disabled={isDeletingChat}
+                onClick={handleDeleteConversation}
+                className="w-full py-2 px-3 rounded-card text-xs font-semibold bg-danger text-white hover:bg-danger/90 transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+              >
+                {isDeletingChat ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Delete Chat'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowDeleteChatModal(false)}
+                className="w-full py-1.5 text-xs text-textTertiary hover:text-textPrimary transition-colors cursor-pointer text-center"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Block User Confirmation Modal */}
+      {showBlockModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-sm bg-surface-elevated border border-border rounded-large p-5 shadow-2xl space-y-4">
+            <h3 className="text-base font-bold text-textPrimary">
+              {isBlocked ? 'Unblock User' : 'Block User'}
+            </h3>
+            <p className="text-xs text-textSecondary leading-relaxed">
+              {isBlocked
+                ? `Do you want to unblock ${title}? You will be able to send and receive messages again.`
+                : `Are you sure you want to block ${title}? Blocked users will not be able to send you messages or see when you are active.`}
+            </p>
+            <div className="flex flex-col gap-2 pt-2">
+              <button
+                type="button"
+                disabled={isBlockingUser}
+                onClick={handleToggleBlock}
+                className={`w-full py-2 px-3 rounded-card text-xs font-semibold ${
+                  isBlocked ? 'bg-active text-active-text' : 'bg-danger text-white hover:bg-danger/90'
+                } transition-colors cursor-pointer flex items-center justify-center gap-1.5`}
+              >
+                {isBlockingUser ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : isBlocked ? (
+                  'Unblock'
+                ) : (
+                  'Block User'
+                )}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowBlockModal(false)}
                 className="w-full py-1.5 text-xs text-textTertiary hover:text-textPrimary transition-colors cursor-pointer text-center"
               >
                 Cancel

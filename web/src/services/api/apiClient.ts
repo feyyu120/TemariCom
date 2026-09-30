@@ -265,8 +265,16 @@ export function patch<T = any>(
   });
 }
 
-export function del<T = any>(endpoint: string, options?: RequestOptions): Promise<ApiResponse<T>> {
-  return request<T>(endpoint, { ...options, method: 'DELETE' });
+export function del<T = any>(
+  endpoint: string,
+  body?: any,
+  options?: RequestOptions
+): Promise<ApiResponse<T>> {
+  return request<T>(endpoint, {
+    ...options,
+    method: 'DELETE',
+    body: body ? JSON.stringify(body) : undefined,
+  });
 }
 
 // Public API functional object (zero classes)

@@ -135,7 +135,15 @@ CREATE TABLE IF NOT EXISTS message_deletions (
     PRIMARY KEY (message_id, user_id)
 );
 
--- 6. FOREIGN KEY FOR LAST MESSAGE
+-- 6. USER BLOCKS
+CREATE TABLE IF NOT EXISTS user_blocks (
+    blocker_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    blocked_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (blocker_id, blocked_id)
+);
+
+-- 7. FOREIGN KEY FOR LAST MESSAGE
 ALTER TABLE conversations
     DROP CONSTRAINT IF EXISTS fk_conversations_last_message;
 
@@ -145,7 +153,7 @@ ALTER TABLE conversations
     REFERENCES messages(id)
     ON DELETE SET NULL;
 
--- 7. PERFORMANCE INDEXES
+-- 8. PERFORMANCE INDEXES
 CREATE INDEX IF NOT EXISTS idx_conversations_last_message
     ON conversations(last_message_at DESC);
 
@@ -176,3 +184,9 @@ CREATE INDEX IF NOT EXISTS idx_message_receipts_user
 
 CREATE INDEX IF NOT EXISTS idx_message_deletions_user
     ON message_deletions(user_id, message_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_blocks_blocker
+    ON user_blocks(blocker_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_blocks_blocked
+    ON user_blocks(blocked_id);
