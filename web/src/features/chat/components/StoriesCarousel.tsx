@@ -1,7 +1,8 @@
-import React from 'react';
-import { Plus } from 'lucide-react';
+import React, { useState } from 'react';
+import { Plus, X } from 'lucide-react';
 import { StoryItem } from '@/features/chat/types';
 import { getInitials } from '@/features/chat/utils/chatUtils';
+import { useToast } from '@/context';
 
 interface StoriesCarouselProps {
   stories?: StoryItem[];
@@ -9,59 +10,35 @@ interface StoriesCarouselProps {
   onStoryPress?: (story: StoryItem) => void;
 }
 
-const DEFAULT_STORIES: StoryItem[] = [
-  {
-    id: '1',
-    name: 'Berek',
-    avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80',
-    is_online: true,
-    has_unseen: true,
-  },
-  {
-    id: '2',
-    name: 'Nebiyu',
-    avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80',
-    is_online: true,
-    has_unseen: true,
-  },
-  {
-    id: '3',
-    name: 'ASTU SE',
-    avatar_url: '',
-    badge_text: 'SE',
-    is_online: false,
-    has_unseen: true,
-  },
-  {
-    id: '4',
-    name: 'Tech Club',
-    avatar_url: '',
-    badge_text: '🧠',
-    is_online: false,
-    has_unseen: false,
-  },
-  {
-    id: '5',
-    name: 'ASTU Admin',
-    avatar_url: '',
-    badge_text: '🏛️',
-    is_online: false,
-    has_unseen: true,
-  },
-];
-
 export const StoriesCarousel: React.FC<StoriesCarouselProps> = ({
-  stories = DEFAULT_STORIES,
+  stories = [],
   onAddStoryPress,
   onStoryPress,
 }) => {
+  const { showToast } = useToast();
+  const [showPopup, setShowPopup] = useState<boolean>(false);
+
+  const handleAddStory = () => {
+    if (onAddStoryPress) {
+      onAddStoryPress();
+      return;
+    }
+
+    showToast({
+      title: 'Stories',
+      message: 'Currently story is unavailable.',
+      type: 'info',
+    });
+    setShowPopup(true);
+  };
+
   return (
-    <div className="py-2.5 px-4 border-b border-border-subtle bg-background select-none">
+    <div className="py-2.5 px-4 border-b border-border-subtle bg-background select-none shrink-0">
       <div className="flex items-center gap-3 overflow-x-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
         {/* "+ Your Story" Item */}
         <button
           type="button"
-          onClick={onAddStoryPress}
+          onClick={handleAddStory}
           className="flex flex-col items-center gap-1.5 shrink-0 group cursor-pointer focus:outline-none"
         >
           <div className="w-14 h-14 rounded-full border-2 border-dashed border-border flex items-center justify-center bg-surface hover:border-active text-textSecondary group-hover:text-active transition-colors">
@@ -108,6 +85,34 @@ export const StoriesCarousel: React.FC<StoriesCarouselProps> = ({
           </button>
         ))}
       </div>
+
+      {/* Modal Popup: Currently story is unavailable */}
+      {showPopup && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="w-full max-w-xs bg-surface-elevated border border-border rounded-2xl p-5 shadow-2xl text-center space-y-4 animate-in fade-in zoom-in-95">
+            <div className="flex items-center justify-between pb-1">
+              <h3 className="text-sm font-bold text-textPrimary">Stories</h3>
+              <button
+                type="button"
+                onClick={() => setShowPopup(false)}
+                className="p-1 text-textTertiary hover:text-textPrimary rounded-full transition-colors cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <p className="text-xs text-textSecondary leading-relaxed">
+              Currently story is unavailable.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowPopup(false)}
+              className="w-full py-2 px-4 rounded-pill bg-active text-active-text text-xs font-semibold hover:opacity-90 active:scale-95 transition-all cursor-pointer"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
