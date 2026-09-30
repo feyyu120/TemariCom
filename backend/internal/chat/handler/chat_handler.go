@@ -548,32 +548,6 @@ func (h *ChatHandler) SearchUsers(c fiber.Ctx) error {
 	})
 }
 
-// GetOrCreateSavedChat handles fetching or creating the private saved messages conversation
-func (h *ChatHandler) GetOrCreateSavedChat(c fiber.Ctx) error {
-	currentUserID, err := h.extractAuthUser(c)
-	if err != nil {
-		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-			"success": false,
-			"error":   "Unauthorized session",
-		})
-	}
-
-	conv, err := h.chatService.GetOrCreateSavedChat(c.Context(), currentUserID)
-	if err != nil {
-		log.Printf("[ChatHandler] GetOrCreateSavedChat error: %v", err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"success": false,
-			"error":   "Failed to fetch saved messages chat",
-		})
-	}
-
-	return c.Status(fiber.StatusOK).JSON(fiber.Map{
-		"success":      true,
-		"data":         conv,
-		"conversation": conv,
-	})
-}
-
 // DeleteConversation deletes / clears conversation for current user
 func (h *ChatHandler) DeleteConversation(c fiber.Ctx) error {
 	currentUserID, err := h.extractAuthUser(c)
@@ -815,6 +789,7 @@ func (h *ChatHandler) WSConnectionHandler() fiber.Handler {
 
 		// Broadcast online presence to peers
 		safeGo(func() {
+			_ = h.chatService.UpdateUserLastSeen(context.Background(), userID)
 			convs, err := h.chatService.GetUserConversations(context.Background(), userID, 50, 0)
 			if err == nil {
 				for _, conv := range convs {
@@ -977,7 +952,8 @@ func (h *ChatHandler) WSConnectionHandler() fiber.Handler {
 
 			if !h.hub.IsUserOnline(userID) {
 				safeGo(func() {
-					now := time.Now()
+					now := time.Now().UTC()
+					_ = h.chatService.UpdateUserLastSeen(context.Background(), userID)
 					convs, err := h.chatService.GetUserConversations(context.Background(), userID, 50, 0)
 					if err == nil {
 						for _, conv := range convs {
@@ -985,7 +961,7 @@ func (h *ChatHandler) WSConnectionHandler() fiber.Handler {
 								h.hub.SendToUser(conv.Peer.ID, dto.WSEventPresence, map[string]interface{}{
 									"user_id":      userID,
 									"is_online":    false,
-									"last_seen_at": now,
+									"last_seen_at": now.Format(time.RFC3339),
 								})
 							}
 						}
