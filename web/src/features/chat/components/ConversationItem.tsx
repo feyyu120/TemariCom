@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { VolumeX, Users, Bookmark, Trash2, UserX, UserCheck, MoreVertical } from 'lucide-react';
+import { VolumeX, Users, Trash2, UserX, UserCheck } from 'lucide-react';
 import { Conversation } from '@/features/chat/types';
 import { formatChatTimestamp, getInitials } from '@/features/chat/utils/chatUtils';
 
@@ -26,19 +26,15 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
-  const isSavedMessages = Boolean(
-    conversation.is_saved_messages || conversation.title === 'Saved Messages'
-  );
   const isBlocked = Boolean(conversation.is_blocked || conversation.peer?.is_blocked);
 
-  const title = isSavedMessages
-    ? 'Saved Messages'
-    : conversation.peer?.full_name ||
-      conversation.title ||
-      conversation.peer?.username ||
-      'Chat';
-  const avatarUrl = isSavedMessages ? '' : conversation.peer?.avatar_url || conversation.avatar_url;
-  const isOnline = isSavedMessages ? false : conversation.peer?.is_online;
+  const title =
+    conversation.peer?.full_name ||
+    conversation.title ||
+    conversation.peer?.username ||
+    'Chat';
+  const avatarUrl = conversation.peer?.avatar_url || conversation.avatar_url;
+  const isOnline = conversation.peer?.is_online;
   const timestamp = formatChatTimestamp(conversation.last_message_at);
 
   // Close context menu on click outside
@@ -91,25 +87,19 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
             : 'hover:bg-surface/60 active:bg-surface-elevated/70'
         }`}
       >
-        {/* Avatar with Online Indicator or Saved Messages Bookmark */}
+        {/* Avatar with Online Indicator */}
         <div className="relative mr-3 shrink-0">
-          {isSavedMessages ? (
-            <div className="w-12 h-12 rounded-full bg-blue-500/15 text-blue-500 flex items-center justify-center border border-blue-500/25 shadow-xs">
-              <Bookmark className="w-6 h-6 fill-blue-500/20" />
-            </div>
-          ) : (
-            <div className="w-12 h-12 rounded-full overflow-hidden bg-surface flex items-center justify-center border border-border-subtle">
-              {avatarUrl ? (
-                <img src={avatarUrl} alt={title} className="w-full h-full object-cover" />
-              ) : conversation.type === 'group' ? (
-                <Users className="w-6 h-6 text-textTertiary" />
-              ) : (
-                <span className="text-sm font-bold text-textPrimary">
-                  {getInitials(title)}
-                </span>
-              )}
-            </div>
-          )}
+          <div className="w-12 h-12 rounded-full overflow-hidden bg-surface flex items-center justify-center border border-border-subtle">
+            {avatarUrl ? (
+              <img src={avatarUrl} alt={title} className="w-full h-full object-cover" />
+            ) : conversation.type === 'group' ? (
+              <Users className="w-6 h-6 text-textTertiary" />
+            ) : (
+              <span className="text-sm font-bold text-textPrimary">
+                {getInitials(title)}
+              </span>
+            )}
+          </div>
 
           {isOnline && (
             <span className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-background" />
@@ -122,12 +112,6 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
             <span className="text-sm font-semibold text-textPrimary truncate flex-1">
               {title}
             </span>
-
-            {isSavedMessages && (
-              <span className="text-[10px] bg-blue-500/10 text-blue-500 font-medium px-1.5 py-0.2 rounded-full shrink-0 border border-blue-500/20">
-                Saved
-              </span>
-            )}
 
             {conversation.is_muted && (
               <VolumeX className="w-3.5 h-3.5 text-textTertiary shrink-0" />
@@ -146,7 +130,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
                   : 'text-textSecondary'
               }`}
             >
-              {conversation.last_message_preview || (isSavedMessages ? 'Saved notes and messages' : 'No messages yet')}
+              {conversation.last_message_preview || 'No messages yet'}
             </p>
           )}
         </div>
@@ -190,7 +174,7 @@ export const ConversationItem: React.FC<ConversationItemProps> = ({
             }}
             className="w-48 bg-surface-elevated border border-border rounded-large shadow-2xl py-1 z-50 animate-in zoom-in-95 duration-100 select-none"
           >
-            {!isSavedMessages && conversation.peer?.id && onToggleBlock && (
+            {conversation.peer?.id && onToggleBlock && (
               <button
                 type="button"
                 onClick={() => {
