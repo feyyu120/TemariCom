@@ -201,14 +201,15 @@ export const ChatPage: React.FC = () => {
       id: tempId,
       type: 'direct',
       title: targetUserNameFromUrl || 'Student',
-      avatar_url: targetUserAvatarFromUrl || undefined,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      avatar_url: targetUserAvatarFromUrl || '',
+      last_message_preview: '',
+      is_muted: false,
+      is_pinned: false,
       peer: {
         id: targetUserIdFromUrl,
         username: targetUserNameFromUrl || 'Student',
         full_name: targetUserNameFromUrl || 'Student',
-        avatar_url: targetUserAvatarFromUrl || undefined,
+        avatar_url: targetUserAvatarFromUrl || '',
         is_online: false,
       },
       unread_count: 0,
@@ -302,8 +303,9 @@ export const ChatPage: React.FC = () => {
         type: 'direct',
         title: user.full_name || user.username,
         avatar_url: user.avatar_url,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        last_message_preview: '',
+        is_muted: false,
+        is_pinned: false,
         peer: {
           id: user.id,
           username: user.username,
@@ -387,14 +389,14 @@ export const ChatPage: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex h-screen w-screen overflow-hidden bg-background text-textPrimary antialiased select-none">
+      <div className="flex h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-background text-textPrimary antialiased select-none fixed inset-0 md:relative md:inset-auto md:h-screen">
         {/* Desktop Left Sidebar */}
         <div className="hidden lg:flex shrink-0">
           <LeftSidebar />
         </div>
 
         {/* Center Main Area: Sign In Prompt */}
-        <main className="flex-1 min-w-0 h-screen flex flex-col justify-between overflow-y-auto">
+        <main className="flex-1 min-w-0 h-full max-h-full flex flex-col justify-between overflow-y-auto">
           {/* Mobile Top Header with Back button */}
           <header className="sticky top-0 z-20 flex items-center justify-between px-4 h-14 bg-background/90 backdrop-blur-md border-b border-border-subtle lg:hidden shrink-0">
             <button
@@ -454,18 +456,18 @@ export const ChatPage: React.FC = () => {
   }
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background text-textPrimary antialiased select-none">
+    <div className="flex h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-background text-textPrimary antialiased select-none fixed inset-0 md:relative md:inset-auto md:h-screen">
       {/* 1. Desktop Left Sidebar */}
       <div className="hidden lg:flex shrink-0">
         <LeftSidebar />
       </div>
 
       {/* 2. Main Chat Area: Clean two-sided desktop view (inbox on left, active chat on right) */}
-      <main className="flex-1 min-w-0 h-screen flex bg-background overflow-hidden relative">
+      <main className="flex-1 min-w-0 h-full max-h-full flex bg-background overflow-hidden relative">
         {/* Left Inbox Column: Header, Stories, Search, Conversations */}
         <section
           style={isDesktop ? { width: `${sidebarWidth}px`, minWidth: '280px', maxWidth: '650px' } : undefined}
-          className={`h-full flex flex-col bg-background shrink-0 border-r border-border-subtle ${
+          className={`h-full max-h-full flex flex-col bg-background shrink-0 border-r border-border-subtle ${
             isResizing ? 'select-none transition-none' : 'transition-[width] duration-150'
           } ${
             selectedConversation
@@ -605,7 +607,7 @@ export const ChatPage: React.FC = () => {
 
         {/* Right Active Chat Column */}
         <section
-          className={`flex-1 h-full min-w-0 flex flex-col bg-background ${
+          className={`flex-1 h-full max-h-full min-w-0 flex flex-col bg-background ${
             selectedConversation ? 'flex' : 'hidden md:flex'
           }`}
         >

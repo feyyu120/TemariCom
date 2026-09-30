@@ -236,8 +236,9 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       if (!payload?.conversation_id) return;
       const convId = payload.conversation_id;
 
-      if (payload.is_typing && payload.username) {
-        setTypingUsers((prev) => ({ ...prev, [convId]: payload.username }));
+      if (payload.is_typing) {
+        const displayName = payload.username || 'Someone';
+        setTypingUsers((prev) => ({ ...prev, [convId]: displayName }));
 
         if (typingTimersRef.current[convId]) {
           clearTimeout(typingTimersRef.current[convId]);
@@ -248,7 +249,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
             delete next[convId];
             return next;
           });
-        }, 3000);
+        }, 3500);
       } else {
         if (typingTimersRef.current[convId]) {
           clearTimeout(typingTimersRef.current[convId]);
@@ -260,6 +261,31 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           return next;
         });
       }
+    });
+
+    // Listen for real-time user presence updates (online/offline/last seen)
+    const unsubPresence = chatWebSocketService.on('chat:presence', (payload: any) => {
+      if (!payload?.user_id) return;
+      const userId = payload.user_id;
+      const isOnline = Boolean(payload.is_online);
+      const lastSeenAt = payload.last_seen_at || (isOnline ? undefined : new Date().toISOString());
+
+      queryClient.setQueryData<Conversation[]>(chatQueryKeys.conversations(), (prev) => {
+        const list = Array.isArray(prev) ? prev : [];
+        return list.map((c) => {
+          if (c.peer && c.peer.id === userId) {
+            return {
+              ...c,
+              peer: {
+                ...c.peer,
+                is_online: isOnline,
+                last_seen_at: lastSeenAt ?? c.peer.last_seen_at,
+              },
+            };
+          }
+          return c;
+        });
+      });
     });
 
     // Listen for edited messages
@@ -304,6 +330,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       unsubRead();
       unsubDelivered();
       unsubTyping();
+      unsubPresence();
       unsubEdited();
       unsubDeleted();
     };

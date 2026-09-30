@@ -113,9 +113,7 @@ export const chatApiService = {
     messageId: string,
     scope: 'me' | 'everyone'
   ): Promise<void> {
-    await del(ENDPOINTS.CHAT.MESSAGE_ITEM(conversationId, messageId), {
-      body: { scope },
-    });
+    await del(ENDPOINTS.CHAT.MESSAGE_ITEM(conversationId, messageId), { scope });
   },
 
   /**

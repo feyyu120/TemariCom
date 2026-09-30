@@ -32,6 +32,7 @@ import { chatWebSocketService } from '@/features/chat/services/chatWebSocketServ
 import { ChatMessage, Conversation, MessagesPage } from '@/features/chat/types';
 import {
   formatMessageTime,
+  formatLastSeen,
   getInitials,
 } from '@/features/chat/utils/chatUtils';
 import { MessageActionModal } from '@/features/chat/components/MessageActionModal';
@@ -201,14 +202,46 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
   useEffect(() => {
     if (!conversationId) return;
 
+    let clearTypingTimer: ReturnType<typeof setTimeout> | null = null;
+
     const unsubTyping = chatWebSocketService.on('chat:typing', (payload: any) => {
       if (payload?.conversation_id === conversationId) {
-        setIsPeerTyping(Boolean(payload.is_typing));
+        const isTyping = Boolean(payload.is_typing);
+        setIsPeerTyping(isTyping);
+
+        if (clearTypingTimer) {
+          clearTimeout(clearTypingTimer);
+          clearTypingTimer = null;
+        }
+
+        // Auto-clear typing indicator if stop event is delayed/dropped
+        if (isTyping) {
+          clearTypingTimer = setTimeout(() => {
+            setIsPeerTyping(false);
+          }, 3500);
+        }
       }
     });
 
     return () => {
       unsubTyping();
+      if (clearTypingTimer) {
+        clearTimeout(clearTypingTimer);
+      }
+      setIsPeerTyping(false);
+    };
+  }, [conversationId]);
+
+  // Clean up typing state on conversation change or unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
+      if (conversationId) {
+        chatWebSocketService.sendTyping(conversationId, false);
+      }
     };
   }, [conversationId]);
 
@@ -217,14 +250,22 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
     setInputText(text);
     if (!conversationId) return;
 
-    chatWebSocketService.sendTyping(conversationId, text.trim().length > 0);
+    if (text.trim().length > 0) {
+      chatWebSocketService.sendTyping(conversationId, true);
 
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    typingTimeoutRef.current = setTimeout(() => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      typingTimeoutRef.current = setTimeout(() => {
+        chatWebSocketService.sendTyping(conversationId, false);
+      }, 2000);
+    } else {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        typingTimeoutRef.current = null;
+      }
       chatWebSocketService.sendTyping(conversationId, false);
-    }, 2000);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -381,8 +422,8 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
       sender: {
         id: currentUser?.id || 'me',
         username: currentUser?.username || 'me',
-        full_name: currentUser?.fullName || currentUser?.username || 'Me',
-        avatar_url: currentUser?.avatarUrl || '',
+        full_name: currentUser?.full_name || currentUser?.username || 'Me',
+        avatar_url: currentUser?.avatar_url || '',
       },
       content: messageContent,
       message_type: 'text',
@@ -405,6 +446,13 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
     setForwardedMessage(null);
     onClearInitialForward?.();
     setIsSending(true);
+
+    // Stop typing state immediately on send
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+      typingTimeoutRef.current = null;
+    }
+    chatWebSocketService.sendTyping(conversationId, false);
 
     // Optimistically update TanStack Query cache
     queryClient.setQueryData<MessagesPage>(messagesQueryKey, (old) => {
@@ -517,9 +565,9 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
   const isOnline = conversation.peer?.is_online;
 
   return (
-    <div className="flex-1 h-full flex flex-col min-w-0 bg-background overflow-hidden relative">
+    <div className="flex-1 h-full max-h-full flex flex-col min-w-0 bg-background overflow-hidden relative overscroll-none">
       {/* 1. Bespoke Direct Chat Header */}
-      <header className="h-[53px] shrink-0 border-b border-border-subtle px-4 flex items-center justify-between bg-background/95 backdrop-blur-md z-10 select-none">
+      <header className="h-[54px] shrink-0 border-b border-border-subtle px-4 flex items-center justify-between bg-background/95 backdrop-blur-md z-10 select-none">
         <div className="flex items-center gap-3 min-w-0">
           {onBack && (
             <button
@@ -549,17 +597,19 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
           </div>
 
           {/* Title & Status */}
-          <div className="min-w-0">
+          <div className="min-w-0 flex flex-col justify-center gap-0.5">
             <h2 className="text-sm font-bold text-textPrimary truncate leading-snug">
               {title}
             </h2>
-            <p className="text-[11px] truncate leading-none">
+            <p className="text-[11px] truncate leading-tight">
               {isPeerTyping ? (
                 <span className="text-emerald-500 font-semibold animate-pulse">Typing...</span>
               ) : isOnline ? (
                 <span className="text-emerald-500 font-medium">Active now</span>
               ) : (
-                <span className="text-textTertiary">Offline</span>
+                <span className="text-textTertiary">
+                  {formatLastSeen(conversation.peer?.last_seen_at || conversation.last_message_at, isOnline)}
+                </span>
               )}
             </p>
           </div>
@@ -587,7 +637,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
       {/* 2. Messages Thread List */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-background/50 select-text"
+        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-background/50 select-text touch-pan-y"
       >
         {messagesQuery.data?.has_more && (
           <div className="flex justify-center pb-2">
@@ -763,7 +813,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
 
       {/* 3. Action Banners: Replying / Editing / Forwarding */}
       {editingMessage ? (
-        <div className="flex items-center justify-between px-4 py-2 bg-surface-elevated border-t border-border-subtle border-l-4 border-l-active">
+        <div className="shrink-0 flex items-center justify-between px-4 py-2 bg-surface-elevated border-t border-border-subtle border-l-4 border-l-active">
           <div className="min-w-0 mr-2">
             <span className="text-xs font-bold text-active block">Edit Message</span>
             <span className="text-xs text-textSecondary truncate block">
@@ -782,7 +832,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
           </button>
         </div>
       ) : replyingTo ? (
-        <div className="flex items-center justify-between px-4 py-2 bg-surface-elevated border-t border-border-subtle border-l-4 border-l-active">
+        <div className="shrink-0 flex items-center justify-between px-4 py-2 bg-surface-elevated border-t border-border-subtle border-l-4 border-l-active">
           <div className="min-w-0 mr-2">
             <span className="text-xs font-bold text-active block">
               Replying to{' '}
@@ -803,7 +853,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
           </button>
         </div>
       ) : forwardedMessage ? (
-        <div className="flex items-center justify-between px-4 py-2 bg-surface-elevated border-t border-border-subtle border-l-4 border-l-active">
+        <div className="shrink-0 flex items-center justify-between px-4 py-2 bg-surface-elevated border-t border-border-subtle border-l-4 border-l-active">
           <div className="min-w-0 mr-2">
             <span className="text-xs font-bold text-active block">
               Forwarded from{' '}
@@ -827,7 +877,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
       ) : null}
 
       {/* 4. WhatsApp / Telegram Style Bottom Input Bar */}
-      <div className="p-3 border-t border-border-subtle bg-background flex items-end gap-2">
+      <div className="shrink-0 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] border-t border-border-subtle bg-background flex items-end gap-2">
         <div className="flex-1 flex items-center gap-1.5 bg-surface-elevated border border-border-subtle rounded-2xl px-3 py-1.5 focus-within:border-active transition-colors">
           <button
             type="button"
