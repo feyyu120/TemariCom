@@ -25,6 +25,7 @@ export interface Conversation {
   is_muted: boolean;
   is_pinned: boolean;
   is_blocked?: boolean;
+  is_saved_messages?: boolean;
   peer?: PeerUser;
 }
 
