@@ -38,7 +38,7 @@ export const HomeScreen: React.FC = () => {
     <div
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
-      className="flex h-screen w-screen overflow-hidden bg-background text-textPrimary antialiased"
+      className="flex h-full h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-background text-textPrimary antialiased"
     >
       {/* 1. Left Navigation Sidebar - Independent scroll on desktop, hidden on mobile */}
       <div className="hidden lg:flex shrink-0">
