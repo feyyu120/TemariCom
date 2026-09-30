@@ -144,6 +144,10 @@ func (h *ChatHandler) CreateDirectChat(c fiber.Ctx) error {
 		})
 	}
 
+	if conv.Peer != nil {
+		conv.Peer.IsOnline = h.hub.IsUserOnline(conv.Peer.ID)
+	}
+
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success":      true,
 		"data":         conv,
@@ -171,6 +175,13 @@ func (h *ChatHandler) GetUserConversations(c fiber.Ctx) error {
 			"success": false,
 			"error":   "Failed to fetch conversations",
 		})
+	}
+
+	// Enrich with real-time online presence status from WebSocket Hub
+	for i := range convs {
+		if convs[i].Peer != nil {
+			convs[i].Peer.IsOnline = h.hub.IsUserOnline(convs[i].Peer.ID)
+		}
 	}
 
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
@@ -635,6 +646,21 @@ func (h *ChatHandler) WSConnectionHandler() fiber.Handler {
 		// Register connection in hub
 		h.hub.Register(userID, kws)
 
+		// Broadcast online presence to peers
+		safeGo(func() {
+			convs, err := h.chatService.GetUserConversations(context.Background(), userID, 50, 0)
+			if err == nil {
+				for _, conv := range convs {
+					if conv.Peer != nil {
+						h.hub.SendToUser(conv.Peer.ID, dto.WSEventPresence, map[string]interface{}{
+							"user_id":   userID,
+							"is_online": true,
+						})
+					}
+				}
+			}
+		})
+
 		// Connection-scoped token bucket rate limiter
 		limiter := NewConnectionRateLimiter(DefaultRateLimitTokensPerSec, DefaultRateLimitBurst)
 
@@ -781,6 +807,24 @@ func (h *ChatHandler) WSConnectionHandler() fiber.Handler {
 			}()
 			log.Printf("[WS] Connection closed: user_id=%s, err=%v", userID, ep.Error)
 			h.hub.Unregister(userID, kws)
+
+			if !h.hub.IsUserOnline(userID) {
+				safeGo(func() {
+					now := time.Now()
+					convs, err := h.chatService.GetUserConversations(context.Background(), userID, 50, 0)
+					if err == nil {
+						for _, conv := range convs {
+							if conv.Peer != nil {
+								h.hub.SendToUser(conv.Peer.ID, dto.WSEventPresence, map[string]interface{}{
+									"user_id":      userID,
+									"is_online":    false,
+									"last_seen_at": now,
+								})
+							}
+						}
+					}
+				})
+			}
 		})
 	}, eventCfg)
 }

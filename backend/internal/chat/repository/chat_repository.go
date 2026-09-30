@@ -167,7 +167,7 @@ func (r *pgChatRepository) GetUserConversations(ctx context.Context, userID uuid
 			  )
 		) unread ON true
 		LEFT JOIN LATERAL (
-			SELECT u.id, u.full_name, u.username, u.avatar_key
+			SELECT u.id, u.full_name, u.username, u.avatar_key, u.last_login_at
 			FROM conversation_participants p_other
 			JOIN users u ON p_other.user_id = u.id
 			WHERE p_other.conversation_id = c.id
@@ -191,13 +191,14 @@ func (r *pgChatRepository) GetUserConversations(ctx context.Context, userID uuid
 		var item dto.ConversationResponse
 		var peerID *uuid.UUID
 		var peerFullName, peerUsername, peerAvatar string
+		var peerLastLoginAt *time.Time
 
 		err := rows.Scan(
 			&item.ID, &item.Type, &item.Title, &item.AvatarKey,
 			&item.LastMessagePreview, &item.LastMessageAt,
 			&item.IsMuted, &item.IsPinned,
 			&item.UnreadCount,
-			&peerID, &peerFullName, &peerUsername, &peerAvatar,
+			&peerID, &peerFullName, &peerUsername, &peerAvatar, &peerLastLoginAt,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan conversation row: %w", err)
@@ -205,10 +206,11 @@ func (r *pgChatRepository) GetUserConversations(ctx context.Context, userID uuid
 
 		if peerID != nil && *peerID != uuid.Nil {
 			item.Peer = &dto.UserSummaryDTO{
-				ID:        *peerID,
-				FullName:  peerFullName,
-				Username:  peerUsername,
-				AvatarURL: peerAvatar,
+				ID:         *peerID,
+				FullName:   peerFullName,
+				Username:   peerUsername,
+				AvatarURL:  peerAvatar,
+				LastSeenAt: peerLastLoginAt,
 			}
 			if item.Title == "" {
 				if peerFullName != "" {

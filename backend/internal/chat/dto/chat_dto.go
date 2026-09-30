@@ -37,11 +37,12 @@ type SendMessageRequest struct {
 
 // UserSummaryDTO provides sender or peer identification with CDN avatar resolution
 type UserSummaryDTO struct {
-	ID        uuid.UUID `json:"id"`
-	FullName  string    `json:"full_name"`
-	Username  string    `json:"username"`
-	AvatarURL string    `json:"avatar_url"`
-	IsOnline  bool      `json:"is_online"`
+	ID         uuid.UUID  `json:"id"`
+	FullName   string     `json:"full_name"`
+	Username   string     `json:"username"`
+	AvatarURL  string     `json:"avatar_url"`
+	IsOnline   bool       `json:"is_online"`
+	LastSeenAt *time.Time `json:"last_seen_at,omitempty"`
 }
 
 // MessageResponse represents a single message with populated sender profile and delivery status
