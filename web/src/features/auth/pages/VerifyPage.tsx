@@ -313,9 +313,9 @@ export const VerifyPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen w-full bg-background flex flex-col justify-between p-4 sm:p-6 lg:p-8 animate-fadeIn text-textPrimary">
+    <div className="h-full h-[100dvh] max-h-[100dvh] w-full bg-background flex flex-col justify-between p-4 sm:p-6 lg:p-8 animate-fadeIn text-textPrimary overflow-y-auto">
       {/* Top Navbar */}
-      <header className="max-w-xl w-full mx-auto flex items-center justify-between py-2">
+      <header className="max-w-xl w-full mx-auto flex items-center justify-between py-2 shrink-0">
         <button
           type="button"
           onClick={handleBackToAuth}
