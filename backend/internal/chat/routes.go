@@ -50,10 +50,6 @@ func RegisterRoutes(
 	chatGroup.Post("/direct", chatHandler.CreateDirectChat)
 	chatGroup.Delete("/conversations/:id", chatHandler.DeleteConversation)
 
-	// Saved Messages (Telegram-style private chat)
-	chatGroup.Get("/saved", chatHandler.GetOrCreateSavedChat)
-	chatGroup.Post("/saved", chatHandler.GetOrCreateSavedChat)
-
 	// User Blocking / Safety
 	chatGroup.Post("/block", chatHandler.BlockUser)
 	chatGroup.Post("/unblock", chatHandler.UnblockUser)
