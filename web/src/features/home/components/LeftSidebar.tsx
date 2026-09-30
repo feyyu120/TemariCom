@@ -262,7 +262,7 @@ export const LeftSidebar: React.FC = () => {
                 {user.avatar_url ? (
                   <img
                     src={user.avatar_url}
-                    alt={user.full_name || user.username}
+                    alt={user.full_name || user.username || 'Avatar'}
                     className="w-9 h-9 rounded-full object-cover shrink-0"
                   />
                 ) : (
@@ -273,14 +273,14 @@ export const LeftSidebar: React.FC = () => {
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
                     <p className="text-[15px] font-bold text-textPrimary truncate hover:underline">
-                      {user.full_name || user.username || user.email.split('@')[0]}
+                      {user.full_name || user.username || (user.email ? user.email.split('@')[0] : 'User')}
                     </p>
                     {user.is_verified && (
                       <BadgeCheck className="w-3.5 h-3.5 text-verification shrink-0" />
                     )}
                   </div>
                   <p className="text-[13px] text-textTertiary truncate">
-                    @{user.username || user.email.split('@')[0]}
+                    @{user.username || (user.email ? user.email.split('@')[0] : 'user')}
                   </p>
                 </div>
               </div>

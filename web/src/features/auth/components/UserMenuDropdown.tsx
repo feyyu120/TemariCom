@@ -59,7 +59,7 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
           {user.avatar_url ? (
             <img
               src={user.avatar_url}
-              alt={user.full_name || user.username}
+              alt={user.full_name || user.username || 'Avatar'}
               className="w-9 h-9 rounded-full object-cover shrink-0"
             />
           ) : (
@@ -70,13 +70,13 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-1">
               <p className="text-sm font-bold text-textPrimary truncate">
-                {user.full_name || user.username || user.email.split('@')[0]}
+                {user.full_name || user.username || (user.email ? user.email.split('@')[0] : 'User')}
               </p>
               {user.is_verified && (
                 <BadgeCheck className="w-3.5 h-3.5 text-verification shrink-0" />
               )}
             </div>
-            <p className="text-xs text-textTertiary truncate">{user.email}</p>
+            <p className="text-xs text-textTertiary truncate">{user.email || ''}</p>
           </div>
         </div>
       </div>
@@ -89,14 +89,15 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
             SWITCH ACCOUNT
           </p>
           {accounts.map((acc) => {
-            const isActive = acc.id === activeAccountId || acc.id === user.id;
+            const accUserId = acc.user?.id;
+            const isActive = accUserId === activeAccountId || accUserId === user.id;
             return (
               <button
-                key={acc.id}
+                key={accUserId || acc.sessionToken}
                 type="button"
                 onClick={async () => {
-                  if (!isActive) {
-                    await switchAccount(acc.id);
+                  if (!isActive && accUserId) {
+                    await switchAccount(accUserId);
                   }
                   onClose();
                 }}
@@ -107,10 +108,10 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  {acc.user.avatar_url ? (
+                  {acc.user?.avatar_url ? (
                     <img
                       src={acc.user.avatar_url}
-                      alt={acc.user.full_name || acc.user.username}
+                      alt={acc.user.full_name || acc.user.username || 'Avatar'}
                       className="w-7 h-7 rounded-full object-cover shrink-0"
                     />
                   ) : (
@@ -119,7 +120,7 @@ export const UserMenuDropdown: React.FC<UserMenuDropdownProps> = ({
                     </div>
                   )}
                   <span className="text-xs truncate">
-                    {acc.user.full_name || acc.user.username || acc.user.email}
+                    {acc.user?.full_name || acc.user?.username || acc.user?.email || 'Account'}
                   </span>
                 </div>
                 {isActive && <Check className="w-4 h-4 text-textPrimary shrink-0 ml-2" />}
