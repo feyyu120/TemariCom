@@ -16,7 +16,6 @@ import { useMyProfile, useUserProfile } from '@/features/profiles/hooks';
 import { ProfileSkeleton } from '@/features/profiles/components/ProfileSkeleton';
 import { ProfileHeader } from '@/features/profiles/components/ProfileHeader';
 import { EditProfileModal } from '@/features/profiles/components/EditProfileModal';
-import { ProfileSettingsModal } from '@/features/profiles/components/ProfileSettingsModal';
 import { MobileBottomNav } from '@/features/home/components/MobileBottomNav';
 import { MobileDrawer } from '@/features/home/components/MobileDrawer';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
@@ -31,7 +30,6 @@ export const ProfilePage: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<ProfileTab>('posts');
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Setup mode check from URL query params (e.g. fresh registration)
@@ -168,10 +166,10 @@ export const ProfilePage: React.FC = () => {
             </h1>
           </div>
 
-          {/* Settings Icon -> opens ProfileSettingsModal */}
+          {/* Settings Icon -> navigates to /profile/settings */}
           <button
             type="button"
-            onClick={() => setIsSettingsModalOpen(true)}
+            onClick={() => navigate('/profile/settings')}
             className="p-1.5 -mr-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
             title="Profile Settings"
             aria-label="Profile Settings"
@@ -312,13 +310,6 @@ export const ProfilePage: React.FC = () => {
         )}
         </div>
       </main>
-
-      {/* Profile Settings Modal */}
-      <ProfileSettingsModal
-        isOpen={isSettingsModalOpen}
-        onClose={() => setIsSettingsModalOpen(false)}
-        onOpenEdit={() => setIsEditModalOpen(true)}
-      />
 
       {/* Mobile Navigation Drawer */}
       <MobileDrawer
