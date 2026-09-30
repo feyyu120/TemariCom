@@ -91,7 +91,7 @@ export const RightSidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-96 h-screen shrink-0 overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden bg-background flex flex-col select-none border-l border-border-subtle">
+    <aside className="w-96 h-full max-h-full shrink-0 overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden bg-background flex flex-col select-none border-l border-border-subtle">
       {/* 1. PINNED TOP HEADER: Search & Notification (Aligned with Left & Center headers) */}
       <div className="h-[53px] flex items-center gap-3 sticky top-0 bg-background/95 backdrop-blur-sm z-10 px-4 border-b border-border-subtle shrink-0">
         {/* Search Input */}

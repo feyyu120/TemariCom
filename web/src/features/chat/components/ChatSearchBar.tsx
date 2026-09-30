@@ -19,7 +19,7 @@ export const ChatSearchBar: React.FC<ChatSearchBarProps> = ({
   placeholder = 'Search chats...',
 }) => {
   return (
-    <div className="px-4 py-2 bg-background">
+    <div className="px-4 py-2 bg-background shrink-0">
       <div className="flex items-center gap-2 bg-surface-elevated rounded-full px-3.5 h-10 border border-border-subtle focus-within:border-active transition-colors">
         <Search className="w-4 h-4 text-textTertiary shrink-0" />
 

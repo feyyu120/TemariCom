@@ -13,7 +13,9 @@ export const RootLayout: React.FC = () => {
     <ToastProvider>
       <ChatProvider>
         <SplashScreen isLoading={isLoading} />
-        <Outlet />
+        <div className="w-full h-full h-[100dvh] max-h-[100dvh] overflow-hidden flex flex-col">
+          <Outlet />
+        </div>
         <AuthModal />
       </ChatProvider>
     </ToastProvider>

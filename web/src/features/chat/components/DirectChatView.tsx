@@ -710,7 +710,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
   const isOnline = conversation.peer?.is_online;
 
   return (
-    <div className="flex-1 h-full max-h-full flex flex-col min-w-0 bg-background overflow-hidden relative overscroll-none">
+    <div className="flex-1 h-full max-h-full h-[100dvh] max-h-[100dvh] md:h-full md:max-h-full min-h-0 min-w-0 flex flex-col bg-background overflow-hidden relative overscroll-none">
       {/* 1. Bespoke Direct Chat Header */}
       <header className="h-[54px] shrink-0 border-b border-border-subtle px-4 flex items-center justify-between bg-background/95 backdrop-blur-md z-20 select-none">
         <div className="flex items-center gap-3 min-w-0">
@@ -792,7 +792,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
                     setIsHeaderMenuOpen(false);
                     setShowBlockModal(true);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-textPrimary hover:bg-surface transition-colors cursor-pointer text-left"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-textPrimary hover:bg-textPrimary/5 transition-colors cursor-pointer text-left"
                 >
                   {isBlocked ? (
                     <>
@@ -827,7 +827,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
       {/* 2. Messages Thread List */}
       <div
         ref={messagesContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-background/50 select-text touch-pan-y"
+        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-background/50 select-text touch-pan-y overscroll-y-contain"
       >
         {messagesQuery.data?.has_more && (
           <div className="flex justify-center pb-2">
@@ -1190,14 +1190,14 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
               <button
                 type="button"
                 onClick={() => confirmDelete('me')}
-                className="w-full py-2 px-3 rounded-card text-xs font-semibold bg-surface border border-border text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
+                className="w-full py-2 px-3 rounded-card text-xs font-semibold bg-surface border border-border text-textPrimary hover:bg-textPrimary/5 transition-colors cursor-pointer"
               >
                 Delete for Me
               </button>
               <button
                 type="button"
                 onClick={() => setMessageToDelete(null)}
-                className="w-full py-1.5 text-xs text-textTertiary hover:text-textPrimary transition-colors cursor-pointer text-center"
+                className="w-full py-2 px-3 rounded-card text-xs font-semibold text-textSecondary hover:text-textPrimary hover:bg-textPrimary/5 transition-colors cursor-pointer text-center"
               >
                 Cancel
               </button>
@@ -1227,7 +1227,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
               <button
                 type="button"
                 onClick={() => setShowDeleteChatModal(false)}
-                className="w-full py-1.5 text-xs text-textTertiary hover:text-textPrimary transition-colors cursor-pointer text-center"
+                className="w-full py-2 px-3 rounded-card text-xs font-semibold text-textSecondary hover:text-textPrimary hover:bg-textPrimary/5 transition-colors cursor-pointer text-center"
               >
                 Cancel
               </button>
@@ -1268,7 +1268,7 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
               <button
                 type="button"
                 onClick={() => setShowBlockModal(false)}
-                className="w-full py-1.5 text-xs text-textTertiary hover:text-textPrimary transition-colors cursor-pointer text-center"
+                className="w-full py-2 px-3 rounded-card text-xs font-semibold text-textSecondary hover:text-textPrimary hover:bg-textPrimary/5 transition-colors cursor-pointer text-center"
               >
                 Cancel
               </button>

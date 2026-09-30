@@ -68,12 +68,12 @@ export const CenterFeed: React.FC<CenterFeedProps> = ({ onOpenMenu }) => {
   }, []);
 
   return (
-    <main className="flex-1 min-w-0 h-screen overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden border-r-0 lg:border-r border-border-subtle bg-background pb-16 lg:pb-0">
+    <main className="flex-1 min-w-0 min-h-0 h-full max-h-full overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden border-r-0 lg:border-r border-border-subtle bg-background pb-16 lg:pb-0">
       {/* 1. Mobile Sticky Top Header (Visible on < lg screens) */}
       <MobileTopBar onOpenMenu={onOpenMenu ?? (() => {})} />
 
       {/* 2. Desktop Sticky Header with Feed Tabs (Visible on lg+ screens) */}
-      <header className="hidden lg:flex h-[53px] sticky top-0 z-20 backdrop-blur-md bg-background/85 border-b border-border-subtle items-stretch">
+      <header className="hidden lg:flex h-[53px] sticky top-0 z-20 backdrop-blur-md bg-background/85 border-b border-border-subtle items-stretch shrink-0">
         <button
           type="button"
           onClick={() => setActiveTab('for_you')}
@@ -120,7 +120,7 @@ export const CenterFeed: React.FC<CenterFeedProps> = ({ onOpenMenu }) => {
       />
 
       {/* 5. Mobile Feed Tabs: For you / Following switcher */}
-      <div className="lg:hidden flex items-stretch border-b border-border-subtle bg-background/95 sticky top-[53px] z-10 backdrop-blur-md">
+      <div className="lg:hidden flex items-stretch border-b border-border-subtle bg-background/95 sticky top-[53px] z-10 backdrop-blur-md shrink-0">
         <button
           type="button"
           onClick={() => setActiveTab('for_you')}

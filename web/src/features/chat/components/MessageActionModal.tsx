@@ -71,7 +71,7 @@ export const MessageActionModal: React.FC<MessageActionModalProps> = ({
             onClose();
             onReply(message);
           }}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-xs font-medium text-textPrimary hover:bg-surface transition-colors cursor-pointer text-left"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-xs font-medium text-textPrimary hover:bg-textPrimary/5 transition-colors cursor-pointer text-left"
         >
           <Reply className="w-4 h-4 text-textSecondary" />
           <span>Reply</span>
@@ -84,7 +84,7 @@ export const MessageActionModal: React.FC<MessageActionModalProps> = ({
             onClose();
             onCopy(message);
           }}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-xs font-medium text-textPrimary hover:bg-surface transition-colors cursor-pointer text-left"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-xs font-medium text-textPrimary hover:bg-textPrimary/5 transition-colors cursor-pointer text-left"
         >
           <Copy className="w-4 h-4 text-textSecondary" />
           <span>Copy</span>
@@ -97,7 +97,7 @@ export const MessageActionModal: React.FC<MessageActionModalProps> = ({
             onClose();
             onForward(message);
           }}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-xs font-medium text-textPrimary hover:bg-surface transition-colors cursor-pointer text-left"
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-xs font-medium text-textPrimary hover:bg-textPrimary/5 transition-colors cursor-pointer text-left"
         >
           <CornerUpRight className="w-4 h-4 text-textSecondary" />
           <span>Forward</span>
@@ -111,7 +111,7 @@ export const MessageActionModal: React.FC<MessageActionModalProps> = ({
               onClose();
               onEdit(message);
             }}
-            className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-xs font-medium text-textPrimary hover:bg-surface transition-colors cursor-pointer text-left"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-xs font-medium text-textPrimary hover:bg-textPrimary/5 transition-colors cursor-pointer text-left"
           >
             <Pencil className="w-4 h-4 text-textSecondary" />
             <span>Edit</span>

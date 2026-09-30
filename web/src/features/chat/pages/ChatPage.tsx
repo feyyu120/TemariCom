@@ -5,7 +5,6 @@ import { MobileDrawer } from '@/features/home/components/MobileDrawer';
 import { MobileBottomNav } from '@/features/home/components/MobileBottomNav';
 import {
   ChatHeader,
-  StoriesCarousel,
   ChatSearchBar,
   ConversationItem,
   UserSearchResults,
@@ -84,6 +83,20 @@ export const ChatPage: React.FC = () => {
     };
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Lock document body scrolling on mobile so only the inner chat messages container scrolls
+  useEffect(() => {
+    const origOverflow = document.body.style.overflow;
+    const origHeight = document.body.style.height;
+
+    document.body.style.overflow = 'hidden';
+    document.body.style.height = '100dvh';
+
+    return () => {
+      document.body.style.overflow = origOverflow;
+      document.body.style.height = origHeight;
+    };
   }, []);
 
   const handleMouseDownResize = useCallback(
@@ -220,6 +233,39 @@ export const ChatPage: React.FC = () => {
     },
     [queryClient, showToast]
   );
+
+  const handleSavedMessagesPress = useCallback(() => {
+    const savedConv = conversations.find((c) => c.is_saved_messages);
+    if (savedConv) {
+      handleOpenConversation(savedConv);
+    } else {
+      showToast({
+        title: 'Saved Messages',
+        message: 'Saved Messages feature is coming soon in the next update.',
+        type: 'info',
+      });
+    }
+  }, [conversations, handleOpenConversation, showToast]);
+
+  const handleCreateGroupPress = useCallback(() => {
+    showToast({
+      title: 'Create Group',
+      message: 'Group chat creation is coming soon in the next update.',
+      type: 'info',
+    });
+  }, [showToast]);
+
+  const handleNewChannelPress = useCallback(() => {
+    showToast({
+      title: 'New Channel',
+      message: 'Channel creation is coming soon in the next update.',
+      type: 'info',
+    });
+  }, [showToast]);
+
+  const handleSettingsPress = useCallback(() => {
+    navigate('/profile/settings');
+  }, [navigate]);
 
   // Clear active conversation on unmount so background notifications/badges function correctly
   useEffect(() => {
@@ -454,7 +500,7 @@ export const ChatPage: React.FC = () => {
 
   if (isAuthLoading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-background text-textPrimary">
+      <div className="flex h-full h-[100dvh] max-h-[100dvh] w-full items-center justify-center bg-background text-textPrimary">
         <div className="w-8 h-8 rounded-full border-2 border-active border-t-transparent animate-spin" />
       </div>
     );
@@ -462,14 +508,14 @@ export const ChatPage: React.FC = () => {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-background text-textPrimary antialiased select-none fixed inset-0 md:relative md:inset-auto md:h-screen">
+      <div className="flex h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-background text-textPrimary antialiased select-none fixed inset-x-0 top-0 md:relative md:inset-auto md:h-full md:max-h-full">
         {/* Desktop Left Sidebar */}
         <div className="hidden lg:flex shrink-0">
           <LeftSidebar />
         </div>
 
         {/* Center Main Area: Sign In Prompt */}
-        <main className="flex-1 min-w-0 h-full max-h-full flex flex-col justify-between overflow-y-auto">
+        <main className="flex-1 min-w-0 min-h-0 h-full max-h-full flex flex-col justify-between overflow-y-auto">
           {/* Mobile Top Header with Back button */}
           <header className="sticky top-0 z-20 flex items-center justify-between px-4 h-14 bg-background/90 backdrop-blur-md border-b border-border-subtle lg:hidden shrink-0">
             <button
@@ -529,14 +575,14 @@ export const ChatPage: React.FC = () => {
   }
 
   return (
-    <div className="flex h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-background text-textPrimary antialiased select-none fixed inset-0 md:relative md:inset-auto md:h-screen">
+    <div className="flex h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-background text-textPrimary antialiased select-none fixed inset-x-0 top-0 md:relative md:inset-auto md:h-full md:max-h-full">
       {/* 1. Desktop Left Sidebar */}
       <div className="hidden lg:flex shrink-0">
         <LeftSidebar />
       </div>
 
       {/* 2. Main Chat Area: Clean two-sided desktop view (inbox on left, active chat on right) */}
-      <main className="flex-1 min-w-0 h-full max-h-full flex bg-background overflow-hidden relative">
+      <main className="flex-1 min-w-0 min-h-0 h-full max-h-full flex bg-background overflow-hidden relative">
         {/* Left Inbox Column: Header, Stories, Search, Conversations */}
         <section
           style={isDesktop ? { width: `${sidebarWidth}px`, minWidth: '280px', maxWidth: '650px' } : undefined}
@@ -550,7 +596,11 @@ export const ChatPage: React.FC = () => {
         >
           {/* Bespoke Chat Header (clean top header for mobile & desktop) */}
           <ChatHeader
-            onMenuPress={() => setIsDrawerOpen(true)}
+            onOpenMobileMenu={() => setIsDrawerOpen(true)}
+            onSavedMessagesPress={handleSavedMessagesPress}
+            onCreateGroupPress={handleCreateGroupPress}
+            onNewChannelPress={handleNewChannelPress}
+            onSettingsPress={handleSettingsPress}
           />
 
           {/* Forwarding Banner */}
@@ -574,9 +624,6 @@ export const ChatPage: React.FC = () => {
               </button>
             </div>
           )}
-
-          {/* Stories Carousel */}
-          <StoriesCarousel />
 
           {/* Search Bar */}
           <ChatSearchBar
@@ -684,7 +731,7 @@ export const ChatPage: React.FC = () => {
 
         {/* Right Active Chat Column */}
         <section
-          className={`flex-1 h-full max-h-full min-w-0 flex flex-col bg-background ${
+          className={`flex-1 h-full max-h-full min-w-0 min-h-0 flex flex-col bg-background ${
             selectedConversation ? 'flex' : 'hidden md:flex'
           }`}
         >

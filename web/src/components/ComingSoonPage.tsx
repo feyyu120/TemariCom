@@ -22,14 +22,14 @@ export const ComingSoonPage: React.FC<ComingSoonPageProps> = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background text-textPrimary antialiased selection:bg-surface-elevated">
+    <div className="flex h-full h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-background text-textPrimary antialiased selection:bg-surface-elevated">
       {/* 1. Desktop Left Sidebar */}
       <div className="hidden lg:flex shrink-0">
         <LeftSidebar />
       </div>
 
       {/* 2. Main Content Area */}
-      <main className="flex-1 h-screen overflow-y-auto min-w-0 bg-background flex flex-col justify-between">
+      <main className="flex-1 min-h-0 h-full max-h-full overflow-y-auto min-w-0 bg-background flex flex-col justify-between">
         {/* Sticky Pinned Header */}
         <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border-subtle shrink-0">
           <div className="max-w-4xl mx-auto px-3 sm:px-4 h-[53px] flex items-center justify-between">
