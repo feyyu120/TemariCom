@@ -76,7 +76,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
     queryKey: chatQueryKeys.conversations(),
     queryFn: () => chatApiService.getConversations(),
     enabled: isAuthenticated && !isAuthLoading && Boolean(user?.id),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000,
     gcTime: 15 * 60 * 1000,
     refetchOnWindowFocus: true,
   });
