@@ -179,6 +179,12 @@ export const LeftSidebar: React.FC = () => {
                       navigate('/profile/settings');
                     } else if (item.id === 'help') {
                       navigate('/faq');
+                    } else if (item.id === 'marketplace') {
+                      navigate('/marketplace');
+                    } else if (item.id === 'downloads') {
+                      navigate('/downloads');
+                    } else if (item.id === 'saved') {
+                      navigate('/saved');
                     }
                   }}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-card text-[15px] font-medium text-textPrimary hover:bg-surface-elevated transition-colors duration-150 cursor-pointer"

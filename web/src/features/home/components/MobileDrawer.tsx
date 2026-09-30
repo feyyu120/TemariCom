@@ -267,14 +267,15 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                     {/* Stored Accounts List */}
                     {Array.isArray(accounts) &&
                       accounts.map((acc) => {
-                      const isActive = acc.id === activeAccountId || acc.id === user.id;
+                      const accUserId = acc.user?.id;
+                      const isActive = accUserId === activeAccountId || accUserId === user.id;
                       return (
                         <button
-                          key={acc.id}
+                          key={accUserId || acc.sessionToken}
                           type="button"
                           onClick={async () => {
-                            if (!isActive) {
-                              await switchAccount(acc.id);
+                            if (!isActive && accUserId) {
+                              await switchAccount(accUserId);
                             }
                             setIsAccountMenuOpen(false);
                           }}
@@ -285,10 +286,10 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            {acc.user.avatar_url ? (
+                            {acc.user?.avatar_url ? (
                               <img
                                 src={acc.user.avatar_url}
-                                alt={acc.user.full_name || acc.user.username}
+                                alt={acc.user.full_name || acc.user.username || 'Avatar'}
                                 className="w-8 h-8 rounded-full object-cover shrink-0"
                               />
                             ) : (
@@ -298,10 +299,10 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                             )}
                             <div className="min-w-0 flex-1">
                               <p className="text-xs font-semibold text-textPrimary truncate">
-                                {acc.user.full_name || acc.user.username || acc.user.email}
+                                {acc.user?.full_name || acc.user?.username || acc.user?.email || 'Account'}
                               </p>
                               <p className="text-[11px] text-textTertiary truncate">
-                                @{acc.user.username || acc.user.email.split('@')[0]}
+                                @{acc.user?.username || (acc.user?.email ? acc.user.email.split('@')[0] : 'user')}
                               </p>
                             </div>
                           </div>
@@ -344,8 +345,14 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                   onClose();
                   if (item.id === 'home') {
                     navigate('/');
+                  } else if (item.id === 'learn') {
+                    navigate('/learn');
                   } else if (item.id === 'research') {
                     navigate('/research');
+                  } else if (item.id === 'tutor') {
+                    navigate('/tutor');
+                  } else if (item.id === 'promote') {
+                    navigate('/promote');
                   } else if (item.id === 'profile') {
                     if (!isAuthenticated) {
                       openAuthModal('login');
@@ -372,6 +379,10 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                   onClose();
                   if (item.id === 'lostitem') {
                     navigate('/lostfound');
+                  } else if (item.id === 'marketplace') {
+                    navigate('/marketplace');
+                  } else if (item.id === 'delivery') {
+                    navigate('/campus');
                   }
                 }}
                 className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
@@ -388,7 +399,14 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
               <button
                 key={item.id}
                 type="button"
-                onClick={onClose}
+                onClick={() => {
+                  onClose();
+                  if (item.id === 'saved') {
+                    navigate('/saved');
+                  } else if (item.id === 'downloads') {
+                    navigate('/downloads');
+                  }
+                }}
                 className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
               >
                 <span className="text-textSecondary">{item.icon}</span>
@@ -405,7 +423,9 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                 type="button"
                 onClick={() => {
                   onClose();
-                  if (item.id === 'help') {
+                  if (item.id === 'settings') {
+                    navigate('/profile/settings');
+                  } else if (item.id === 'help') {
                     navigate('/faq');
                   }
                 }}
