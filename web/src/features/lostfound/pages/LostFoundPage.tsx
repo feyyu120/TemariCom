@@ -178,14 +178,14 @@ export const LostFoundPage: React.FC = () => {
   }, [items, statusFilter, onlyMyCampus]);
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background text-textPrimary antialiased select-none">
+    <div className="flex h-full h-[100dvh] max-h-[100dvh] w-full overflow-hidden bg-background text-textPrimary antialiased select-none">
       {/* 1. Desktop Left Sidebar */}
       <div className="hidden lg:flex shrink-0">
         <LeftSidebar />
       </div>
 
       {/* 2. Main Scrollable Content */}
-      <main className="flex-1 h-screen overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-w-0 bg-background flex flex-col">
+      <main className="flex-1 min-h-0 h-full max-h-full overflow-y-auto no-scrollbar [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden min-w-0 bg-background flex flex-col">
         {/* Sticky Mobile/Desktop Top Header */}
         <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border-subtle shrink-0">
           {/* Top Bar Row */}
