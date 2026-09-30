@@ -452,26 +452,6 @@ export const ChatPage: React.FC = () => {
     });
   }, [conversations, query]);
 
-  const handleOpenSavedMessages = useCallback(async () => {
-    try {
-      const savedConv = await chatApiService.getOrCreateSavedChat();
-      if (savedConv && savedConv.id) {
-        handleOpenConversation(savedConv);
-        queryClient.setQueryData<Conversation[]>(chatQueryKeys.conversations(), (prev) => {
-          const list = Array.isArray(prev) ? prev : [];
-          if (list.some((c) => c.id === savedConv.id)) return list;
-          return [savedConv, ...list];
-        });
-      }
-    } catch (err: any) {
-      showToast({
-        title: 'Error',
-        message: err?.message || 'Could not open Saved Messages',
-        type: 'error',
-      });
-    }
-  }, [handleOpenConversation, queryClient, showToast]);
-
   if (isAuthLoading) {
     return (
       <div className="flex h-screen w-screen items-center justify-center bg-background text-textPrimary">
@@ -571,7 +551,6 @@ export const ChatPage: React.FC = () => {
           {/* Bespoke Chat Header (clean top header for mobile & desktop) */}
           <ChatHeader
             onMenuPress={() => setIsDrawerOpen(true)}
-            onSavedMessagesPress={handleOpenSavedMessages}
           />
 
           {/* Forwarding Banner */}
