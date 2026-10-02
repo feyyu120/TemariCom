@@ -10,7 +10,6 @@ import {
   MapPin,
   RefreshCw,
   Package,
-  Menu,
   MoreVertical,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth';
@@ -191,15 +190,6 @@ export const LostFoundPage: React.FC = () => {
           {/* Top Bar Row */}
           <div className="max-w-4xl mx-auto px-3 sm:px-4 h-[53px] flex items-center justify-between">
             <div className="flex items-center gap-2.5 min-w-0">
-              <button
-                type="button"
-                onClick={() => setIsDrawerOpen(true)}
-                className="lg:hidden p-1.5 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
-                aria-label="Open mobile menu"
-              >
-                <Menu className="w-5 h-5 text-textPrimary" />
-              </button>
-
               <div className="flex items-center min-w-0">
                 <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
                   Lost Item
@@ -561,7 +551,11 @@ export const LostFoundPage: React.FC = () => {
       />
 
       {/* Mobile Drawer */}
-      <MobileDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
+      <MobileDrawer
+        isOpen={isDrawerOpen}
+        onOpen={() => setIsDrawerOpen(true)}
+        onClose={() => setIsDrawerOpen(false)}
+      />
     </div>
   );
 };

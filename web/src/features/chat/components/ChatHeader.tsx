@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { MoreVertical, Bookmark, Users, Radio, Settings, Menu } from 'lucide-react';
+import { MoreVertical, Bookmark, Users, Radio, Settings } from 'lucide-react';
 
 export interface ChatHeaderProps {
   onOpenMobileMenu?: () => void;
@@ -12,7 +12,6 @@ export interface ChatHeaderProps {
 }
 
 export const ChatHeader: React.FC<ChatHeaderProps> = ({
-  onOpenMobileMenu,
   onMenuPress,
   onSavedMessagesPress,
   onCreateGroupPress,
@@ -38,16 +37,6 @@ export const ChatHeader: React.FC<ChatHeaderProps> = ({
   return (
     <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle bg-background select-none shrink-0 relative">
       <div className="flex items-center gap-2.5">
-        {onOpenMobileMenu && (
-          <button
-            type="button"
-            onClick={onOpenMobileMenu}
-            className="p-1 -ml-1 rounded-full text-textSecondary hover:text-textPrimary hover:bg-surface-elevated transition-colors lg:hidden cursor-pointer"
-            aria-label="Open navigation menu"
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-        )}
         <h1 className="text-xl font-bold tracking-tight text-textPrimary">Chat</h1>
       </div>
 

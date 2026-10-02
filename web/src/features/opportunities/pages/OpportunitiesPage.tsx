@@ -5,7 +5,7 @@ import {
   Search,
   Megaphone,
   BriefcaseBusiness,
-  CheckCircle2,
+  BadgeCheck,
   ChevronRight,
   Smartphone,
   CreditCard,
@@ -15,7 +15,6 @@ import {
   ExternalLink,
   Filter,
   X,
-  Menu,
   MoreVertical,
 } from 'lucide-react';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
@@ -170,15 +169,6 @@ export const OpportunitiesPage: React.FC = () => {
           {/* Top Bar Row */}
           <div className="max-w-4xl mx-auto px-3 sm:px-4 h-[53px] flex items-center justify-between">
             <div className="flex items-center gap-2.5 min-w-0">
-              <button
-                type="button"
-                onClick={() => setIsDrawerOpen(true)}
-                className="lg:hidden p-1.5 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
-                aria-label="Open mobile menu"
-              >
-                <Menu className="w-5 h-5 text-textPrimary" />
-              </button>
-
               <div className="flex items-center min-w-0">
                 <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
                   Announcements
@@ -417,7 +407,7 @@ export const OpportunitiesPage: React.FC = () => {
                                     {ann.institutionName}
                                   </h3>
                                   {ann.isOfficial && (
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-verification shrink-0" />
+                                    <BadgeCheck className="w-4 h-4 text-verification shrink-0" />
                                   )}
                                 </div>
                                 <p className="text-[12px] text-textTertiary flex items-center gap-1.5 mt-0.5">
@@ -477,9 +467,14 @@ export const OpportunitiesPage: React.FC = () => {
                                 </div>
                               )}
                               <div className="min-w-0">
-                                <h3 className="font-bold text-[14px] sm:text-[15px] text-textPrimary truncate">
-                                  {opp.organization}
-                                </h3>
+                                <div className="flex items-center gap-1.5">
+                                  <h3 className="font-bold text-[14px] sm:text-[15px] text-textPrimary truncate">
+                                    {opp.organization}
+                                  </h3>
+                                  {opp.isOfficial && (
+                                    <BadgeCheck className="w-4 h-4 text-verification shrink-0" />
+                                  )}
+                                </div>
                                 <p className="text-[12px] text-textTertiary mt-0.5">
                                   {opp.deadlineOrDate}
                                 </p>
@@ -603,6 +598,7 @@ export const OpportunitiesPage: React.FC = () => {
       {/* Mobile Drawer Navigation Menu */}
       <MobileDrawer
         isOpen={isDrawerOpen}
+        onOpen={() => setIsDrawerOpen(true)}
         onClose={() => setIsDrawerOpen(false)}
       />
     </div>

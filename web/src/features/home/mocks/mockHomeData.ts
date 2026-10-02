@@ -146,6 +146,7 @@ export const mockOpportunities: Opportunity[] = [
     organization: 'Addis Ababa University',
     deadlineOrDate: 'Deadline: May 31, 2025',
     organizationLogoUrl: 'https://images.unsplash.com/photo-1592280771190-3e2e4d571952?w=80&auto=format&fit=crop&q=80',
+    isOfficial: true,
   },
   {
     id: 'opp-2',
@@ -154,6 +155,7 @@ export const mockOpportunities: Opportunity[] = [
     organization: 'Ministry of Innovation & Tech',
     deadlineOrDate: 'Deadline: June 10, 2025',
     organizationLogoUrl: 'https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=80&auto=format&fit=crop&q=80',
+    isOfficial: true,
   },
   {
     id: 'opp-3',
@@ -162,6 +164,7 @@ export const mockOpportunities: Opportunity[] = [
     organization: 'Ethio Telecom',
     deadlineOrDate: 'Deadline: May 28, 2025',
     organizationLogoUrl: 'https://images.unsplash.com/photo-1573164713988-8665fc963095?w=80&auto=format&fit=crop&q=80',
+    isOfficial: true,
   },
   {
     id: 'opp-4',

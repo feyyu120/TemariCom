@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
 import { MobileDrawer } from '@/features/home/components/MobileDrawer';
-import { MobileBottomNav } from '@/features/home/components/MobileBottomNav';
 import {
   ChatHeader,
   ChatSearchBar,
@@ -564,11 +563,6 @@ export const ChatPage: React.FC = () => {
               </div>
             </div>
           </div>
-
-          {/* Mobile Bottom Navigation */}
-          <div className="lg:hidden shrink-0">
-            <MobileBottomNav />
-          </div>
         </main>
       </div>
     );
@@ -762,14 +756,11 @@ export const ChatPage: React.FC = () => {
       </main>
 
       {/* Mobile Drawer Menu */}
-      <MobileDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
-
-      {/* Mobile Fixed Bottom Navigation (Only visible when no active chat is open on mobile) */}
-      {!selectedConversation && (
-        <div className="md:hidden">
-          <MobileBottomNav />
-        </div>
-      )}
+      <MobileDrawer
+        isOpen={isDrawerOpen}
+        onOpen={() => setIsDrawerOpen(true)}
+        onClose={() => setIsDrawerOpen(false)}
+      />
     </div>
   );
 };

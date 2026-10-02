@@ -1,12 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Home,
-  BookOpen,
   Microscope,
   GraduationCap,
   BadgePercent,
   ShoppingCart,
-  Bike,
   Search,
   Bookmark,
   Download,
@@ -29,6 +27,7 @@ import { useNavigate } from 'react-router-dom';
 interface MobileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpen?: () => void;
 }
 
 interface DrawerMenuItem {
@@ -38,7 +37,7 @@ interface DrawerMenuItem {
   isDanger?: boolean;
 }
 
-export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) => {
+export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose, onOpen }) => {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const {
@@ -104,18 +103,63 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
     touchStartY.current = null;
   };
 
+  // Swipe right on window to open drawer anywhere on mobile (< lg screens)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    let windowStartX = 0;
+    let windowStartY = 0;
+    let windowStartTime = 0;
+
+    const handleWindowTouchStart = (e: TouchEvent) => {
+      if (isOpen) return;
+      if (window.innerWidth >= 1024) return;
+      if (e.touches.length !== 1) return;
+
+      windowStartX = e.touches[0].clientX;
+      windowStartY = e.touches[0].clientY;
+      windowStartTime = Date.now();
+    };
+
+    const handleWindowTouchEnd = (e: TouchEvent) => {
+      if (isOpen) return;
+      if (window.innerWidth >= 1024) return;
+      if (e.changedTouches.length !== 1) return;
+
+      const deltaX = e.changedTouches[0].clientX - windowStartX;
+      const deltaY = e.changedTouches[0].clientY - windowStartY;
+      const elapsed = Date.now() - windowStartTime;
+
+      // Swiped right: minimum 45px, predominantly horizontal, within 600ms
+      // Starts within the left portion of the screen (e.g. windowStartX < window.innerWidth * 0.75)
+      if (
+        deltaX > 45 &&
+        Math.abs(deltaX) > Math.abs(deltaY) * 1.3 &&
+        elapsed < 600 &&
+        windowStartX < window.innerWidth * 0.75
+      ) {
+        onOpen?.();
+      }
+    };
+
+    window.addEventListener('touchstart', handleWindowTouchStart, { passive: true });
+    window.addEventListener('touchend', handleWindowTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener('touchstart', handleWindowTouchStart);
+      window.removeEventListener('touchend', handleWindowTouchEnd);
+    };
+  }, [isOpen, onOpen]);
+
   const menuGroup1: DrawerMenuItem[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
-    { id: 'learn', label: 'Learn', icon: <BookOpen className="w-5 h-5" /> },
     { id: 'research', label: 'Research', icon: <Microscope className="w-5 h-5" /> },
-    { id: 'profile', label: 'My Profile', icon: <UserIcon className="w-5 h-5" /> },
     { id: 'tutor', label: 'Find Tutor', icon: <GraduationCap className="w-5 h-5" /> },
     { id: 'promote', label: 'Promote', icon: <BadgePercent className="w-5 h-5" /> },
   ];
 
   const menuGroup2: DrawerMenuItem[] = [
     { id: 'marketplace', label: 'Marketplace', icon: <ShoppingCart className="w-5 h-5" /> },
-    { id: 'delivery', label: 'Campus Delivery', icon: <Bike className="w-5 h-5" /> },
     { id: 'lostitem', label: 'Lost Item', icon: <Search className="w-5 h-5" /> },
   ];
 
@@ -345,20 +389,12 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                   onClose();
                   if (item.id === 'home') {
                     navigate('/');
-                  } else if (item.id === 'learn') {
-                    navigate('/learn');
                   } else if (item.id === 'research') {
                     navigate('/research');
                   } else if (item.id === 'tutor') {
                     navigate('/tutor');
                   } else if (item.id === 'promote') {
                     navigate('/promote');
-                  } else if (item.id === 'profile') {
-                    if (!isAuthenticated) {
-                      openAuthModal('login');
-                    } else {
-                      navigate('/profile');
-                    }
                   }
                 }}
                 className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
@@ -381,8 +417,6 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                     navigate('/lostfound');
                   } else if (item.id === 'marketplace') {
                     navigate('/marketplace');
-                  } else if (item.id === 'delivery') {
-                    navigate('/campus');
                   }
                 }}
                 className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"

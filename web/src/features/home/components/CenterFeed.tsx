@@ -119,46 +119,7 @@ export const CenterFeed: React.FC<CenterFeedProps> = ({ onOpenMenu }) => {
         opportunities={opportunities}
       />
 
-      {/* 5. Mobile Feed Tabs: For you / Following switcher */}
-      <div className="lg:hidden flex items-stretch border-b border-border-subtle bg-background/95 sticky top-[53px] z-10 backdrop-blur-md shrink-0">
-        <button
-          type="button"
-          onClick={() => setActiveTab('for_you')}
-          className="flex-1 py-3 flex items-center justify-center text-center text-[15px] font-semibold transition-colors relative"
-        >
-          <span
-            className={
-              activeTab === 'for_you'
-                ? 'text-textPrimary font-bold'
-                : 'text-textTertiary'
-            }
-          >
-            For you
-          </span>
-          {activeTab === 'for_you' && (
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-14 h-0.5 bg-textPrimary rounded-full" />
-          )}
-        </button>
 
-        <button
-          type="button"
-          onClick={() => setActiveTab('following')}
-          className="flex-1 py-3 flex items-center justify-center text-center text-[15px] font-semibold transition-colors relative"
-        >
-          <span
-            className={
-              activeTab === 'following'
-                ? 'text-textPrimary font-bold'
-                : 'text-textTertiary'
-            }
-          >
-            Following
-          </span>
-          {activeTab === 'following' && (
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-16 h-0.5 bg-textPrimary rounded-full" />
-          )}
-        </button>
-      </div>
 
       {/* 6. Feed Posts Stream */}
       <div className="divide-y divide-border-subtle">

@@ -405,13 +405,17 @@ func (h *ChatHandler) DeleteMessage(c fiber.Ctx) error {
 		})
 	}
 
-	// Parse scope from request body
-	var body struct {
-		Scope string `json:"scope"` // "everyone" or "me"
+	// Parse scope from query param or request body
+	scope := strings.ToLower(strings.TrimSpace(c.Query("scope")))
+	if scope == "" {
+		var body struct {
+			Scope string `json:"scope"` // "everyone" or "me"
+		}
+		_ = c.Bind().Body(&body)
+		scope = strings.ToLower(strings.TrimSpace(body.Scope))
 	}
-	_ = c.Bind().Body(&body)
 
-	forAll := body.Scope == "everyone"
+	forAll := scope == "everyone"
 
 	recipientIDs, err := h.chatService.DeleteMessage(c.Context(), convID, msgID, currentUserID, forAll)
 	if err != nil {
@@ -448,7 +452,7 @@ func (h *ChatHandler) DeleteMessage(c fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"success":    true,
 		"message_id": msgID,
-		"scope":      body.Scope,
+		"scope":      scope,
 	})
 }
 

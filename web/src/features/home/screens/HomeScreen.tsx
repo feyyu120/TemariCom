@@ -56,6 +56,7 @@ export const HomeScreen: React.FC = () => {
       {/* 4. Mobile Drawer Navigation Menu */}
       <MobileDrawer
         isOpen={isDrawerOpen}
+        onOpen={() => setIsDrawerOpen(true)}
         onClose={() => setIsDrawerOpen(false)}
       />
 

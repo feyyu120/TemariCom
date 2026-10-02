@@ -7,7 +7,6 @@ import {
   LogIn,
   ChevronLeft,
   ChevronRight,
-  Menu,
   MoreVertical,
   ArrowLeft,
 } from 'lucide-react';
@@ -124,16 +123,7 @@ export const ResearchPage: React.FC = () => {
                 >
                   <ArrowLeft className="w-5 h-5 text-textPrimary" />
                 </button>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => setIsDrawerOpen(true)}
-                  className="lg:hidden p-1.5 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
-                  aria-label="Open mobile menu"
-                >
-                  <Menu className="w-5 h-5 text-textPrimary" />
-                </button>
-              )}
+              ) : null}
 
               <div className="flex items-center min-w-0">
                 {activeTab === 'saved' ? (
@@ -419,6 +409,7 @@ export const ResearchPage: React.FC = () => {
       {/* 3. Mobile Navigation Drawer */}
       <MobileDrawer
         isOpen={isDrawerOpen}
+        onOpen={() => setIsDrawerOpen(true)}
         onClose={() => setIsDrawerOpen(false)}
       />
     </div>

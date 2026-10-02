@@ -132,7 +132,7 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
       queryClient.setQueryData<MessagesPage>(
         chatQueryKeys.messages(message.conversation_id, 50),
         (old) => {
-          if (!old) return { messages: [message], has_more: false };
+          if (!old) return old;
           if (old.messages.some((m) => m.id === message.id)) return old;
 
           const isMine =
@@ -156,6 +156,11 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
           };
         }
       );
+
+      // Invalidate messages query so if not loaded yet, entering chat fetches full history
+      queryClient.invalidateQueries({
+        queryKey: ['chat', 'messages', message.conversation_id],
+      });
 
       // Update conversations list in TanStack Query
       queryClient.setQueryData<Conversation[]>(chatQueryKeys.conversations(), (prev) => {

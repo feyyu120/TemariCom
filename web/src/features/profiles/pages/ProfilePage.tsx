@@ -9,14 +9,12 @@ import {
   AlertCircle,
   LogIn,
   Sparkles,
-  Menu,
 } from 'lucide-react';
 import { useAuth } from '@/features/auth';
 import { useMyProfile, useUserProfile } from '@/features/profiles/hooks';
 import { ProfileSkeleton } from '@/features/profiles/components/ProfileSkeleton';
 import { ProfileHeader } from '@/features/profiles/components/ProfileHeader';
 import { EditProfileModal } from '@/features/profiles/components/EditProfileModal';
-import { MobileBottomNav } from '@/features/home/components/MobileBottomNav';
 import { MobileDrawer } from '@/features/home/components/MobileDrawer';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
 
@@ -84,14 +82,6 @@ export const ProfilePage: React.FC = () => {
         <div className="flex-1 min-h-0 h-full max-h-full overflow-y-auto min-w-0 bg-background flex flex-col justify-between">
           <header className="h-[53px] sticky top-0 z-30 bg-background/90 backdrop-blur-md border-b border-border-subtle flex items-center justify-between px-3.5 sm:px-4 shrink-0">
             <div className="flex items-center gap-2.5">
-              <button
-                type="button"
-                onClick={() => setIsDrawerOpen(true)}
-                className="lg:hidden p-1.5 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer"
-                aria-label="Open mobile menu"
-              >
-                <Menu className="w-5 h-5 text-textPrimary" />
-              </button>
               <span className="font-bold text-base text-textPrimary">Profile</span>
             </div>
             <div className="w-6" />
@@ -119,10 +109,9 @@ export const ProfilePage: React.FC = () => {
             </div>
           </main>
 
-          <MobileBottomNav />
-
           <MobileDrawer
             isOpen={isDrawerOpen}
+            onOpen={() => setIsDrawerOpen(true)}
             onClose={() => setIsDrawerOpen(false)}
           />
         </div>
@@ -151,16 +140,7 @@ export const ProfilePage: React.FC = () => {
               >
                 <ArrowLeft className="w-5 h-5 text-textPrimary" />
               </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setIsDrawerOpen(true)}
-                className="lg:hidden p-1.5 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
-                aria-label="Open mobile menu"
-              >
-                <Menu className="w-5 h-5 text-textPrimary" />
-              </button>
-            )}
+            ) : null}
             <h1 className="text-base sm:text-lg font-bold text-textPrimary tracking-tight truncate">
               {isViewingSpecificUser ? (profile?.user?.full_name || 'Profile') : 'Profile'}
             </h1>
@@ -314,11 +294,9 @@ export const ProfilePage: React.FC = () => {
       {/* Mobile Navigation Drawer */}
       <MobileDrawer
         isOpen={isDrawerOpen}
+        onOpen={() => setIsDrawerOpen(true)}
         onClose={() => setIsDrawerOpen(false)}
       />
-
-      {/* Fixed bottom navigation for mobile */}
-      <MobileBottomNav />
     </div>
   );
 };
