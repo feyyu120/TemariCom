@@ -23,7 +23,6 @@ import { useTheme } from '@/theme';
 import { useMyProfile } from '@/features/profiles/hooks/useMyProfile';
 import { profileService } from '@/features/profiles/services/profileService';
 import { EditProfileModal } from '@/features/profiles/components/EditProfileModal';
-import { MobileBottomNav } from '@/features/home/components/MobileBottomNav';
 import { MobileDrawer } from '@/features/home/components/MobileDrawer';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
 import { ConfirmDeleteModal } from '@/components';
@@ -723,9 +722,6 @@ export const ProfileSettingsPage: React.FC = () => {
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
       />
-
-      {/* Mobile Bottom Navigation */}
-      <MobileBottomNav />
     </div>
   );
 };
