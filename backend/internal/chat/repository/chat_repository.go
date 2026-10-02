@@ -860,7 +860,7 @@ func (r *pgChatRepository) DeleteMessage(ctx context.Context, conversationID, me
 
 	// Verify message exists in this conversation
 	var senderID uuid.UUID
-	checkQuery := `SELECT sender_id FROM messages WHERE id = $1 AND conversation_id = $2 AND deleted_at IS NULL;`
+	checkQuery := `SELECT sender_id FROM messages WHERE id = $1 AND conversation_id = $2;`
 	err = r.db.QueryRow(ctx, checkQuery, messageID, conversationID).Scan(&senderID)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -895,7 +895,7 @@ func (r *pgChatRepository) DeleteMessage(ctx context.Context, conversationID, me
 				       COALESCE(content, '[' || message_type || ' message]') AS preview, 
 				       created_at
 				FROM messages
-				WHERE conversation_id = $1
+				WHERE conversation_id = $1 AND deleted_at IS NULL
 				ORDER BY created_at DESC
 				LIMIT 1
 			)
