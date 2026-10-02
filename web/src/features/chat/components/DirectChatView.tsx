@@ -131,8 +131,9 @@ export const DirectChatView: React.FC<DirectChatViewProps> = ({
     queryKey: messagesQueryKey,
     queryFn: () => chatApiService.getMessages(conversationId!, 50),
     enabled: Boolean(conversationId) && !isTempConversation,
-    staleTime: 60 * 1000,
+    staleTime: 0,
     gcTime: 10 * 60 * 1000,
+    refetchOnMount: 'always',
     refetchOnWindowFocus: false,
   });
 
