@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Menu, MoreVertical, ArrowLeft, Sparkles } from 'lucide-react';
+import { MoreVertical, ArrowLeft, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
 import { MobileDrawer } from '@/features/home/components/MobileDrawer';
@@ -34,15 +34,6 @@ export const ComingSoonPage: React.FC<ComingSoonPageProps> = ({
         <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border-subtle shrink-0">
           <div className="max-w-4xl mx-auto px-3 sm:px-4 h-[53px] flex items-center justify-between">
             <div className="flex items-center gap-2.5 min-w-0">
-              <button
-                type="button"
-                onClick={() => setIsDrawerOpen(true)}
-                className="lg:hidden p-1.5 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
-                aria-label="Open mobile menu"
-              >
-                <Menu className="w-5 h-5 text-textPrimary" />
-              </button>
-
               <div className="flex items-center min-w-0">
                 <h1 className="text-base sm:text-lg font-bold tracking-tight text-textPrimary truncate">
                   {title}
@@ -132,6 +123,7 @@ export const ComingSoonPage: React.FC<ComingSoonPageProps> = ({
       {/* 3. Mobile Navigation Drawer */}
       <MobileDrawer
         isOpen={isDrawerOpen}
+        onOpen={() => setIsDrawerOpen(true)}
         onClose={() => setIsDrawerOpen(false)}
       />
     </div>
