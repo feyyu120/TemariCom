@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronRight, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, BadgeCheck } from 'lucide-react';
 import { OfficialAnnouncement, Opportunity } from '@/features/home/types';
 
 interface MobileOfficialOpportunitiesProps {
@@ -34,7 +34,7 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
     organization: opp.organization,
     logoUrl: opp.organizationLogoUrl,
     meta: opp.deadlineOrDate,
-    isOfficial: false,
+    isOfficial: Boolean(opp.isOfficial),
   }));
 
   const combinedItems = [...officialItems, ...opportunityItems];
@@ -46,7 +46,7 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
       {/* Section Header */}
       <div className="flex items-center justify-between px-4 mb-2.5">
         <h2 className="text-[15px] font-bold text-textPrimary tracking-tight">
-          Official & Opportunities
+          Announcements
         </h2>
         <button
           type="button"
@@ -97,7 +97,7 @@ export const MobileOfficialOpportunities: React.FC<MobileOfficialOpportunitiesPr
                   {item.organization}
                 </span>
                 {item.isOfficial && (
-                  <CheckCircle2 className="w-3.5 h-3.5 text-verification shrink-0" />
+                  <BadgeCheck className="w-4 h-4 text-verification shrink-0" />
                 )}
               </div>
 
