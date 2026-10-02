@@ -5,7 +5,7 @@ import {
   Search,
   Megaphone,
   BriefcaseBusiness,
-  CheckCircle2,
+  BadgeCheck,
   ChevronRight,
   Smartphone,
   CreditCard,
@@ -417,7 +417,7 @@ export const OpportunitiesPage: React.FC = () => {
                                     {ann.institutionName}
                                   </h3>
                                   {ann.isOfficial && (
-                                    <CheckCircle2 className="w-3.5 h-3.5 text-verification shrink-0" />
+                                    <BadgeCheck className="w-4 h-4 text-verification shrink-0" />
                                   )}
                                 </div>
                                 <p className="text-[12px] text-textTertiary flex items-center gap-1.5 mt-0.5">
@@ -477,9 +477,14 @@ export const OpportunitiesPage: React.FC = () => {
                                 </div>
                               )}
                               <div className="min-w-0">
-                                <h3 className="font-bold text-[14px] sm:text-[15px] text-textPrimary truncate">
-                                  {opp.organization}
-                                </h3>
+                                <div className="flex items-center gap-1.5">
+                                  <h3 className="font-bold text-[14px] sm:text-[15px] text-textPrimary truncate">
+                                    {opp.organization}
+                                  </h3>
+                                  {opp.isOfficial && (
+                                    <BadgeCheck className="w-4 h-4 text-verification shrink-0" />
+                                  )}
+                                </div>
                                 <p className="text-[12px] text-textTertiary mt-0.5">
                                   {opp.deadlineOrDate}
                                 </p>
