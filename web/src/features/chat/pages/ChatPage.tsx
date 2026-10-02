@@ -756,7 +756,11 @@ export const ChatPage: React.FC = () => {
       </main>
 
       {/* Mobile Drawer Menu */}
-      <MobileDrawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
+      <MobileDrawer
+        isOpen={isDrawerOpen}
+        onOpen={() => setIsDrawerOpen(true)}
+        onClose={() => setIsDrawerOpen(false)}
+      />
     </div>
   );
 };
