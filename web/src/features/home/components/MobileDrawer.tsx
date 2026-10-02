@@ -27,6 +27,7 @@ import { useNavigate } from 'react-router-dom';
 interface MobileDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  onOpen?: () => void;
 }
 
 interface DrawerMenuItem {
@@ -36,7 +37,7 @@ interface DrawerMenuItem {
   isDanger?: boolean;
 }
 
-export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) => {
+export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose, onOpen }) => {
   const navigate = useNavigate();
   const { isDark, toggleTheme } = useTheme();
   const {
@@ -101,6 +102,54 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
     touchStartX.current = null;
     touchStartY.current = null;
   };
+
+  // Swipe right on window to open drawer anywhere on mobile (< lg screens)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    let windowStartX = 0;
+    let windowStartY = 0;
+    let windowStartTime = 0;
+
+    const handleWindowTouchStart = (e: TouchEvent) => {
+      if (isOpen) return;
+      if (window.innerWidth >= 1024) return;
+      if (e.touches.length !== 1) return;
+
+      windowStartX = e.touches[0].clientX;
+      windowStartY = e.touches[0].clientY;
+      windowStartTime = Date.now();
+    };
+
+    const handleWindowTouchEnd = (e: TouchEvent) => {
+      if (isOpen) return;
+      if (window.innerWidth >= 1024) return;
+      if (e.changedTouches.length !== 1) return;
+
+      const deltaX = e.changedTouches[0].clientX - windowStartX;
+      const deltaY = e.changedTouches[0].clientY - windowStartY;
+      const elapsed = Date.now() - windowStartTime;
+
+      // Swiped right: minimum 45px, predominantly horizontal, within 600ms
+      // Starts within the left portion of the screen (e.g. windowStartX < window.innerWidth * 0.75)
+      if (
+        deltaX > 45 &&
+        Math.abs(deltaX) > Math.abs(deltaY) * 1.3 &&
+        elapsed < 600 &&
+        windowStartX < window.innerWidth * 0.75
+      ) {
+        onOpen?.();
+      }
+    };
+
+    window.addEventListener('touchstart', handleWindowTouchStart, { passive: true });
+    window.addEventListener('touchend', handleWindowTouchEnd, { passive: true });
+
+    return () => {
+      window.removeEventListener('touchstart', handleWindowTouchStart);
+      window.removeEventListener('touchend', handleWindowTouchEnd);
+    };
+  }, [isOpen, onOpen]);
 
   const menuGroup1: DrawerMenuItem[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
