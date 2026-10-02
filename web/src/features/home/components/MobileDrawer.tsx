@@ -1,12 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Home,
-  BookOpen,
   Microscope,
   GraduationCap,
   BadgePercent,
   ShoppingCart,
-  Bike,
   Search,
   Bookmark,
   Download,
@@ -106,16 +104,13 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
 
   const menuGroup1: DrawerMenuItem[] = [
     { id: 'home', label: 'Home', icon: <Home className="w-5 h-5" /> },
-    { id: 'learn', label: 'Learn', icon: <BookOpen className="w-5 h-5" /> },
     { id: 'research', label: 'Research', icon: <Microscope className="w-5 h-5" /> },
-    { id: 'profile', label: 'My Profile', icon: <UserIcon className="w-5 h-5" /> },
     { id: 'tutor', label: 'Find Tutor', icon: <GraduationCap className="w-5 h-5" /> },
     { id: 'promote', label: 'Promote', icon: <BadgePercent className="w-5 h-5" /> },
   ];
 
   const menuGroup2: DrawerMenuItem[] = [
     { id: 'marketplace', label: 'Marketplace', icon: <ShoppingCart className="w-5 h-5" /> },
-    { id: 'delivery', label: 'Campus Delivery', icon: <Bike className="w-5 h-5" /> },
     { id: 'lostitem', label: 'Lost Item', icon: <Search className="w-5 h-5" /> },
   ];
 
@@ -345,20 +340,12 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                   onClose();
                   if (item.id === 'home') {
                     navigate('/');
-                  } else if (item.id === 'learn') {
-                    navigate('/learn');
                   } else if (item.id === 'research') {
                     navigate('/research');
                   } else if (item.id === 'tutor') {
                     navigate('/tutor');
                   } else if (item.id === 'promote') {
                     navigate('/promote');
-                  } else if (item.id === 'profile') {
-                    if (!isAuthenticated) {
-                      openAuthModal('login');
-                    } else {
-                      navigate('/profile');
-                    }
                   }
                 }}
                 className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
@@ -381,8 +368,6 @@ export const MobileDrawer: React.FC<MobileDrawerProps> = ({ isOpen, onClose }) =
                     navigate('/lostfound');
                   } else if (item.id === 'marketplace') {
                     navigate('/marketplace');
-                  } else if (item.id === 'delivery') {
-                    navigate('/campus');
                   }
                 }}
                 className="w-full flex items-center gap-3.5 px-3 py-2.5 rounded-card text-sm font-medium text-textPrimary hover:bg-surface-elevated transition-colors cursor-pointer"
