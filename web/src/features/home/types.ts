@@ -67,6 +67,7 @@ export interface Opportunity {
   organizationLogoUrl?: string;
   deadlineOrDate: string;
   location?: string;
+  isOfficial?: boolean;
 }
 
 export type LostFoundStatus = 'Lost' | 'Found';
