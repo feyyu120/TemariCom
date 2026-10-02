@@ -14,7 +14,6 @@ import {
   Moon,
   HelpCircle,
   FileText,
-  Menu,
   Check,
   Info,
 } from 'lucide-react';
@@ -131,14 +130,6 @@ export const ProfileSettingsPage: React.FC = () => {
               aria-label="Back to profile"
             >
               <ArrowLeft className="w-5 h-5 text-textPrimary" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsDrawerOpen(true)}
-              className="lg:hidden p-1.5 -ml-1 rounded-full hover:bg-surface-elevated text-textPrimary transition-colors cursor-pointer shrink-0"
-              aria-label="Open mobile menu"
-            >
-              <Menu className="w-5 h-5 text-textPrimary" />
             </button>
             <h1 className="text-base sm:text-lg font-bold text-textPrimary tracking-tight truncate">
               Settings
@@ -720,6 +711,7 @@ export const ProfileSettingsPage: React.FC = () => {
       {/* Mobile Drawer */}
       <MobileDrawer
         isOpen={isDrawerOpen}
+        onOpen={() => setIsDrawerOpen(true)}
         onClose={() => setIsDrawerOpen(false)}
       />
     </div>
