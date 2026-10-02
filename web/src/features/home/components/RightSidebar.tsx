@@ -6,6 +6,7 @@ import {
   Megaphone,
   BriefcaseBusiness,
   ChevronRight,
+  BadgeCheck,
   Smartphone,
   CreditCard,
   Package,
@@ -157,9 +158,14 @@ export const RightSidebar: React.FC = () => {
                     />
                     <div className="min-w-0 flex-1">
                       {/* Institution Name */}
-                      <p className="text-[14px] font-semibold text-textPrimary truncate">
-                        {item.institutionName}
-                      </p>
+                      <div className="flex items-center gap-1 min-w-0">
+                        <p className="text-[14px] font-semibold text-textPrimary truncate">
+                          {item.institutionName}
+                        </p>
+                        {item.isOfficial && (
+                          <BadgeCheck className="w-3.5 h-3.5 text-verification shrink-0" />
+                        )}
+                      </div>
                       {/* Title: distinct in size and color */}
                       <p className="text-[13px] font-medium text-textSecondary truncate group-hover:underline transition-colors mt-0.5">
                         {item.title}
