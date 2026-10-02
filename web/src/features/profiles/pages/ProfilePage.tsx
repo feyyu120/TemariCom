@@ -16,7 +16,6 @@ import { useMyProfile, useUserProfile } from '@/features/profiles/hooks';
 import { ProfileSkeleton } from '@/features/profiles/components/ProfileSkeleton';
 import { ProfileHeader } from '@/features/profiles/components/ProfileHeader';
 import { EditProfileModal } from '@/features/profiles/components/EditProfileModal';
-import { MobileBottomNav } from '@/features/home/components/MobileBottomNav';
 import { MobileDrawer } from '@/features/home/components/MobileDrawer';
 import { LeftSidebar } from '@/features/home/components/LeftSidebar';
 
@@ -118,8 +117,6 @@ export const ProfilePage: React.FC = () => {
               </button>
             </div>
           </main>
-
-          <MobileBottomNav />
 
           <MobileDrawer
             isOpen={isDrawerOpen}
@@ -316,9 +313,6 @@ export const ProfilePage: React.FC = () => {
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
       />
-
-      {/* Fixed bottom navigation for mobile */}
-      <MobileBottomNav />
     </div>
   );
 };
